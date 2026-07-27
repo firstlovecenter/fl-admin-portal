@@ -28,6 +28,26 @@
       "submitting": "Envoi en cours…",
       "success": "Instructions envoyées. Vérifiez votre e-mail.",
       "genericError": "Échec de l'envoi de l'e-mail. Veuillez réessayer."
+    },
+    "setup": {
+      "title": "Configurez votre mot de passe",
+      "description": "Terminez la configuration de votre compte en créant un mot de passe.",
+      "emailLabel": "Adresse e-mail",
+      "passwordLabel": "Mot de passe",
+      "confirmLabel": "Confirmer le mot de passe",
+      "passwordPlaceholder": "Créez un mot de passe",
+      "confirmPlaceholder": "Confirmez votre mot de passe",
+      "successTitle": "Mot de passe défini avec succès !",
+      "signIn": "Se connecter",
+      "failed": "Échec de la configuration du mot de passe. Veuillez réessayer.",
+      "loadingEmail": "Chargement de l'e-mail…",
+      "passwordRequired": "Le mot de passe est obligatoire",
+      "confirmRequired": "Veuillez confirmer votre mot de passe",
+      "minLength": "Le mot de passe doit comporter au moins 8 caractères",
+      "needLower": "Doit contenir au moins une minuscule",
+      "needUpper": "Doit contenir au moins une majuscule",
+      "needNumber": "Doit contenir au moins un chiffre",
+      "mustMatch": "Les mots de passe doivent correspondre"
     }
   },
   "language": {
@@ -183,7 +203,31 @@
       "body": "La fonctionnalité de réconciliation est encore en cours de développement. Des nouvelles bientôt !"
     },
     "retrievingChurch": "Récupération des informations de votre église…",
-    "loadingMap": "Chargement de la carte…"
+    "loadingMap": "Chargement de la carte…",
+    "errors": {
+      "signupFailed": "Échec de l'inscription",
+      "loginFailed": "Échec de la connexion",
+      "tokenRefreshFailed": "Échec du renouvellement du jeton",
+      "passwordSetupFailed": "Échec de la configuration du mot de passe",
+      "passwordResetFailed": "Échec de la réinitialisation du mot de passe",
+      "passwordResetRequestFailed": "Échec de la demande de réinitialisation du mot de passe",
+      "accountDeletionFailed": "Échec de la suppression du compte",
+      "uploadUrlFailed": "Impossible d'obtenir l'URL de téléversement",
+      "presignedUrlFailed": "Impossible de générer l'URL présignée",
+      "s3UploadFailed": "Impossible de téléverser l'image vers S3",
+      "sessionExpired": "Session expirée. Veuillez vous reconnecter.",
+      "downloadFailed": "Échec du téléchargement ({{status}})",
+      "fileTypeNotAllowed": "Type de fichier non autorisé. Types pris en charge : {{types}}",
+      "fileTooLarge": "Fichier trop volumineux. Taille maximale : {{size}} Mo"
+    },
+    "maintenance": {
+      "title": "Site en maintenance",
+      "body": "Nous travaillons actuellement sur le site et serons de retour sous peu. Merci de votre patience."
+    },
+    "password": {
+      "show": "Afficher le mot de passe",
+      "hide": "Masquer le mot de passe"
+    }
   },
   "accounts": {
     "common": {
@@ -1311,6 +1355,38 @@
       "unnamed": "{{role}} sans nom",
       "openNamedLevel": "Ouvrir {{level}} {{name}}",
       "noneMatchTerm": "Pas de {{levelPlural}} pour « {{term}} »."
+    },
+    "memberDelete": {
+      "title": "Supprimer ce membre ?",
+      "notePlaceholder": "Ajoutez un contexte qui explique cette décision",
+      "reasonRequired": "Veuillez choisir une catégorie de motif",
+      "reasonTextRequired": "Veuillez indiquer la raison de la suppression de ce membre"
+    },
+    "memberTitle": {
+      "title": "Titres pastoraux",
+      "removedToast": "Titre {{title}} retiré",
+      "pastoralAppointmentDate": "Date de nomination pastorale",
+      "ordinationDate": "Date d'ordination",
+      "consecrationDate": "Date de consécration",
+      "pastor": "Pasteur",
+      "reverend": "Révérend",
+      "bishop": "Évêque"
+    },
+    "avatar": {
+      "alt": "Photo du membre",
+      "change": "Changer la photo",
+      "upload": "Téléverser une photo",
+      "hint": "PNG, JPG ou WebP. 10 Mo max."
+    },
+    "closeDown": {
+      "button": "Fermer",
+      "title": "Fermer la bacenta",
+      "confirm": "Fermer {{name}}",
+      "cancel": "Non, revenir en arrière"
+    },
+    "memberTable": {
+      "loadError": "Impossible de charger les membres. Veuillez réessayer.",
+      "noMatches": "Aucun membre ne correspond à votre recherche"
     }
   },
   "dashboard": {
@@ -1521,6 +1597,12 @@
         "Même le temple a fini par fermer.",
         "Heures de service crépusculaires — pointage silencieux."
       ]
+    },
+    "weeklyTip": {
+      "title": "Conseil de la semaine",
+      "readNext": "À lire ensuite",
+      "showLess": "Afficher moins",
+      "viewMore": "Afficher plus"
     }
   },
   "settings": {
@@ -2158,6 +2240,13 @@
         "basonta": "Basonta"
       },
       "filenameStem": "{{name}} {{type}} Membres - {{date}}.csv"
+    },
+    "servicesThisWeek": {
+      "date": "Date",
+      "bacentaName": "Nom de la bacenta",
+      "attendance": "Présence",
+      "income": "Revenus",
+      "exportCsv": "Exporter en CSV"
     }
   },
   "nav": {
@@ -2508,6 +2597,118 @@
       "showMore": "Afficher plus de résultats",
       "memberFallback": "Membre",
       "bacentaSubtitle": "Bacenta {{name}}"
+    }
+  },
+  "maps": {
+    "title": "Cartes",
+    "subtitle": "Explorez les membres, les bacentas et les lieux d’évangélisation.",
+    "backToSearch": "Retour à la recherche",
+    "openControls": "Ouvrir les commandes de la carte",
+    "searchAndExplore": "Rechercher et explorer",
+    "venues": "Lieux",
+    "close": "Fermer",
+    "centreOnMe": "Centrer la carte sur ma position",
+    "search": {
+      "aPlace": "Rechercher un lieu",
+      "anAddress": "Rechercher une adresse",
+      "flcDatabase": "Rechercher dans la base FLC",
+      "databasePlaceholder": "Membres, bacentas, lieux…",
+      "quickJumps": "Accès rapides",
+      "myLocation": "Ma position",
+      "flcHq": "Siège FLC",
+      "outreach": "Évangélisation",
+      "directory": "Répertoire",
+      "showAllBacentas": "Afficher toutes les bacentas",
+      "toggleBacentasOverlay": "Basculer la couche de toutes les bacentas",
+      "showAllBacentasHint": "Place un marqueur pour chaque bacenta dont la position est enregistrée et dézoome pour afficher tout le réseau.",
+      "loadUnvisited": "Charger les membres non visités",
+      "loadUnvisitedHint": "Place un marqueur pour chaque membre de votre conseil qui n'a pas encore été visité cette saison.",
+      "downloadDirectory": "Télécharger le répertoire",
+      "downloadDirectoryHint": "Un CSV par niveau. Les lignes bacenta incluent latitude / longitude pour la cartographie et la planification des trajets.",
+      "loading": "Chargement…",
+      "inSearch": "Recherche"
+    },
+    "info": {
+      "council": "Conseil :",
+      "pastor": "Pasteur :",
+      "capacity": "Capacité :",
+      "category": "Catégorie :",
+      "school": "École :",
+      "viewProfile": "Voir le profil du membre",
+      "getDirections": "Obtenir l’itinéraire"
+    },
+    "panel": {
+      "indoor": "Intérieur",
+      "outdoor": "Extérieur",
+      "hostels": "Résidences",
+      "schools": "Écoles",
+      "sortBy": "Trier par",
+      "sortName": "Nom",
+      "sortCapacity": "Capacité",
+      "searchIn": "Rechercher {{label}}…",
+      "noMatches": "Aucun résultat."
+    },
+    "venue": {
+      "location": "Emplacement",
+      "locationHint": "Ouvrez Google Maps, appuyez longuement sur le point et copiez les coordonnées.",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "nameLabel": "Nom du lieu",
+      "namePlaceholder": "Saisissez le nom du lieu",
+      "capacityLabel": "Capacité",
+      "capacityPlaceholder": "Nombre de places",
+      "schoolLabel": "École",
+      "schoolPlaceholder": "Saisissez le nom de l'école",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "createError": "Cartes : impossible de créer le lieu {{kind}}",
+      "nameRequired": "Le nom du lieu est obligatoire",
+      "capacityRequired": "Impossible de valider sans indiquer le nombre de places",
+      "capacityInvalid": "Veuillez saisir une capacité valide",
+      "latitudeRequired": "La latitude est obligatoire",
+      "latitudeInvalid": "Veuillez saisir une latitude valide",
+      "longitudeRequired": "La longitude est obligatoire",
+      "longitudeInvalid": "Veuillez saisir une longitude valide",
+      "schoolRequired": "Le nom de l'école est obligatoire",
+      "noDecimals": "Les décimales ne sont pas autorisées",
+      "capacityPositive": "La capacité doit être positive",
+      "latMin": "La latitude doit être ≥ -90",
+      "latMax": "La latitude doit être ≤ 90",
+      "lngMin": "La longitude doit être ≥ -180",
+      "lngMax": "La longitude doit être ≤ 180"
+    },
+    "category": {
+      "indoorTitle": "Lieux intérieurs",
+      "indoorDescription": "Lieux d'évangélisation intérieurs du réseau.",
+      "indoorAdd": "Ajouter un lieu d'évangélisation intérieur",
+      "indoorAddHint": "Lieux intérieurs où vous pouvez organiser des services d'évangélisation.",
+      "outdoorTitle": "Lieux extérieurs",
+      "outdoorDescription": "Espaces d'évangélisation en plein air.",
+      "outdoorAdd": "Ajouter un lieu d'évangélisation extérieur",
+      "outdoorAddHint": "Espaces en plein air où vous pouvez mener l'évangélisation.",
+      "hostelTitle": "Résidences",
+      "hostelDescription": "Résidences universitaires pour l'évangélisation dans le supérieur.",
+      "hostelAdd": "Ajouter une résidence",
+      "hostelAddHint": "Résidences universitaires pour l'évangélisation dans le supérieur.",
+      "schoolTitle": "Lycées",
+      "schoolDescription": "Lycées pour l'évangélisation scolaire.",
+      "schoolAdd": "Ajouter un lycée",
+      "schoolAddHint": "Lycées pour l'évangélisation scolaire.",
+      "indoorAddShort": "Ajouter un lieu intérieur",
+      "outdoorAddShort": "Ajouter un lieu extérieur",
+      "hostelAddShort": "Ajouter une résidence",
+      "schoolAddShort": "Ajouter un lycée",
+      "indoorEmpty": "Aucun lieu intérieur pour le moment — ajoutez-en un pour commencer.",
+      "outdoorEmpty": "Aucun lieu extérieur pour le moment — ajoutez-en un pour commencer.",
+      "hostelEmpty": "Aucune résidence pour le moment — ajoutez-en une pour commencer.",
+      "schoolEmpty": "Aucun lycée pour le moment — ajoutez-en un pour commencer."
+    },
+    "typename": {
+      "googlePlace": "Lieu Google",
+      "indoorVenue": "Lieu intérieur",
+      "outdoorVenue": "Lieu extérieur",
+      "highSchool": "Lycée",
+      "hostel": "Résidence"
     }
   }
 }

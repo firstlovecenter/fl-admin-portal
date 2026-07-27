@@ -18,6 +18,9 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import React from 'react'
 import { render, screen, cleanup } from '@testing-library/react'
+// MaintenanceMode renders through useTranslation now — register the real
+// instance or every string comes back as its raw key.
+import 'lib/i18n'
 import MaintenanceMode from './MaintenanceMode'
 import MaintenanceGate from './MaintenanceGate'
 

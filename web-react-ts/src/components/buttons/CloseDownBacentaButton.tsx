@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useContext, useState } from 'react'
 import { useMutation } from '@apollo/client'
 import { Archive, Loader2 } from 'lucide-react'
@@ -28,6 +29,7 @@ const CloseDownBacentaButton = ({
   bacentaName,
   leaderId,
 }: CloseDownBacentaButtonProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard, governorshipId } = useContext(ChurchContext)
   const [open, setOpen] = useState(false)
@@ -61,18 +63,20 @@ const CloseDownBacentaButton = ({
       <Button
         type="button"
         variant="outline"
-        aria-label={`Close Down ${bacentaName}`}
+        aria-label={t('directory.closeDown.confirm', { name: bacentaName })}
         className="gap-1.5 min-h-[44px] min-w-[44px] px-2.5 sm:px-4 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
         onClick={() => setOpen(true)}
       >
         <Archive className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Close Down</span>
+        <span className="hidden sm:inline">
+          {t('directory.closeDown.button')}
+        </span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Close Down Bacenta</DialogTitle>
+            <DialogTitle>{t('directory.closeDown.title')}</DialogTitle>
             <DialogDescription>
               Are you sure you want to close down {bacentaName}? This will mark
               the bacenta inactive.
@@ -85,7 +89,7 @@ const CloseDownBacentaButton = ({
               disabled={loading}
               onClick={() => setOpen(false)}
             >
-              No, take me back
+              {t('directory.closeDown.cancel')}
             </Button>
             <Button
               type="button"
@@ -97,7 +101,7 @@ const CloseDownBacentaButton = ({
               {loading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Submitting
+                  {t('shared.form.submitting')}
                 </>
               ) : (
                 "Yes, I'm sure"

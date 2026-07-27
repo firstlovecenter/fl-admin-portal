@@ -28,6 +28,26 @@
       "submitting": "Enviando…",
       "success": "Instrucciones enviadas. Revisa tu correo electrónico.",
       "genericError": "No se pudo enviar el correo. Inténtalo de nuevo."
+    },
+    "setup": {
+      "title": "Configure su contraseña",
+      "description": "Complete la configuración de su cuenta creando una contraseña.",
+      "emailLabel": "Correo electrónico",
+      "passwordLabel": "Contraseña",
+      "confirmLabel": "Confirmar contraseña",
+      "passwordPlaceholder": "Cree una contraseña",
+      "confirmPlaceholder": "Confirme su contraseña",
+      "successTitle": "¡Contraseña configurada correctamente!",
+      "signIn": "Iniciar sesión",
+      "failed": "No se pudo configurar la contraseña. Inténtelo de nuevo.",
+      "loadingEmail": "Cargando el correo…",
+      "passwordRequired": "La contraseña es obligatoria",
+      "confirmRequired": "Confirme su contraseña",
+      "minLength": "La contraseña debe tener al menos 8 caracteres",
+      "needLower": "Debe contener al menos una minúscula",
+      "needUpper": "Debe contener al menos una mayúscula",
+      "needNumber": "Debe contener al menos un número",
+      "mustMatch": "Las contraseñas deben coincidir"
     }
   },
   "language": {
@@ -183,7 +203,31 @@
       "body": "La función de reconciliación aún está en desarrollo. ¡Pronto habrá novedades!"
     },
     "retrievingChurch": "Recuperando la información de su iglesia…",
-    "loadingMap": "Cargando el mapa…"
+    "loadingMap": "Cargando el mapa…",
+    "errors": {
+      "signupFailed": "Error al registrarse",
+      "loginFailed": "Error al iniciar sesión",
+      "tokenRefreshFailed": "Error al renovar el token",
+      "passwordSetupFailed": "Error al configurar la contraseña",
+      "passwordResetFailed": "Error al restablecer la contraseña",
+      "passwordResetRequestFailed": "Error al solicitar el restablecimiento de la contraseña",
+      "accountDeletionFailed": "Error al eliminar la cuenta",
+      "uploadUrlFailed": "No se pudo obtener la URL de subida",
+      "presignedUrlFailed": "No se pudo generar la URL prefirmada",
+      "s3UploadFailed": "No se pudo subir la imagen a S3",
+      "sessionExpired": "La sesión ha caducado. Vuelva a iniciar sesión.",
+      "downloadFailed": "Error de descarga ({{status}})",
+      "fileTypeNotAllowed": "Tipo de archivo no permitido. Tipos admitidos: {{types}}",
+      "fileTooLarge": "Archivo demasiado grande. Tamaño máximo: {{size}} MB"
+    },
+    "maintenance": {
+      "title": "Sitio en mantenimiento",
+      "body": "Estamos trabajando en el sitio y volveremos en breve. Gracias por su paciencia."
+    },
+    "password": {
+      "show": "Mostrar contraseña",
+      "hide": "Ocultar contraseña"
+    }
   },
   "accounts": {
     "common": {
@@ -1311,6 +1355,38 @@
       "unnamed": "{{role}} sin nombre",
       "openNamedLevel": "Abrir {{level}} {{name}}",
       "noneMatchTerm": "No hay {{levelPlural}} para «{{term}}»."
+    },
+    "memberDelete": {
+      "title": "¿Eliminar a este miembro?",
+      "notePlaceholder": "Añada el contexto que explique esta decisión",
+      "reasonRequired": "Elija una categoría de motivo",
+      "reasonTextRequired": "Indique el motivo por el que elimina a este miembro"
+    },
+    "memberTitle": {
+      "title": "Títulos pastorales",
+      "removedToast": "Título {{title}} eliminado",
+      "pastoralAppointmentDate": "Fecha de nombramiento pastoral",
+      "ordinationDate": "Fecha de ordenación",
+      "consecrationDate": "Fecha de consagración",
+      "pastor": "Pastor",
+      "reverend": "Reverendo",
+      "bishop": "Obispo"
+    },
+    "avatar": {
+      "alt": "Foto del miembro",
+      "change": "Cambiar foto",
+      "upload": "Subir foto",
+      "hint": "PNG, JPG o WebP. Máx. 10 MB."
+    },
+    "closeDown": {
+      "button": "Cerrar",
+      "title": "Cerrar bacenta",
+      "confirm": "Cerrar {{name}}",
+      "cancel": "No, volver atrás"
+    },
+    "memberTable": {
+      "loadError": "No se pudieron cargar los miembros. Inténtelo de nuevo.",
+      "noMatches": "Ningún miembro coincide con su búsqueda"
     }
   },
   "dashboard": {
@@ -1521,6 +1597,12 @@
         "Hasta el templo cerró eventualmente.",
         "Horas de servicio del atardecer — fichando en silencio."
       ]
+    },
+    "weeklyTip": {
+      "title": "Consejo de la semana",
+      "readNext": "Leer a continuación",
+      "showLess": "Ver menos",
+      "viewMore": "Ver más"
     }
   },
   "settings": {
@@ -2158,6 +2240,13 @@
         "basonta": "Basonta"
       },
       "filenameStem": "{{name}} {{type}} Membresía - {{date}}.csv"
+    },
+    "servicesThisWeek": {
+      "date": "Fecha",
+      "bacentaName": "Nombre de la bacenta",
+      "attendance": "Asistencia",
+      "income": "Ingresos",
+      "exportCsv": "Exportar CSV"
     }
   },
   "nav": {
@@ -2508,6 +2597,118 @@
       "showMore": "Mostrar más resultados",
       "memberFallback": "Miembro",
       "bacentaSubtitle": "Bacenta {{name}}"
+    }
+  },
+  "maps": {
+    "title": "Mapas",
+    "subtitle": "Explore miembros, bacentas y lugares de evangelización.",
+    "backToSearch": "Volver a la búsqueda",
+    "openControls": "Abrir los controles del mapa",
+    "searchAndExplore": "Buscar y explorar",
+    "venues": "Lugares",
+    "close": "Cerrar",
+    "centreOnMe": "Centrar el mapa en mi ubicación",
+    "search": {
+      "aPlace": "Buscar un lugar",
+      "anAddress": "Buscar una dirección",
+      "flcDatabase": "Buscar en la base de datos FLC",
+      "databasePlaceholder": "Miembros, bacentas, lugares…",
+      "quickJumps": "Accesos rápidos",
+      "myLocation": "Mi ubicación",
+      "flcHq": "Sede FLC",
+      "outreach": "Evangelización",
+      "directory": "Directorio",
+      "showAllBacentas": "Mostrar todas las bacentas",
+      "toggleBacentasOverlay": "Alternar la capa de todas las bacentas",
+      "showAllBacentasHint": "Coloca un marcador por cada bacenta con ubicación registrada y aleja el zoom para ver toda la red.",
+      "loadUnvisited": "Cargar miembros no visitados",
+      "loadUnvisitedHint": "Coloca un marcador por cada miembro de su consejo que aún no ha sido visitado esta temporada.",
+      "downloadDirectory": "Descargar el directorio",
+      "downloadDirectoryHint": "Un CSV por nivel. Las filas de bacenta incluyen latitud / longitud para cartografía y planificación de rutas.",
+      "loading": "Cargando…",
+      "inSearch": "Buscar"
+    },
+    "info": {
+      "council": "Consejo:",
+      "pastor": "Pastor:",
+      "capacity": "Capacidad:",
+      "category": "Categoría:",
+      "school": "Escuela:",
+      "viewProfile": "Ver el perfil del miembro",
+      "getDirections": "Cómo llegar"
+    },
+    "panel": {
+      "indoor": "Interior",
+      "outdoor": "Exterior",
+      "hostels": "Residencias",
+      "schools": "Escuelas",
+      "sortBy": "Ordenar por",
+      "sortName": "Nombre",
+      "sortCapacity": "Capacidad",
+      "searchIn": "Buscar {{label}}…",
+      "noMatches": "Sin resultados."
+    },
+    "venue": {
+      "location": "Ubicación",
+      "locationHint": "Abra Google Maps, mantenga pulsado el punto y copie las coordenadas.",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "nameLabel": "Nombre del lugar",
+      "namePlaceholder": "Introduzca el nombre del lugar",
+      "capacityLabel": "Capacidad",
+      "capacityPlaceholder": "Número de asientos",
+      "schoolLabel": "Escuela",
+      "schoolPlaceholder": "Introduzca el nombre de la escuela",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "createError": "Mapas: no se pudo crear el lugar {{kind}}",
+      "nameRequired": "El nombre del lugar es obligatorio",
+      "capacityRequired": "No se puede enviar sin indicar el número de asientos",
+      "capacityInvalid": "Introduzca una capacidad válida",
+      "latitudeRequired": "La latitud es obligatoria",
+      "latitudeInvalid": "Introduzca una latitud válida",
+      "longitudeRequired": "La longitud es obligatoria",
+      "longitudeInvalid": "Introduzca una longitud válida",
+      "schoolRequired": "El nombre de la escuela es obligatorio",
+      "noDecimals": "No se pueden introducir decimales",
+      "capacityPositive": "La capacidad debe ser positiva",
+      "latMin": "La latitud debe ser ≥ -90",
+      "latMax": "La latitud debe ser ≤ 90",
+      "lngMin": "La longitud debe ser ≥ -180",
+      "lngMax": "La longitud debe ser ≤ 180"
+    },
+    "category": {
+      "indoorTitle": "Lugares interiores",
+      "indoorDescription": "Lugares de evangelización interiores de la red.",
+      "indoorAdd": "Añadir lugar de evangelización interior",
+      "indoorAddHint": "Lugares interiores donde puede celebrar servicios de evangelización.",
+      "outdoorTitle": "Lugares exteriores",
+      "outdoorDescription": "Espacios de evangelización al aire libre.",
+      "outdoorAdd": "Añadir lugar de evangelización exterior",
+      "outdoorAddHint": "Espacios al aire libre donde puede evangelizar.",
+      "hostelTitle": "Residencias",
+      "hostelDescription": "Residencias universitarias para la evangelización terciaria.",
+      "hostelAdd": "Añadir residencia",
+      "hostelAddHint": "Residencias universitarias para la evangelización terciaria.",
+      "schoolTitle": "Institutos",
+      "schoolDescription": "Institutos para la evangelización escolar.",
+      "schoolAdd": "Añadir instituto",
+      "schoolAddHint": "Institutos para la evangelización escolar.",
+      "indoorAddShort": "Añadir lugar interior",
+      "outdoorAddShort": "Añadir lugar exterior",
+      "hostelAddShort": "Añadir residencia",
+      "schoolAddShort": "Añadir instituto",
+      "indoorEmpty": "Aún no hay lugares interiores: añada uno para empezar.",
+      "outdoorEmpty": "Aún no hay lugares exteriores: añada uno para empezar.",
+      "hostelEmpty": "Aún no hay residencias: añada una para empezar.",
+      "schoolEmpty": "Aún no hay institutos: añada uno para empezar."
+    },
+    "typename": {
+      "googlePlace": "Lugar de Google",
+      "indoorVenue": "Lugar interior",
+      "outdoorVenue": "Lugar exterior",
+      "highSchool": "Instituto",
+      "hostel": "Residencia"
     }
   }
 }

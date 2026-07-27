@@ -1,4 +1,12 @@
-import { Building2, Download, Globe2, Loader2, LocateFixed, Users } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import {
+  Building2,
+  Download,
+  Globe2,
+  Loader2,
+  LocateFixed,
+  Users,
+} from 'lucide-react'
 import { Button } from 'components/ui/button'
 import { Switch } from 'components/ui/switch'
 import { Label } from 'components/ui/label'
@@ -44,15 +52,16 @@ const SearchPanel = ({
   downloadDirectoryLabel,
   downloadingDirectory,
 }: SearchPanelProps) => {
+  const { t } = useTranslation()
   const noop = () => {}
 
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <SectionLabel>Search a place</SectionLabel>
+        <SectionLabel>{t('maps.search.aPlace')}</SectionLabel>
         <GooglePlacesCombobox
           name="google-places-search"
-          placeholder="Search an address"
+          placeholder={t('maps.search.anAddress')}
           initialValue=""
           setCentre={setCentre}
           handleClose={noop}
@@ -60,10 +69,10 @@ const SearchPanel = ({
       </div>
 
       <div className="space-y-2">
-        <SectionLabel>Search the FLC database</SectionLabel>
+        <SectionLabel>{t('maps.search.flcDatabase')}</SectionLabel>
         <MemberPlacesCombobox
           name="member-places-search"
-          placeholder="Members, Bacentas, venues…"
+          placeholder={t('maps.search.databasePlaceholder')}
           initialValue=""
           setCentre={setCentre}
           placesSearchByName={placesSearchByName}
@@ -79,11 +88,10 @@ const SearchPanel = ({
               className="flex items-center gap-2 text-sm font-medium"
             >
               <Globe2 className="size-4 text-maps" />
-              Show all Bacentas
+              {t('maps.search.showAllBacentas')}
             </Label>
             <p className="text-xs text-muted-foreground">
-              Drop a marker for every Bacenta with a recorded location and zoom
-              out to fit the whole network.
+              {t('maps.search.showAllBacentasHint')}
             </p>
           </div>
           <div className="flex h-11 items-center">
@@ -94,7 +102,7 @@ const SearchPanel = ({
                 id="show-all-bacentas"
                 checked={showAllBacentas}
                 onCheckedChange={onToggleAllBacentas}
-                aria-label="Toggle all Bacentas overlay"
+                aria-label={t('maps.search.toggleBacentasOverlay')}
               />
             )}
           </div>
@@ -102,7 +110,7 @@ const SearchPanel = ({
       </div>
 
       <div className="space-y-2">
-        <SectionLabel>Quick jumps</SectionLabel>
+        <SectionLabel>{t('maps.search.quickJumps')}</SectionLabel>
         <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
@@ -111,7 +119,9 @@ const SearchPanel = ({
             onClick={onMyLocation}
           >
             <LocateFixed className="size-4 text-maps" />
-            <span className="text-sm font-medium">My location</span>
+            <span className="text-sm font-medium">
+              {t('maps.search.myLocation')}
+            </span>
           </Button>
           <Button
             type="button"
@@ -120,14 +130,16 @@ const SearchPanel = ({
             onClick={onFlcHq}
           >
             <Building2 className="size-4 text-maps" />
-            <span className="text-sm font-medium">FLC HQ</span>
+            <span className="text-sm font-medium">
+              {t('maps.search.flcHq')}
+            </span>
           </Button>
         </div>
       </div>
 
       <RoleView roles={permitLeaderAdmin('Council')}>
         <div className="space-y-2">
-          <SectionLabel>Outreach</SectionLabel>
+          <SectionLabel>{t('maps.search.outreach')}</SectionLabel>
           <Button
             type="button"
             variant="default"
@@ -136,18 +148,19 @@ const SearchPanel = ({
             disabled={loadingUnvisited}
           >
             <Users className="size-4" />
-            {loadingUnvisited ? 'Loading…' : 'Load unvisited members'}
+            {loadingUnvisited
+              ? t('maps.search.loading')
+              : t('maps.search.loadUnvisited')}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Drops a marker for every member in your council that hasn't yet been
-            visited this season.
+            {t('maps.search.loadUnvisitedHint')}
           </p>
         </div>
       </RoleView>
 
       {onDownloadDirectory ? (
         <div className="space-y-2">
-          <SectionLabel>Directory</SectionLabel>
+          <SectionLabel>{t('maps.search.directory')}</SectionLabel>
           <Button
             type="button"
             variant="secondary"
@@ -162,11 +175,10 @@ const SearchPanel = ({
             )}
             {downloadingDirectory
               ? 'Generating CSV…'
-              : downloadDirectoryLabel ?? 'Download directory'}
+              : downloadDirectoryLabel ?? t('maps.search.downloadDirectory')}
           </Button>
           <p className="text-xs text-muted-foreground">
-            One CSV per level. Bacenta rows include latitude / longitude for
-            mapping and route planning.
+            {t('maps.search.downloadDirectoryHint')}
           </p>
         </div>
       ) : null}

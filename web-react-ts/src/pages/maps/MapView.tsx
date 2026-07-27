@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useCallback, useContext, useRef, useState } from 'react'
 import { useLazyQuery } from '@apollo/client'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -73,6 +74,7 @@ const resolvePanelKey = (pathname: string): PanelKey => {
 }
 
 const MapView = () => {
+  const { t } = useTranslation()
   const { currentUser } = useContext(MemberContext)
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -219,7 +221,11 @@ const MapView = () => {
         const raw: RawBacenta[] = res.data?.bacentas ?? []
         const points: PlaceType[] = raw
           .filter(
-            (b): b is RawBacenta & { location: NonNullable<RawBacenta['location']> } =>
+            (
+              b
+            ): b is RawBacenta & {
+              location: NonNullable<RawBacenta['location']>
+            } =>
               !!b.location &&
               Number.isFinite(b.location.latitude) &&
               Number.isFinite(b.location.longitude)
@@ -281,10 +287,10 @@ const MapView = () => {
         </span>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-base font-semibold text-foreground">
-            Maps
+            {t('maps.title')}
           </h1>
           <p className="truncate text-xs text-muted-foreground">
-            Explore members, Bacentas and outreach venues.
+            {t('maps.subtitle')}
           </p>
         </div>
         {pathname !== '/maps' ? (
@@ -296,7 +302,7 @@ const MapView = () => {
             onClick={() => navigate('/maps')}
           >
             <X className="size-4" />
-            Back to search
+            {t('maps.backToSearch')}
           </Button>
         ) : null}
       </header>
@@ -320,12 +326,14 @@ const MapView = () => {
           <Button
             type="button"
             onClick={() => setMobileSheetOpen(true)}
-            aria-label="Open maps controls"
+            aria-label={t('maps.openControls')}
             className="absolute bottom-6 left-6 h-12 gap-2 rounded-full px-5 shadow-lg lg:hidden"
           >
             <MapIcon className="size-4" />
             <span className="text-sm font-semibold">
-              {activePanel === 'search' ? 'Search & explore' : 'Venues'}
+              {activePanel === 'search'
+                ? t('maps.searchAndExplore')
+                : t('maps.venues')}
             </span>
           </Button>
         </main>
@@ -340,7 +348,7 @@ const MapView = () => {
           <SheetHeader className="border-b border-border">
             <SheetTitle className="flex items-center gap-2 text-base">
               <MapIcon className="size-4 text-maps" />
-              Maps
+              {t('maps.title')}
             </SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-hidden">

@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from '@apollo/client'
 import type { DocumentNode } from '@apollo/client'
 import { Form, Formik, type FormikHelpers } from 'formik'
@@ -30,8 +32,8 @@ type FormValues = {
 }
 
 type VenueConfig = {
-  title: string
-  description: string
+  titleKey: string
+  descriptionKey: string
   mutation: DocumentNode
   /** Operation-name string passed to Apollo's `refetchQueries`. Refetching by
    * name catches every active observer regardless of `variables` — the live
@@ -44,8 +46,8 @@ type VenueConfig = {
 
 const VENUE_CONFIG: Record<VenueKind, VenueConfig> = {
   indoor: {
-    title: 'Add indoor outreach venue',
-    description: 'Indoor venues you can host outreach services in.',
+    titleKey: 'maps.category.indoorAdd',
+    descriptionKey: 'maps.category.indoorAddHint',
     mutation: CREATE_INDOOR_OUTREACH_VENUE_MUTATION,
     refetchQueryName: 'IndoorVenues',
     hasSchool: false,
@@ -57,8 +59,8 @@ const VENUE_CONFIG: Record<VenueKind, VenueConfig> = {
     }),
   },
   outdoor: {
-    title: 'Add outdoor outreach venue',
-    description: 'Open-air spaces you can run outreach in.',
+    titleKey: 'maps.category.outdoorAdd',
+    descriptionKey: 'maps.category.outdoorAddHint',
     mutation: CREATE_OUTDOOR_OUTREACH_VENUE_MUTATION,
     refetchQueryName: 'OutdoorVenues',
     hasSchool: false,
@@ -70,18 +72,12 @@ const VENUE_CONFIG: Record<VenueKind, VenueConfig> = {
     }),
   },
   hostel: {
-    title: 'Add hostel',
-    description: 'University hostels for tertiary outreach.',
+    titleKey: 'maps.category.hostelAdd',
+    descriptionKey: 'maps.category.hostelAddHint',
     mutation: CREATE_HOSTEL_INFORMATION_MUTATION,
     refetchQueryName: 'Hostels',
     hasSchool: true,
-    buildVariables: ({
-      venueName,
-      capacity,
-      latitude,
-      longitude,
-      school,
-    }) => ({
+    buildVariables: ({ venueName, capacity, latitude, longitude, school }) => ({
       name: venueName,
       capacity: parseInt(capacity, 10),
       latitude: parseFloat(latitude),
@@ -90,18 +86,12 @@ const VENUE_CONFIG: Record<VenueKind, VenueConfig> = {
     }),
   },
   school: {
-    title: 'Add senior high school',
-    description: 'Senior high schools for school outreach.',
+    titleKey: 'maps.category.schoolAdd',
+    descriptionKey: 'maps.category.schoolAddHint',
     mutation: CREATE_SENIOR_HIGH_SCHOOL_MUTATION,
     refetchQueryName: 'HighSchools',
     hasSchool: true,
-    buildVariables: ({
-      venueName,
-      capacity,
-      latitude,
-      longitude,
-      school,
-    }) => ({
+    buildVariables: ({ venueName, capacity, latitude, longitude, school }) => ({
       name: venueName,
       capacity: parseInt(capacity, 10),
       latitude: parseFloat(latitude),
@@ -111,27 +101,27 @@ const VENUE_CONFIG: Record<VenueKind, VenueConfig> = {
   },
 }
 
-const buildSchema = (hasSchool: boolean) => {
+const buildSchema = (hasSchool: boolean, t: TFunction) => {
   const base: Record<string, Yup.AnySchema> = {
-    venueName: Yup.string().required('Venue name is required'),
+    venueName: Yup.string().required(t('maps.venue.nameRequired')),
     capacity: Yup.number()
-      .required('Cannot submit without entering number of seats')
-      .integer('Cannot enter decimals')
-      .positive('Capacity must be positive')
-      .typeError('Please enter a valid capacity'),
+      .required(t('maps.venue.capacityRequired'))
+      .integer(t('maps.venue.noDecimals'))
+      .positive(t('maps.venue.capacityPositive'))
+      .typeError(t('maps.venue.capacityInvalid')),
     latitude: Yup.number()
-      .min(-90, 'Latitude must be ≥ -90')
-      .max(90, 'Latitude must be ≤ 90')
-      .required('Latitude is required')
-      .typeError('Please enter a valid latitude'),
+      .min(-90, t('maps.venue.latMin'))
+      .max(90, t('maps.venue.latMax'))
+      .required(t('maps.venue.latitudeRequired'))
+      .typeError(t('maps.venue.latitudeInvalid')),
     longitude: Yup.number()
-      .min(-180, 'Longitude must be ≥ -180')
-      .max(180, 'Longitude must be ≤ 180')
-      .required('Longitude is required')
-      .typeError('Please enter a valid longitude'),
+      .min(-180, t('maps.venue.lngMin'))
+      .max(180, t('maps.venue.lngMax'))
+      .required(t('maps.venue.longitudeRequired'))
+      .typeError(t('maps.venue.longitudeInvalid')),
   }
   if (hasSchool) {
-    base.school = Yup.string().required('School name is required')
+    base.school = Yup.string().required(t('maps.venue.schoolRequired'))
   }
   return Yup.object(base)
 }
@@ -143,6 +133,7 @@ type AddVenueSheetProps = {
 }
 
 const AddVenueSheet = ({ kind, open, onOpenChange }: AddVenueSheetProps) => {
+  const { t } = useTranslation()
   const config = VENUE_CONFIG[kind]
   const [createVenue] = useMutation(config.mutation, {
     refetchQueries: [config.refetchQueryName],
@@ -167,7 +158,7 @@ const AddVenueSheet = ({ kind, open, onOpenChange }: AddVenueSheetProps) => {
       helpers.resetForm()
       onOpenChange(false)
     } catch (err) {
-      throwToSentry(`Maps: failed to create ${kind} venue`, err)
+      throwToSentry(t('maps.venue.createError', { kind }), err)
     } finally {
       helpers.setSubmitting(false)
     }
@@ -180,54 +171,53 @@ const AddVenueSheet = ({ kind, open, onOpenChange }: AddVenueSheetProps) => {
         className="w-full sm:max-w-md flex flex-col gap-0 p-0"
       >
         <SheetHeader className="border-b border-border">
-          <SheetTitle className="text-base">{config.title}</SheetTitle>
-          <SheetDescription>{config.description}</SheetDescription>
+          <SheetTitle className="text-base">{t(config.titleKey)}</SheetTitle>
+          <SheetDescription>{t(config.descriptionKey)}</SheetDescription>
         </SheetHeader>
 
         <Formik
           initialValues={initialValues}
           onSubmit={onSubmit}
-          validationSchema={buildSchema(config.hasSchool)}
+          validationSchema={buildSchema(config.hasSchool, t)}
         >
           {(formik) => (
             <Form className="flex flex-1 flex-col overflow-hidden">
               <div className="flex-1 space-y-4 overflow-y-auto p-4">
                 <Input
                   name="venueName"
-                  label="Venue name"
-                  placeholder="Enter the name of the venue"
+                  label={t('maps.venue.nameLabel')}
+                  placeholder={t('maps.venue.namePlaceholder')}
                 />
                 <Input
                   name="capacity"
                   type="number"
-                  label="Capacity"
-                  placeholder="Number of seats"
+                  label={t('maps.venue.capacityLabel')}
+                  placeholder={t('maps.venue.capacityPlaceholder')}
                 />
                 {config.hasSchool ? (
                   <Input
                     name="school"
-                    label="School"
-                    placeholder="Enter the school name"
+                    label={t('maps.venue.schoolLabel')}
+                    placeholder={t('maps.venue.schoolPlaceholder')}
                   />
                 ) : null}
 
                 <div className="space-y-1.5">
                   <p className="text-sm font-medium text-foreground">
-                    Location
+                    {t('maps.venue.location')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Open Google Maps, long-press the spot, and copy the
-                    coordinates.
+                    {t('maps.venue.locationHint')}
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <Input
                       name="latitude"
-                      label="Latitude"
+                      label={t('maps.venue.latitude')}
                       placeholder="5.6559"
                     />
                     <Input
                       name="longitude"
-                      label="Longitude"
+                      label={t('maps.venue.longitude')}
                       placeholder="-0.1670"
                     />
                   </div>
@@ -241,13 +231,13 @@ const AddVenueSheet = ({ kind, open, onOpenChange }: AddVenueSheetProps) => {
                   className="w-full sm:w-auto sm:min-w-32"
                   onClick={() => onOpenChange(false)}
                 >
-                  Cancel
+                  {t('maps.venue.cancel')}
                 </Button>
                 <SubmitButton
                   formik={formik}
                   className="w-full sm:w-auto sm:min-w-32"
                 >
-                  Save
+                  {t('maps.venue.save')}
                 </SubmitButton>
               </div>
             </Form>

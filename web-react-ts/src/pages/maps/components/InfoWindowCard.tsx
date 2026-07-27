@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -7,7 +8,7 @@ import { Phone, MessageCircle, Navigation, User } from 'lucide-react'
 import type { ChurchIdAndName } from 'global-types'
 import type { PlaceType } from '../types'
 import type { MemberMapData, Neo4jLocation } from './map-utils'
-import { TYPENAME_LABEL } from '../maps-constants'
+import { TYPENAME_LABEL_KEY } from '../maps-constants'
 
 type MemberDescription = {
   member: MemberMapData & { location: Neo4jLocation }
@@ -51,6 +52,7 @@ const TYPENAME_TO_CATEGORY: Partial<
 }
 
 const MemberInfo = ({ place }: { place: PlaceType }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { clickCard } = useContext(ChurchContext)
   const parsed = safeParse<MemberDescription>(place.description)
@@ -62,11 +64,15 @@ const MemberInfo = ({ place }: { place: PlaceType }) => {
     <div className="space-y-3">
       <dl className="space-y-1.5 text-sm">
         <div className="flex gap-2">
-          <dt className="font-medium text-foreground">Council:</dt>
+          <dt className="font-medium text-foreground">
+            {t('maps.info.council')}
+          </dt>
           <dd className="text-muted-foreground">{council.name}</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="font-medium text-foreground">Pastor:</dt>
+          <dt className="font-medium text-foreground">
+            {t('maps.info.pastor')}
+          </dt>
           <dd className="text-muted-foreground">
             {pastor.firstName} {pastor.lastName}
           </dd>
@@ -83,7 +89,7 @@ const MemberInfo = ({ place }: { place: PlaceType }) => {
           >
             <a href={`tel:${phoneNumber}`}>
               <Phone className="size-4" />
-              Call
+              {t('shared.actions.call')}
             </a>
           </Button>
         ) : null}
@@ -94,12 +100,9 @@ const MemberInfo = ({ place }: { place: PlaceType }) => {
             variant="outline"
             className="gap-1.5 min-h-9 border-success/30 text-success hover:bg-success/10 hover:text-success"
           >
-            <a
-              href={`https://wa.me/${whatsappNumber}`}
-              rel="noreferrer"
-            >
+            <a href={`https://wa.me/${whatsappNumber}`} rel="noreferrer">
               <MessageCircle className="size-4" />
-              WhatsApp
+              {t('directory.memberDisplay.whatsapp')}
             </a>
           </Button>
         ) : null}
@@ -116,21 +119,16 @@ const MemberInfo = ({ place }: { place: PlaceType }) => {
           }}
         >
           <User className="size-4" />
-          View Member Profile
+          {t('maps.info.viewProfile')}
         </Button>
         {member.location ? (
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="gap-1.5"
-          >
+          <Button asChild size="sm" variant="outline" className="gap-1.5">
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${member.location.y}%2C${member.location.x}`}
               rel="noreferrer"
             >
               <Navigation className="size-4" />
-              Get Directions
+              {t('maps.info.getDirections')}
             </a>
           </Button>
         ) : null}
@@ -140,6 +138,7 @@ const MemberInfo = ({ place }: { place: PlaceType }) => {
 }
 
 const VenueInfo = ({ place }: { place: PlaceType }) => {
+  const { t } = useTranslation()
   const parsed = safeParse<VenueDescription>(place.description)
   // Hostels and High Schools historically don't ship a JSON description,
   // so fall back to the typename → category map and show what we have.
@@ -157,19 +156,25 @@ const VenueInfo = ({ place }: { place: PlaceType }) => {
     <dl className="space-y-1.5 text-sm">
       {capacity !== null ? (
         <div className="flex gap-2">
-          <dt className="font-medium text-foreground">Capacity:</dt>
+          <dt className="font-medium text-foreground">
+            {t('maps.info.capacity')}
+          </dt>
           <dd className="tabular-nums text-muted-foreground">{capacity}</dd>
         </div>
       ) : null}
       {category ? (
         <div className="flex gap-2">
-          <dt className="font-medium text-foreground">Category:</dt>
+          <dt className="font-medium text-foreground">
+            {t('maps.info.category')}
+          </dt>
           <dd className="text-muted-foreground">{category}</dd>
         </div>
       ) : null}
       {school ? (
         <div className="flex gap-2">
-          <dt className="font-medium text-foreground">School:</dt>
+          <dt className="font-medium text-foreground">
+            {t('maps.info.school')}
+          </dt>
           <dd className="text-muted-foreground">{school}</dd>
         </div>
       ) : null}
@@ -178,7 +183,9 @@ const VenueInfo = ({ place }: { place: PlaceType }) => {
 }
 
 const InfoWindowCard = ({ place }: InfoWindowCardProps) => {
-  const label = TYPENAME_LABEL[place.typename]
+  const { t } = useTranslation()
+  const labelKey = TYPENAME_LABEL_KEY[place.typename]
+  const label = labelKey ? t(labelKey) : ''
   const heading = label ? `${label} ${place.name}` : place.name
 
   const isMember = place.typename === 'Member' || place.typename === 'Bacenta'

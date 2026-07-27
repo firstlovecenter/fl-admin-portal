@@ -12,7 +12,7 @@ import { Button } from 'components/ui/button'
 import LoadingScreen from 'components/base-component/LoadingScreen'
 import InfoWindowCard from './components/InfoWindowCard'
 import { getMapIcon, getMapIconClass } from './components/map-utils'
-import { FLC_HQ, TYPENAME_LABEL } from './maps-constants'
+import { FLC_HQ, TYPENAME_LABEL_KEY } from './maps-constants'
 import type { PlaceType } from './types'
 
 type LibrariesOptions = ('places' | 'drawing' | 'geometry' | 'visualization')[]
@@ -95,7 +95,8 @@ const MapCanvas = ({
           {(clusterer) => (
             <>
               {otherPlaces.map((place) => {
-                const typeLabel = TYPENAME_LABEL[place.typename]
+                const typeLabelKey = TYPENAME_LABEL_KEY[place.typename]
+                const typeLabel = typeLabelKey ? t(typeLabelKey) : ''
                 return (
                   <Marker
                     key={
@@ -129,7 +130,7 @@ const MapCanvas = ({
                 <button
                   type="button"
                   onClick={() => setActiveMarker(null)}
-                  aria-label="Close"
+                  aria-label={t('maps.close')}
                   className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   <X className="size-4" />
@@ -151,7 +152,7 @@ const MapCanvas = ({
           type="button"
           size="icon"
           variant="default"
-          aria-label="Centre map on my location"
+          aria-label={t('maps.centreOnMe')}
           className="absolute bottom-6 right-6 size-12 rounded-full bg-card text-foreground shadow-lg hover:bg-card/90"
           onClick={onLocate}
         >

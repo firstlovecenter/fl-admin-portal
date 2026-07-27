@@ -28,6 +28,26 @@
       "submitting": "Wird gesendet…",
       "success": "Anweisungen gesendet. Überprüfen Sie Ihre E-Mails.",
       "genericError": "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    },
+    "setup": {
+      "title": "Richten Sie Ihr Passwort ein",
+      "description": "Schließen Sie die Kontoeinrichtung ab, indem Sie ein Passwort erstellen.",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "confirmLabel": "Passwort bestätigen",
+      "passwordPlaceholder": "Passwort erstellen",
+      "confirmPlaceholder": "Passwort bestätigen",
+      "successTitle": "Passwort erfolgreich festgelegt!",
+      "signIn": "Anmelden",
+      "failed": "Passwort konnte nicht eingerichtet werden. Bitte erneut versuchen.",
+      "loadingEmail": "E-Mail wird geladen…",
+      "passwordRequired": "Passwort ist erforderlich",
+      "confirmRequired": "Bitte bestätigen Sie Ihr Passwort",
+      "minLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
+      "needLower": "Muss mindestens einen Kleinbuchstaben enthalten",
+      "needUpper": "Muss mindestens einen Großbuchstaben enthalten",
+      "needNumber": "Muss mindestens eine Ziffer enthalten",
+      "mustMatch": "Die Passwörter müssen übereinstimmen"
     }
   },
   "language": {
@@ -183,7 +203,31 @@
       "body": "Die Abstimmungsfunktion wird noch entwickelt. Bald gibt es Neuigkeiten!"
     },
     "retrievingChurch": "Ihre Gemeindeinformationen werden abgerufen…",
-    "loadingMap": "Karte wird geladen…"
+    "loadingMap": "Karte wird geladen…",
+    "errors": {
+      "signupFailed": "Registrierung fehlgeschlagen",
+      "loginFailed": "Anmeldung fehlgeschlagen",
+      "tokenRefreshFailed": "Token-Erneuerung fehlgeschlagen",
+      "passwordSetupFailed": "Passworteinrichtung fehlgeschlagen",
+      "passwordResetFailed": "Passwortzurücksetzung fehlgeschlagen",
+      "passwordResetRequestFailed": "Anfrage zur Passwortzurücksetzung fehlgeschlagen",
+      "accountDeletionFailed": "Kontolöschung fehlgeschlagen",
+      "uploadUrlFailed": "Upload-URL konnte nicht abgerufen werden",
+      "presignedUrlFailed": "Vorsignierte URL konnte nicht erzeugt werden",
+      "s3UploadFailed": "Bild konnte nicht zu S3 hochgeladen werden",
+      "sessionExpired": "Sitzung abgelaufen. Bitte melden Sie sich erneut an.",
+      "downloadFailed": "Download fehlgeschlagen ({{status}})",
+      "fileTypeNotAllowed": "Dateityp nicht zulässig. Unterstützte Typen: {{types}}",
+      "fileTooLarge": "Datei zu groß. Maximale Größe: {{size}} MB"
+    },
+    "maintenance": {
+      "title": "Website wird gewartet",
+      "body": "Wir arbeiten derzeit an der Website und sind in Kürze zurück. Vielen Dank für Ihre Geduld."
+    },
+    "password": {
+      "show": "Passwort anzeigen",
+      "hide": "Passwort verbergen"
+    }
   },
   "accounts": {
     "common": {
@@ -1311,6 +1355,38 @@
       "unnamed": "Unbenannter {{role}}",
       "openNamedLevel": "{{level}} {{name}} öffnen",
       "noneMatchTerm": "Keine {{levelPlural}} für „{{term}}“."
+    },
+    "memberDelete": {
+      "title": "Dieses Mitglied löschen?",
+      "notePlaceholder": "Fügen Sie Kontext hinzu, der diese Entscheidung erklärt",
+      "reasonRequired": "Bitte wählen Sie eine Begründungskategorie",
+      "reasonTextRequired": "Bitte geben Sie den Grund für das Löschen dieses Mitglieds an"
+    },
+    "memberTitle": {
+      "title": "Pastorale Titel",
+      "removedToast": "Titel {{title}} entfernt",
+      "pastoralAppointmentDate": "Datum der pastoralen Berufung",
+      "ordinationDate": "Ordinationsdatum",
+      "consecrationDate": "Weihedatum",
+      "pastor": "Pastor",
+      "reverend": "Reverend",
+      "bishop": "Bischof"
+    },
+    "avatar": {
+      "alt": "Mitgliedsfoto",
+      "change": "Foto ändern",
+      "upload": "Foto hochladen",
+      "hint": "PNG, JPG oder WebP. Max. 10 MB."
+    },
+    "closeDown": {
+      "button": "Schließen",
+      "title": "Bacenta schließen",
+      "confirm": "{{name}} schließen",
+      "cancel": "Nein, zurück"
+    },
+    "memberTable": {
+      "loadError": "Mitglieder konnten nicht geladen werden. Bitte erneut versuchen.",
+      "noMatches": "Keine Mitglieder entsprechen Ihrer Suche"
     }
   },
   "dashboard": {
@@ -1521,6 +1597,12 @@
         "Selbst der Tempel schloss irgendwann.",
         "Dämmerungs-Diensttunden — stilles Einstempeln."
       ]
+    },
+    "weeklyTip": {
+      "title": "Tipp der Woche",
+      "readNext": "Als Nächstes lesen",
+      "showLess": "Weniger anzeigen",
+      "viewMore": "Mehr anzeigen"
     }
   },
   "settings": {
@@ -2158,6 +2240,13 @@
         "basonta": "Basonta"
       },
       "filenameStem": "{{name}} {{type}} Mitgliedschaft - {{date}}.csv"
+    },
+    "servicesThisWeek": {
+      "date": "Datum",
+      "bacentaName": "Bacenta-Name",
+      "attendance": "Anwesenheit",
+      "income": "Einnahmen",
+      "exportCsv": "CSV exportieren"
     }
   },
   "nav": {
@@ -2508,6 +2597,118 @@
       "showMore": "Mehr Ergebnisse anzeigen",
       "memberFallback": "Mitglied",
       "bacentaSubtitle": "{{name}} Bacenta"
+    }
+  },
+  "maps": {
+    "title": "Karten",
+    "subtitle": "Erkunden Sie Mitglieder, Bacentas und Outreach-Orte.",
+    "backToSearch": "Zurück zur Suche",
+    "openControls": "Kartensteuerung öffnen",
+    "searchAndExplore": "Suchen & erkunden",
+    "venues": "Orte",
+    "close": "Schließen",
+    "centreOnMe": "Karte auf meinen Standort zentrieren",
+    "search": {
+      "aPlace": "Einen Ort suchen",
+      "anAddress": "Eine Adresse suchen",
+      "flcDatabase": "In der FLC-Datenbank suchen",
+      "databasePlaceholder": "Mitglieder, Bacentas, Orte…",
+      "quickJumps": "Schnellzugriffe",
+      "myLocation": "Mein Standort",
+      "flcHq": "FLC-Zentrale",
+      "outreach": "Outreach",
+      "directory": "Verzeichnis",
+      "showAllBacentas": "Alle Bacentas anzeigen",
+      "toggleBacentasOverlay": "Overlay aller Bacentas umschalten",
+      "showAllBacentasHint": "Setzt eine Markierung für jede Bacenta mit erfasstem Standort und zoomt heraus, um das ganze Netzwerk zu zeigen.",
+      "loadUnvisited": "Nicht besuchte Mitglieder laden",
+      "loadUnvisitedHint": "Setzt eine Markierung für jedes Mitglied Ihres Rats, das in dieser Saison noch nicht besucht wurde.",
+      "downloadDirectory": "Verzeichnis herunterladen",
+      "downloadDirectoryHint": "Eine CSV pro Ebene. Bacenta-Zeilen enthalten Breiten- und Längengrad für Kartierung und Routenplanung.",
+      "loading": "Wird geladen…",
+      "inSearch": "Suchen"
+    },
+    "info": {
+      "council": "Rat:",
+      "pastor": "Pastor:",
+      "capacity": "Kapazität:",
+      "category": "Kategorie:",
+      "school": "Schule:",
+      "viewProfile": "Mitgliedsprofil ansehen",
+      "getDirections": "Route anzeigen"
+    },
+    "panel": {
+      "indoor": "Innen",
+      "outdoor": "Außen",
+      "hostels": "Wohnheime",
+      "schools": "Schulen",
+      "sortBy": "Sortieren nach",
+      "sortName": "Name",
+      "sortCapacity": "Kapazität",
+      "searchIn": "{{label}} suchen…",
+      "noMatches": "Keine Treffer."
+    },
+    "venue": {
+      "location": "Standort",
+      "locationHint": "Öffnen Sie Google Maps, halten Sie die Stelle gedrückt und kopieren Sie die Koordinaten.",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "nameLabel": "Name des Ortes",
+      "namePlaceholder": "Geben Sie den Namen des Ortes ein",
+      "capacityLabel": "Kapazität",
+      "capacityPlaceholder": "Anzahl der Plätze",
+      "schoolLabel": "Schule",
+      "schoolPlaceholder": "Geben Sie den Namen der Schule ein",
+      "latitude": "Breitengrad",
+      "longitude": "Längengrad",
+      "createError": "Karten: Ort {{kind}} konnte nicht erstellt werden",
+      "nameRequired": "Der Name des Ortes ist erforderlich",
+      "capacityRequired": "Absenden nicht möglich, ohne die Anzahl der Plätze anzugeben",
+      "capacityInvalid": "Bitte geben Sie eine gültige Kapazität ein",
+      "latitudeRequired": "Breitengrad ist erforderlich",
+      "latitudeInvalid": "Bitte geben Sie einen gültigen Breitengrad ein",
+      "longitudeRequired": "Längengrad ist erforderlich",
+      "longitudeInvalid": "Bitte geben Sie einen gültigen Längengrad ein",
+      "schoolRequired": "Der Name der Schule ist erforderlich",
+      "noDecimals": "Dezimalstellen sind nicht zulässig",
+      "capacityPositive": "Die Kapazität muss positiv sein",
+      "latMin": "Breitengrad muss ≥ -90 sein",
+      "latMax": "Breitengrad muss ≤ 90 sein",
+      "lngMin": "Längengrad muss ≥ -180 sein",
+      "lngMax": "Längengrad muss ≤ 180 sein"
+    },
+    "category": {
+      "indoorTitle": "Innenorte",
+      "indoorDescription": "Outreach-Orte in Innenräumen im gesamten Netzwerk.",
+      "indoorAdd": "Outreach-Ort in Innenräumen hinzufügen",
+      "indoorAddHint": "Innenräume, in denen Sie Outreach-Gottesdienste abhalten können.",
+      "outdoorTitle": "Außenorte",
+      "outdoorDescription": "Outreach-Flächen unter freiem Himmel.",
+      "outdoorAdd": "Outreach-Ort im Freien hinzufügen",
+      "outdoorAddHint": "Flächen im Freien, auf denen Sie Outreach machen können.",
+      "hostelTitle": "Wohnheime",
+      "hostelDescription": "Studentenwohnheime für Outreach an Hochschulen.",
+      "hostelAdd": "Wohnheim hinzufügen",
+      "hostelAddHint": "Studentenwohnheime für Outreach an Hochschulen.",
+      "schoolTitle": "Oberstufenschulen",
+      "schoolDescription": "Oberstufenschulen für Outreach an Schulen.",
+      "schoolAdd": "Oberstufenschule hinzufügen",
+      "schoolAddHint": "Oberstufenschulen für Outreach an Schulen.",
+      "indoorAddShort": "Innenort hinzufügen",
+      "outdoorAddShort": "Außenort hinzufügen",
+      "hostelAddShort": "Wohnheim hinzufügen",
+      "schoolAddShort": "Oberstufenschule hinzufügen",
+      "indoorEmpty": "Noch keine Innenorte — fügen Sie einen hinzu, um zu beginnen.",
+      "outdoorEmpty": "Noch keine Außenorte — fügen Sie einen hinzu, um zu beginnen.",
+      "hostelEmpty": "Noch keine Wohnheime — fügen Sie eines hinzu, um zu beginnen.",
+      "schoolEmpty": "Noch keine Oberstufenschulen — fügen Sie eine hinzu, um zu beginnen."
+    },
+    "typename": {
+      "googlePlace": "Google-Ort",
+      "indoorVenue": "Innenort",
+      "outdoorVenue": "Außenort",
+      "highSchool": "Oberstufenschule",
+      "hostel": "Wohnheim"
     }
   }
 }

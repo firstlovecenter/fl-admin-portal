@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useQuery } from '@apollo/client'
 import {
@@ -24,17 +25,21 @@ type Props = {
 
 type Tip = NonNullable<WeeklyTipForChurchResult['weeklyTipForChurch']>
 
-const SectionHeader = () => (
-  <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 lg:py-3">
-    <Sparkles
-      className="size-3.5 lg:size-4"
-      style={{ color: 'hsl(var(--arrivals))' }}
-    />
-    <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground lg:text-xs">
-      Tip of the week
-    </h3>
-  </div>
-)
+const SectionHeader = () => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 lg:py-3">
+      <Sparkles
+        className="size-3.5 lg:size-4"
+        style={{ color: 'hsl(var(--arrivals))' }}
+      />
+      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground lg:text-xs">
+        {t('dashboard.weeklyTip.title')}
+      </h3>
+    </div>
+  )
+}
 
 const ExpandedDetails = ({ tip }: { tip: Tip }) => {
   const {
@@ -112,6 +117,7 @@ const ExpandedDetails = ({ tip }: { tip: Tip }) => {
  * keeping the deeper content one tap away.
  */
 const WeeklyTipCard = ({ churchId, authRole }: Props) => {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const permitted = isLeaderOrAdminRole(authRole)
   const { data, loading } = useQuery<WeeklyTipForChurchResult>(
@@ -140,8 +146,9 @@ const WeeklyTipCard = ({ churchId, authRole }: Props) => {
   const tip = data?.weeklyTipForChurch
   if (!tip) return null
 
-  const hasMore =
-    Boolean(tip.scripture || tip.quotedPassage || tip.prayerPrompt)
+  const hasMore = Boolean(
+    tip.scripture || tip.quotedPassage || tip.prayerPrompt
+  )
 
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -161,7 +168,7 @@ const WeeklyTipCard = ({ churchId, authRole }: Props) => {
             />
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Read next
+                {t('dashboard.weeklyTip.readNext')}
               </p>
               <p className="mt-0.5 text-xs font-medium text-foreground">
                 {tip.recommendedBook.title}
@@ -193,7 +200,9 @@ const WeeklyTipCard = ({ churchId, authRole }: Props) => {
           aria-expanded={expanded}
           className="flex min-h-11 w-full items-center justify-center gap-1.5 border-t border-border/60 bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:bg-muted active:text-foreground"
         >
-          {expanded ? 'Show less' : 'View more'}
+          {expanded
+            ? t('dashboard.weeklyTip.showLess')
+            : t('dashboard.weeklyTip.viewMore')}
           <ChevronDown
             className={cn(
               'size-3.5 transition-transform',

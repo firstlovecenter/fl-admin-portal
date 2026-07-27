@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useMemo, useState } from 'react'
 import { useQuery, type DocumentNode } from '@apollo/client'
 import { Plus, Search, Users, MapPin, GraduationCap } from 'lucide-react'
@@ -30,10 +31,10 @@ type SortKey = 'Name' | 'Capacity' | ''
 type Config = {
   query: DocumentNode
   dataKey: 'indoorVenues' | 'outdoorVenues' | 'hostels' | 'highSchools'
-  label: string
-  description: string
-  addLabel: string
-  emptyHint: string
+  labelKey: string
+  descriptionKey: string
+  addLabelKey: string
+  emptyHintKey: string
   typename: PlaceType['typename']
   showSchool: boolean
 }
@@ -42,40 +43,40 @@ const CONFIG: Record<VenueKind, Config> = {
   indoor: {
     query: GET_INDOOR_VENUES,
     dataKey: 'indoorVenues',
-    label: 'Indoor venues',
-    description: 'Indoor outreach venues across the network.',
-    addLabel: 'Add indoor venue',
-    emptyHint: 'No indoor venues yet — add one to get started.',
+    labelKey: 'maps.category.indoorTitle',
+    descriptionKey: 'maps.category.indoorDescription',
+    addLabelKey: 'maps.category.indoorAddShort',
+    emptyHintKey: 'maps.category.indoorEmpty',
     typename: 'IndoorVenue',
     showSchool: false,
   },
   outdoor: {
     query: GET_OUTDOOR_VENUES,
     dataKey: 'outdoorVenues',
-    label: 'Outdoor venues',
-    description: 'Open-air outreach spaces.',
-    addLabel: 'Add outdoor venue',
-    emptyHint: 'No outdoor venues yet — add one to get started.',
+    labelKey: 'maps.category.outdoorTitle',
+    descriptionKey: 'maps.category.outdoorDescription',
+    addLabelKey: 'maps.category.outdoorAddShort',
+    emptyHintKey: 'maps.category.outdoorEmpty',
     typename: 'OutdoorVenue',
     showSchool: false,
   },
   hostel: {
     query: GET_HOSTEL_INFORMATION,
     dataKey: 'hostels',
-    label: 'Hostels',
-    description: 'University hostels for tertiary outreach.',
-    addLabel: 'Add hostel',
-    emptyHint: 'No hostels yet — add one to get started.',
+    labelKey: 'maps.category.hostelTitle',
+    descriptionKey: 'maps.category.hostelDescription',
+    addLabelKey: 'maps.category.hostelAddShort',
+    emptyHintKey: 'maps.category.hostelEmpty',
     typename: 'Hostel',
     showSchool: true,
   },
   school: {
     query: GET_SENIOR_HIGH_SCHOOLS,
     dataKey: 'highSchools',
-    label: 'Senior high schools',
-    description: 'Senior high schools for school outreach.',
-    addLabel: 'Add senior high school',
-    emptyHint: 'No senior high schools yet — add one to get started.',
+    labelKey: 'maps.category.schoolTitle',
+    descriptionKey: 'maps.category.schoolDescription',
+    addLabelKey: 'maps.category.schoolAddShort',
+    emptyHintKey: 'maps.category.schoolEmpty',
     typename: 'HighSchool',
     showSchool: true,
   },
@@ -90,6 +91,7 @@ type VenuePanelProps = {
 }
 
 const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
+  const { t } = useTranslation()
   const config = CONFIG[kind]
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<SortKey>('')
@@ -150,9 +152,11 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
       <div className="space-y-3 p-4 pt-0">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold text-foreground">
-            {config.label}
+            {t(config.labelKey)}
           </h3>
-          <p className="text-xs text-muted-foreground">{config.description}</p>
+          <p className="text-xs text-muted-foreground">
+            {t(config.descriptionKey)}
+          </p>
         </div>
 
         <div className="relative">
@@ -163,15 +167,17 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Search ${config.label.toLowerCase()}…`}
+            placeholder={`Search ${t(config.labelKey).toLowerCase()}…`}
             className="min-h-11 pl-9"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Sort by</span>
-          <SortPill value="Name" label="Name" />
-          <SortPill value="Capacity" label="Capacity" />
+          <span className="text-xs text-muted-foreground">
+            {t('maps.panel.sortBy')}
+          </span>
+          <SortPill value="Name" label={t('maps.panel.sortName')} />
+          <SortPill value="Capacity" label={t('maps.panel.sortCapacity')} />
         </div>
 
         <RoleView roles={permitAdmin('Campus')}>
@@ -181,7 +187,7 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
             onClick={() => setSheetOpen(true)}
           >
             <Plus className="size-4" />
-            {config.addLabel}
+            {t(config.addLabelKey)}
           </Button>
         </RoleView>
       </div>
@@ -195,7 +201,7 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex h-32 items-center justify-center px-4 text-center text-sm text-muted-foreground">
-            {search.trim() ? 'No matches.' : config.emptyHint}
+            {search.trim() ? t('maps.panel.noMatches') : t(config.emptyHintKey)}
           </div>
         ) : (
           <ul className="space-y-1.5">
@@ -225,7 +231,8 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
                         <Users className="size-3.5" />
                         {capacityNumber(venue.capacity)}
                       </span>
-                      {config.showSchool && (venue.school || venue.university) ? (
+                      {config.showSchool &&
+                      (venue.school || venue.university) ? (
                         <span className="truncate">
                           {venue.school ?? venue.university}
                         </span>
@@ -239,11 +246,7 @@ const VenuePanel = ({ kind, setCentre }: VenuePanelProps) => {
         )}
       </div>
 
-      <AddVenueSheet
-        kind={kind}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-      />
+      <AddVenueSheet kind={kind} open={sheetOpen} onOpenChange={setSheetOpen} />
     </div>
   )
 }

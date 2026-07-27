@@ -1,3 +1,4 @@
+import { tOutsideReact } from 'lib/translate-outside-react'
 import { FetchResult } from '@apollo/client'
 
 export interface UploadToS3Props {
@@ -35,7 +36,11 @@ export const uploadToS3 = async ({
 
     if (!allowedMimeTypes.includes(file.type)) {
       throw new Error(
-        `File type not allowed. Supported types: ${allowedMimeTypes.join(', ')}`
+        tOutsideReact(
+          'shared.errors.fileTypeNotAllowed',
+          'File type not allowed. Supported types: {{types}}',
+          { types: allowedMimeTypes.join(', ') }
+        )
       )
     }
 
@@ -43,7 +48,11 @@ export const uploadToS3 = async ({
     const maxFileSize = 10 * 1024 * 1024 // 10MB
     if (file.size > maxFileSize) {
       throw new Error(
-        `File too large. Maximum size: ${maxFileSize / (1024 * 1024)}MB`
+        tOutsideReact(
+          'shared.errors.fileTooLarge',
+          'File too large. Maximum size: {{size}}MB',
+          { size: maxFileSize / (1024 * 1024) }
+        )
       )
     }
 
@@ -60,11 +69,22 @@ export const uploadToS3 = async ({
     })
 
     if (response.errors && response.errors.length > 0) {
-      throw new Error(response.errors[0]?.message || 'Failed to get upload URL')
+      throw new Error(
+        response.errors[0]?.message ||
+          tOutsideReact(
+            'shared.errors.uploadUrlFailed',
+            'Failed to get upload URL'
+          )
+      )
     }
 
     if (!response.data?.generatePresignedUrl) {
-      throw new Error('Failed to generate presigned URL')
+      throw new Error(
+        tOutsideReact(
+          'shared.errors.presignedUrlFailed',
+          'Failed to generate presigned URL'
+        )
+      )
     }
 
     const { presignedUrl, publicUrl } = response.data.generatePresignedUrl
@@ -111,8 +131,18 @@ export const uploadToS3 = async ({
       if (
         error.message.includes('File type not allowed') ||
         error.message.includes('File too large') ||
-        error.message.includes('Failed to get upload URL') ||
-        error.message.includes('Failed to generate presigned URL') ||
+        error.message.includes(
+          tOutsideReact(
+            'shared.errors.uploadUrlFailed',
+            'Failed to get upload URL'
+          )
+        ) ||
+        error.message.includes(
+          tOutsideReact(
+            'shared.errors.presignedUrlFailed',
+            'Failed to generate presigned URL'
+          )
+        ) ||
         error.message.includes('Upload failed')
       ) {
         throw error
@@ -122,7 +152,12 @@ export const uploadToS3 = async ({
     // Log error for debugging (disable eslint for this line)
     // eslint-disable-next-line no-console
     console.error('Error uploading to S3:', error)
-    throw new Error('Failed to upload image to S3')
+    throw new Error(
+      tOutsideReact(
+        'shared.errors.s3UploadFailed',
+        'Failed to upload image to S3'
+      )
+    )
   }
 }
 

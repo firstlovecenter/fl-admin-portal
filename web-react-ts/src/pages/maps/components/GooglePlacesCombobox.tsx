@@ -28,13 +28,11 @@ const GooglePlacesCombobox = (props: ComboBoxProps) => {
 
   const [searchString, setSearchString] = useState(initialValue ?? '')
 
-  const places: Place[] = data
-    .slice(0, 7)
-    .map((s) => ({
-      description: s.description,
-      place_id: s.place_id,
-      name: s.description,
-    }))
+  const places: Place[] = data.slice(0, 7).map((s) => ({
+    description: s.description,
+    place_id: s.place_id,
+    name: s.description,
+  }))
 
   const handleSelect = async (val: Place) => {
     setValue(val.description, false)

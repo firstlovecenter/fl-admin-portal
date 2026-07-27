@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useContext, useState } from 'react'
 import { Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
@@ -71,6 +72,7 @@ type MemberTitleDialogProps = {
 }
 
 const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
+  const { t } = useTranslation()
   const { memberId } = useContext(MemberContext)
   const { data, loading } = useQuery<Data>(GET_MEMBER_TITLES, {
     variables: { id: memberId },
@@ -124,10 +126,7 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
           variables: { id: memberId, ordinationDate: values.ordinationDate },
         })
       }
-      if (
-        values.consecrationDate &&
-        values.consecrationDate !== saved.Bishop
-      ) {
+      if (values.consecrationDate && values.consecrationDate !== saved.Bishop) {
         await UpdateMemberConsecrationDate({
           variables: {
             id: memberId,
@@ -148,7 +147,7 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
     setRemovingTitle(title)
     try {
       await RemoveMemberTitle({ variables: { id: memberId, title } })
-      toast.success(`${title} title removed`)
+      toast.success(t('directory.memberTitle.removedToast', { title }))
     } catch (err) {
       throwToSentry(`Error removing ${title} title`, err)
     } finally {
@@ -163,17 +162,17 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
   }> = [
     {
       name: 'appointmentDate',
-      label: 'Pastoral Appointment Date',
+      label: t('directory.memberTitle.pastoralAppointmentDate'),
       title: 'Pastor',
     },
     {
       name: 'ordinationDate',
-      label: 'Ordination Date',
+      label: t('directory.memberTitle.ordinationDate'),
       title: 'Reverend',
     },
     {
       name: 'consecrationDate',
-      label: 'Consecration Date',
+      label: t('directory.memberTitle.consecrationDate'),
       title: 'Bishop',
     },
   ]
@@ -187,7 +186,7 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
     >
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Pastoral Titles</DialogTitle>
+          <DialogTitle>{t('directory.memberTitle.title')}</DialogTitle>
           <DialogDescription>
             {member?.fullName
               ? `Set or update pastoral title dates for ${member.fullName}.`
@@ -245,7 +244,7 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
                     disabled={formik.isSubmitting || Boolean(removingTitle)}
                     className="min-h-[44px]"
                   >
-                    Cancel
+                    {t('shared.actions.cancel')}
                   </Button>
                   <Button
                     type="submit"

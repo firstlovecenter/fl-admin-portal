@@ -28,6 +28,26 @@
       "submitting": "Sending…",
       "success": "Reset instructions sent. Check your email.",
       "genericError": "Failed to send reset email. Please try again."
+    },
+    "setup": {
+      "title": "Set up your password",
+      "description": "Complete your account setup by creating a password.",
+      "emailLabel": "Email address",
+      "passwordLabel": "Password",
+      "confirmLabel": "Confirm password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPlaceholder": "Confirm your password",
+      "successTitle": "Password set successfully!",
+      "signIn": "Sign in",
+      "failed": "Failed to set up password. Please try again.",
+      "loadingEmail": "Loading email…",
+      "passwordRequired": "Password is required",
+      "confirmRequired": "Please confirm your password",
+      "minLength": "Password must be at least 8 characters",
+      "needLower": "Must contain at least one lowercase letter",
+      "needUpper": "Must contain at least one uppercase letter",
+      "needNumber": "Must contain at least one number",
+      "mustMatch": "Passwords must match"
     }
   },
   "language": {
@@ -183,7 +203,31 @@
       "body": "The Reconciliation Feature is still being worked on. Will update soon!"
     },
     "retrievingChurch": "Retrieving your church information…",
-    "loadingMap": "Loading map…"
+    "loadingMap": "Loading map…",
+    "errors": {
+      "signupFailed": "Signup failed",
+      "loginFailed": "Login failed",
+      "tokenRefreshFailed": "Token refresh failed",
+      "passwordSetupFailed": "Password setup failed",
+      "passwordResetFailed": "Password reset failed",
+      "passwordResetRequestFailed": "Password reset request failed",
+      "accountDeletionFailed": "Account deletion failed",
+      "uploadUrlFailed": "Failed to get upload URL",
+      "presignedUrlFailed": "Failed to generate presigned URL",
+      "s3UploadFailed": "Failed to upload image to S3",
+      "sessionExpired": "Sign in expired. Please sign in again.",
+      "downloadFailed": "Download failed ({{status}})",
+      "fileTypeNotAllowed": "File type not allowed. Supported types: {{types}}",
+      "fileTooLarge": "File too large. Maximum size: {{size}}MB"
+    },
+    "maintenance": {
+      "title": "Site is under maintenance",
+      "body": "We are currently working on the site and will be back shortly. Thank you for your patience."
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password"
+    }
   },
   "accounts": {
     "common": {
@@ -1311,6 +1355,38 @@
       "unnamed": "Unnamed {{role}}",
       "openNamedLevel": "Open {{name}} {{level}}",
       "noneMatchTerm": "No {{levelPlural}} match \"{{term}}\""
+    },
+    "memberDelete": {
+      "title": "Delete this member?",
+      "notePlaceholder": "Add any context that helps explain this decision",
+      "reasonRequired": "Please pick a reason category",
+      "reasonTextRequired": "Please provide the reason you're deleting this member"
+    },
+    "memberTitle": {
+      "title": "Pastoral Titles",
+      "removedToast": "{{title}} title removed",
+      "pastoralAppointmentDate": "Pastoral Appointment Date",
+      "ordinationDate": "Ordination Date",
+      "consecrationDate": "Consecration Date",
+      "pastor": "Pastor",
+      "reverend": "Reverend",
+      "bishop": "Bishop"
+    },
+    "avatar": {
+      "alt": "Member photo",
+      "change": "Change Photo",
+      "upload": "Upload Photo",
+      "hint": "PNG, JPG or WebP. Max 10MB."
+    },
+    "closeDown": {
+      "button": "Close Down",
+      "title": "Close Down Bacenta",
+      "confirm": "Close Down {{name}}",
+      "cancel": "No, take me back"
+    },
+    "memberTable": {
+      "loadError": "Could not load members. Please try again.",
+      "noMatches": "No members match your search"
     }
   },
   "dashboard": {
@@ -1521,6 +1597,12 @@
         "Even the temple closed eventually.",
         "Twilight servant hours — clocking in quietly."
       ]
+    },
+    "weeklyTip": {
+      "title": "Tip of the week",
+      "readNext": "Read next",
+      "showLess": "Show less",
+      "viewMore": "View more"
     }
   },
   "settings": {
@@ -2158,6 +2240,13 @@
         "basonta": "Basonta"
       },
       "filenameStem": "{{name}} {{type}} Membership - {{date}}.csv"
+    },
+    "servicesThisWeek": {
+      "date": "Date",
+      "bacentaName": "Bacenta Name",
+      "attendance": "Attendance",
+      "income": "Income",
+      "exportCsv": "Export CSV"
     }
   },
   "nav": {
@@ -2508,6 +2597,118 @@
       "showMore": "Show more results",
       "memberFallback": "Member",
       "bacentaSubtitle": "{{name}} Bacenta"
+    }
+  },
+  "maps": {
+    "title": "Maps",
+    "subtitle": "Explore members, Bacentas and outreach venues.",
+    "backToSearch": "Back to search",
+    "openControls": "Open maps controls",
+    "searchAndExplore": "Search & explore",
+    "venues": "Venues",
+    "close": "Close",
+    "centreOnMe": "Centre map on my location",
+    "search": {
+      "aPlace": "Search a place",
+      "anAddress": "Search an address",
+      "flcDatabase": "Search the FLC database",
+      "databasePlaceholder": "Members, Bacentas, venues…",
+      "quickJumps": "Quick jumps",
+      "myLocation": "My location",
+      "flcHq": "FLC HQ",
+      "outreach": "Outreach",
+      "directory": "Directory",
+      "showAllBacentas": "Show all Bacentas",
+      "toggleBacentasOverlay": "Toggle all Bacentas overlay",
+      "showAllBacentasHint": "Drop a marker for every Bacenta with a recorded location and zoom out to fit the whole network.",
+      "loadUnvisited": "Load unvisited members",
+      "loadUnvisitedHint": "Drops a marker for every member in your council that hasn't yet been visited this season.",
+      "downloadDirectory": "Download directory",
+      "downloadDirectoryHint": "One CSV per level. Bacenta rows include latitude / longitude for mapping and route planning.",
+      "loading": "Loading…",
+      "inSearch": "Search"
+    },
+    "info": {
+      "council": "Council:",
+      "pastor": "Pastor:",
+      "capacity": "Capacity:",
+      "category": "Category:",
+      "school": "School:",
+      "viewProfile": "View Member Profile",
+      "getDirections": "Get Directions"
+    },
+    "panel": {
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "hostels": "Hostels",
+      "schools": "Schools",
+      "sortBy": "Sort by",
+      "sortName": "Name",
+      "sortCapacity": "Capacity",
+      "searchIn": "Search {{label}}…",
+      "noMatches": "No matches."
+    },
+    "venue": {
+      "location": "Location",
+      "locationHint": "Open Google Maps, long-press the spot, and copy the coordinates.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "nameLabel": "Venue name",
+      "namePlaceholder": "Enter the name of the venue",
+      "capacityLabel": "Capacity",
+      "capacityPlaceholder": "Number of seats",
+      "schoolLabel": "School",
+      "schoolPlaceholder": "Enter the school name",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "createError": "Maps: failed to create {{kind}} venue",
+      "nameRequired": "Venue name is required",
+      "capacityRequired": "Cannot submit without entering number of seats",
+      "capacityInvalid": "Please enter a valid capacity",
+      "latitudeRequired": "Latitude is required",
+      "latitudeInvalid": "Please enter a valid latitude",
+      "longitudeRequired": "Longitude is required",
+      "longitudeInvalid": "Please enter a valid longitude",
+      "schoolRequired": "School name is required",
+      "noDecimals": "Cannot enter decimals",
+      "capacityPositive": "Capacity must be positive",
+      "latMin": "Latitude must be ≥ -90",
+      "latMax": "Latitude must be ≤ 90",
+      "lngMin": "Longitude must be ≥ -180",
+      "lngMax": "Longitude must be ≤ 180"
+    },
+    "category": {
+      "indoorTitle": "Indoor venues",
+      "indoorDescription": "Indoor outreach venues across the network.",
+      "indoorAdd": "Add indoor outreach venue",
+      "indoorAddHint": "Indoor venues you can host outreach services in.",
+      "outdoorTitle": "Outdoor venues",
+      "outdoorDescription": "Open-air outreach spaces.",
+      "outdoorAdd": "Add outdoor outreach venue",
+      "outdoorAddHint": "Open-air spaces you can run outreach in.",
+      "hostelTitle": "Hostels",
+      "hostelDescription": "University hostels for tertiary outreach.",
+      "hostelAdd": "Add hostel",
+      "hostelAddHint": "University hostels for tertiary outreach.",
+      "schoolTitle": "Senior high schools",
+      "schoolDescription": "Senior high schools for school outreach.",
+      "schoolAdd": "Add senior high school",
+      "schoolAddHint": "Senior high schools for school outreach.",
+      "indoorAddShort": "Add indoor venue",
+      "outdoorAddShort": "Add outdoor venue",
+      "hostelAddShort": "Add hostel",
+      "schoolAddShort": "Add senior high school",
+      "indoorEmpty": "No indoor venues yet — add one to get started.",
+      "outdoorEmpty": "No outdoor venues yet — add one to get started.",
+      "hostelEmpty": "No hostels yet — add one to get started.",
+      "schoolEmpty": "No senior high schools yet — add one to get started."
+    },
+    "typename": {
+      "googlePlace": "Google Place",
+      "indoorVenue": "Indoor Venue",
+      "outdoorVenue": "Outdoor Venue",
+      "highSchool": "High School",
+      "hostel": "Hostel"
     }
   }
 }

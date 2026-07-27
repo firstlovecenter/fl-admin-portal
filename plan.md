@@ -939,6 +939,105 @@ files never rendered the branch the bug was in.**
   no semantic change. Left in place; reverting them would be churn on top of
   churn now that the earlier work is committed.
 
+## Phase 8 — everything except the AI Assistant (DONE this pass)
+
+Closes every remaining English-only surface bar the deliberately-deferred AI
+Assistant. Coverage went from **246 localized / 23 English-only** to
+**262 / 8**, and 5 of the 8 remaining are AI Assistant or dead code.
+
+### Groups localized
+
+| Group | Files | Notes |
+| --- | --- | --- |
+| **Maps** | 7 | `MapView`, `MapCanvas`, `MapPanel`, `SearchPanel`, `VenuePanel`, `AddVenueSheet`, `InfoWindowCard` + `maps-constants` — new `maps.*` namespace, including all 13 of its Yup messages |
+| **`MemberDisplayCard`** | 1 | **9 call sites**, all on already-translated pages — the highest-traffic leak left |
+| Auth | 1 | `SetupPasswordPage` (live, pre-auth) + its 7 Yup messages |
+| Directory dialogs | 3 | `MemberDeleteDialog`, `MemberTitleDialog`, `MemberAvatarUpload` |
+| Chrome | 4 | `MaintenanceMode`, `WeeklyTipCard`, `MemberTable`, `CloseDownBacentaButton` |
+| Non-component | 4 | `lib/auth-service.ts` (7), `utils/s3Upload.ts` (5), `useArrivalsExport`, `useDefaultersExport`, `DownloadMembershipList` |
+| Misc | 1 | `CampusBacentaServicesThisWeek` table + CSV headers |
+
+**148 new keys.** Locale files are now **2294 keys × 5 languages**.
+
+### `tOutsideReact` — a `t` for modules with no hook
+
+`lib/auth-service.ts`, `utils/s3Upload.ts` and the export hooks emit error text
+that lands in a toast on an otherwise-translated page, but they are plain
+modules. New `lib/translate-outside-react.ts` wraps the two hazards of
+reaching for the singleton directly: `i18next.t` returns **`undefined`** before
+`lib/i18n` runs (so an unguarded caller would show the user the literal string
+"undefined"), and a missing key renders as the raw key path. Both fall back to
+the English text the caller already had, with `{{placeholder}}` interpolation
+applied to the fallback too.
+
+Tested from both sides, in two files — the uninitialised branch is
+unreachable from any file that imports `lib/i18n`, so it needs its own.
+
+### The module-scope-constant pattern, five more times
+
+This is now the single most recurring shape on this branch: a `const` at module
+scope holding display strings, which cannot call the component's `t`. Found
+again in `VenuePanel`'s `CONFIG`, `AddVenueSheet`'s `VENUE_CONFIG`,
+`MapPanel`'s `TAB_DEFS`, `maps-constants`' `TYPENAME_LABEL`, and both dialogs'
+Yup `validationSchema`.
+
+Two fixes, chosen per case:
+- **Key paths in the constant** (`label` → `labelKey`), resolved with `t()` at
+  render. Keeps the constant static and makes the indirection
+  self-documenting. Used for the four config/label maps.
+- **Factory taking `t`** (`buildValidationSchema(t)`, `buildSchema(hasSchool, t)`).
+  Used for the Yup schemas, matching `buildTimeSlots` / `buildStatusTiles` from
+  phases 6-7.
+
+### Deliberately not translated
+
+- **HistoryLog audit text.** Every `historyRecord:` template in the reusable
+  forms, `MemberDeleteDialog`'s persisted `reason:`, and `MemberDisplay`'s
+  sticky-note records. These are stored in English on purpose and translated
+  at *display* time by `lib/translate-history-record.ts` — rewriting them
+  would mix languages across entries depending on who wrote each one.
+- **`arrivals-utils.ts`'s `'In Only'` / `'In and Out'`** — backend enum values
+  in the mutation payload.
+- **`components/members-grids/download-csv-helpers.ts`** — 14 CSV headers, but
+  the module has **zero callers**. Dead; deleting it is the right fix, which is
+  the user's call, not a rename.
+- Currency codes (`GHS`, `USD`), `title="Synago"`, and the generated-workbook
+  sheet names.
+
+### Still English-only (8 files)
+
+- **AI Assistant (3)** — `AiAssistant`, `ChatHistorySidebar`, `TodaysTipBanner`.
+  Needs the product decision plan.md flags (translate the corpus? generate
+  in-language? post-hoc?), not a `t()` pass.
+- **Dead code (3)** — `pages/auth/LoginPage.tsx` (0 refs; `SimpleLogin` is the
+  live login), `components/sidebar-demo-2.tsx` (0 refs), `components/Login.tsx`.
+  Worth **deleting** rather than translating; left alone because deletion
+  wasn't asked for.
+- **Not real copy (2)** — `SplashSreen.tsx` and `SearchBadgeIcon.tsx` render
+  only `title="Synago"` and a literal `<div>SearchBadgeIcon</div>` placeholder.
+
+### Verification
+
+- `tsc --noEmit` clean. `eslint --max-warnings=0` clean on all 33 files touched
+  this pass, bar two pre-existing warnings in `MemberDisplayCard`
+  (`BsMusicNote`, `rest` unused) confirmed present at HEAD.
+- Vitest **17 failed / 742 passed** (759). Two files:
+  - `createApolloClient.test.tsx` (11) — the documented MSW/AbortSignal
+    failures, untouched by this branch.
+  - `ServiceForm.test.tsx` (6) — **verified pre-existing**: stashing this
+    pass's changes and re-running gives the identical 6 failures at HEAD. It
+    imports nothing this pass touched.
+  - `MaintenanceMode.test.tsx` (5) *was* broken by this pass — a pre-existing
+    test asserting English on a now-localized component — and is fixed.
+    `DisplayPage.test.tsx` flaked once under load and passes in isolation.
+- `npm run build`: green, 392 precache entries.
+- **2294 keys × 5 languages, 0 missing / 0 extra / 0 placeholder mismatches.**
+
+### Unchanged, still the real gates on `main`
+
+Live-browser verification of the authenticated app, and native-speaker review
+of the greeting pool and organizational-level terms. Neither is code.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:

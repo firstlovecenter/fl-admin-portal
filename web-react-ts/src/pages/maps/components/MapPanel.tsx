@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Building, Building2, GraduationCap, Search, Tent } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from 'components/ui/tabs'
@@ -19,14 +20,14 @@ const PANEL_PATH: Record<PanelKey, string> = {
 
 const TAB_DEFS: Array<{
   key: PanelKey
-  label: string
+  labelKey: string
   icon: React.ComponentType<{ className?: string }>
 }> = [
-  { key: 'search', label: 'Search', icon: Search },
-  { key: 'indoor', label: 'Indoor', icon: Building2 },
-  { key: 'outdoor', label: 'Outdoor', icon: Tent },
-  { key: 'hostel', label: 'Hostels', icon: Building },
-  { key: 'school', label: 'Schools', icon: GraduationCap },
+  { key: 'search', labelKey: 'maps.search.inSearch', icon: Search },
+  { key: 'indoor', labelKey: 'maps.panel.indoor', icon: Building2 },
+  { key: 'outdoor', labelKey: 'maps.panel.outdoor', icon: Tent },
+  { key: 'hostel', labelKey: 'maps.panel.hostels', icon: Building },
+  { key: 'school', labelKey: 'maps.panel.schools', icon: GraduationCap },
 ]
 
 type MapPanelProps = {
@@ -62,6 +63,7 @@ const MapPanel = ({
   downloadingDirectory,
   className,
 }: MapPanelProps) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   return (
@@ -78,15 +80,15 @@ const MapPanel = ({
       >
         <div className="border-b border-border px-3 pt-3 pb-3">
           <TabsList className="grid w-full grid-cols-5 gap-1 bg-muted/40 p-1">
-            {TAB_DEFS.map(({ key, label, icon: Icon }) => (
+            {TAB_DEFS.map(({ key, labelKey, icon: Icon }) => (
               <TabsTrigger
                 key={key}
                 value={key}
                 className="flex flex-col items-center gap-0.5 px-1 py-1.5 text-[10px] sm:text-xs"
-                aria-label={label}
+                aria-label={t(labelKey)}
               >
                 <Icon className="size-4" />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </TabsTrigger>
             ))}
           </TabsList>
