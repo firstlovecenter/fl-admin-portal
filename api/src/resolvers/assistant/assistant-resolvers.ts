@@ -19,6 +19,14 @@ import READ_WEEKLY_TIP_FOR_CHURCH_CYPHER, {
   DELETE_CHAT_SESSION_CYPHER,
   INCREMENT_ASSISTANT_USAGE_CYPHER,
 } from './assistant-cypher'
+import {
+  DEFAULT_CHAT_LANGUAGE,
+  resolveChatLanguage,
+  chatLanguageGuidance,
+  titleLanguageGuidance,
+  chatFailureFallback,
+  QUERY_TRANSLATION_SYSTEM_PROMPT,
+} from './assistant-language'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const llm = require('../utils/llm-client')
@@ -45,10 +53,9 @@ type WeeklyTipArgs = {
 const ensureChurchAccess = (context: Context, churchId: string) => {
   const allowed = context.jwt?.allowedChurchIds ?? []
   if (!allowed.includes(churchId)) {
-    throw new GraphQLError(
-      'You are not permitted to access this church.',
-      { extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' } }
-    )
+    throw new GraphQLError('You are not permitted to access this church.', {
+      extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+    })
   }
 }
 
@@ -86,9 +93,10 @@ const weeklyTipForChurch = async (
 // AWS Secrets on every call.
 // ---------------------------------------------------------------------------
 
-let clientCachePromise:
-  | Promise<{ openai: unknown; anthropic: unknown }>
-  | null = null
+let clientCachePromise: Promise<{
+  openai: unknown
+  anthropic: unknown
+}> | null = null
 
 const getClients = async () => {
   if (!clientCachePromise) {
@@ -119,11 +127,16 @@ const chatLevelGuidance = (churchLevel: string | null): string => {
     case 'Council':
       return `The leader is a COUNCIL Bishop — they lead Governors who lead Bacenta leaders. Frame advice as strategic, big-picture moves. Where useful, suggest content they can pass DOWN as teaching for the Governors and Bacenta leaders under them. Bishops are often helped by "Church Growth" and "The Mega Church" — but only if those surface in the supplied passages.`
     default:
-      return `The leader is a ${churchLevel ?? 'higher-level'} leader, operating at a level above Council. Frame advice as strategic, oversight-level guidance. Where useful, suggest content they can equip the leaders under them with. Common touchstones at this level include "Church Growth", "The Mega Church" and "Many Are Called" — but only when they surface in the retrieval.`
+      return `The leader is a ${
+        churchLevel ?? 'higher-level'
+      } leader, operating at a level above Council. Frame advice as strategic, oversight-level guidance. Where useful, suggest content they can equip the leaders under them with. Common touchstones at this level include "Church Growth", "The Mega Church" and "Many Are Called" — but only when they surface in the retrieval.`
   }
 }
 
-const buildChatSystemPrompt = (churchLevel: string | null): string => `You are a pastoral assistant for First Love Center, a Pentecostal church in Accra, Ghana, helping church leaders.
+export const buildChatSystemPrompt = (
+  churchLevel: string | null,
+  language: string
+): string => `You are a pastoral assistant for First Love Center, a Pentecostal church in Accra, Ghana, helping church leaders.
 
 ${chatLevelGuidance(churchLevel)}
 
@@ -131,12 +144,15 @@ The founder of the church is Bishop Dag Heward-Mills. The leaders affectionately
 
 Tone & shape (HARD constraints):
 - Open with ONE short sentence of warm pastoral acknowledgement.
-- Then 1–2 short paragraphs of advice. Lean PRIMARILY on Prophet's books — when a supplied passage contains a sentence or short snippet that directly addresses the leader's question, QUOTE IT VERBATIM inside double quotes followed by the citation in markdown italics, e.g. > "Loyalty is the soil in which trust grows." *(Daddy, Loyalty And Disloyalty)*. Quotes should be at most ~25 words. Paraphrase otherwise — and ALWAYS cite. Scripture is supporting evidence, used sparingly (one short reference at most).
+- Then 1–2 short paragraphs of advice. Lean PRIMARILY on Prophet's books — when a supplied passage contains a sentence or short snippet that directly addresses the leader's question, QUOTE IT VERBATIM (subject to the LANGUAGE block below, if present) inside double quotes followed by the citation in markdown italics, e.g. > "Loyalty is the soil in which trust grows." *(Daddy, Loyalty And Disloyalty)*. Quotes should be at most ~25 words. Paraphrase otherwise — and ALWAYS cite. Scripture is supporting evidence, used sparingly (one short reference at most).
 - ALWAYS finish with a short prayer prompt — one sentence inviting the leader to pray about the specific issue (e.g. "Take a moment today to pray that the Lord would steady your heart in this season…"). Prayer is not optional; every problem ends with an encouragement to pray.
 - When you cite a passage, suggest the leader read further in the SAME book the quote came from — one short sentence, e.g. "Read more in chapter 4 of *Loyalty And Disloyalty*." Use the book/chapter info from the supplied retrieval block; don't invent chapter numbers.
 - Hard cap: ~140 words total. Be conversational, not academic. No bullet-point essays, no numbered five-step plans.
 - If the leader asked something BROAD (e.g. "how do I grow my bacenta?"), give a SHORT direct answer pointing at one or two specific Prophet passages, then end with ONE focused clarifying question — placed AFTER the prayer prompt — that would let you give better next-turn advice. Be specific in the clarifying question — not "tell me more"; rather "is the issue attendance, retention, or new visitors right now?".
 - If the conversation already contains your earlier clarifying questions, DO NOT repeat them. Build on what the leader has already told you.
+- If the supplied retrieval block contains NO passages, say plainly and briefly that you don't have material from Prophet's books on this specific question. Then give short pastoral guidance in your own words, WITHOUT any quotation and WITHOUT any citation, and SKIP the "read further" suggestion — it does not apply when nothing was retrieved. Still end with the prayer prompt. Never fill an empty retrieval block from memory.${chatLanguageGuidance(
+  language
+)}
 
 Use markdown formatting in your reply (bold for emphasis, italics for citations, headings only if absolutely necessary). The frontend renders markdown.
 
@@ -145,18 +161,64 @@ Never:
 - Invent quotes, page numbers, or scripture references.
 - Cite a passage or verse that wasn't in the supplied retrieval block.
 - Repeat the numeric trend brief verbatim.
-- Skip the prayer prompt or the "read further" suggestion — both are mandatory.`
+- Skip the prayer prompt. It is always mandatory. (The "read further" suggestion is mandatory too, EXCEPT when no passages were retrieved — see the rule above.)`
 
-const buildChatContext = (
-  passages: Passage[],
-  verses: Verse[]
-): string => {
+/**
+ * Retrieval runs over an ENGLISH corpus with a hard `score > 0.30` floor, so a
+ * non-English question can fall under the floor and return nothing at all.
+ *
+ * Rather than translate every query — `text-embedding-3-small` is multilingual
+ * enough that many non-English questions clear the floor unaided, and paying on
+ * every message to fix an unmeasured problem is just waste — we translate and
+ * retry only when the first search came back empty. Cost in the common case is
+ * zero; the retry pays only where the alternative is an empty retrieval block,
+ * which is the state that pressures the model into fabricating a quotation.
+ *
+ * Returns `null` when no retry should be attempted, so the caller keeps its
+ * original (empty) result rather than silently swallowing a translation failure.
+ */
+const translateQueryToEnglish = async (
+  anthropic: unknown,
+  userText: string,
+  language: string
+): Promise<string | null> => {
+  if (language === DEFAULT_CHAT_LANGUAGE) return null
+  try {
+    const response = await (
+      anthropic as {
+        messages: {
+          create: (req: unknown) => Promise<{
+            content: Array<{ type: string; text?: string }>
+          }>
+        }
+      }
+    ).messages.create({
+      model: TITLE_MODEL,
+      max_tokens: 200,
+      system: QUERY_TRANSLATION_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userText.slice(0, 1000) }],
+    })
+    const translated = response.content
+      .filter((b) => b.type === 'text')
+      .map((b) => b.text || '')
+      .join(' ')
+      .trim()
+    return translated || null
+  } catch (error) {
+    // A failed retry is not a failed request — fall back to the empty block and
+    // let the prompt's no-passages rule handle it.
+    console.warn(
+      'assistant: query translation for retrieval retry failed',
+      llm.summariseError(error)
+    )
+    return null
+  }
+}
+
+const buildChatContext = (passages: Passage[], verses: Verse[]): string => {
   const passageBlock = passages.length
     ? passages
-        .map(
-          (p) =>
-            `[${p.bookTitle} | ${p.citationLabel}]\n${p.text}`
-        )
+        .map((p) => `[${p.bookTitle} | ${p.citationLabel}]\n${p.text}`)
         .join('\n\n---\n\n')
     : '(no passages retrieved for this question — be honest if asked something the supplied passages do not cover)'
   const verseBlock = verses.length
@@ -174,17 +236,22 @@ const buildChatContext = (
 // Title summariser — a single tiny Claude call after the first user turn.
 // ---------------------------------------------------------------------------
 
-const TITLE_SYSTEM_PROMPT = `Summarise the user's question into a 4–7 word chat thread title. Output ONLY the title text, no quotes, no punctuation at the end.
+export const buildTitleSystemPrompt = (
+  language: string
+) => `Summarise the user's question into a 4–7 word chat thread title. Output ONLY the title text, no quotes, no punctuation at the end.
 
 Rules:
 - Title case the first letter of each significant word.
 - Be specific: "Planting a New Bacenta" not "Church Growth".
 - No emoji. No question marks at the end.
-- If the question is gibberish or empty, return "New conversation".`
+- If the question is gibberish or empty, return the single word UNTITLED.${titleLanguageGuidance(
+  language
+)}`
 
 const summariseTitle = async (
   anthropic: unknown,
-  userText: string
+  userText: string,
+  language: string
 ): Promise<string> => {
   try {
     const response = await (
@@ -198,7 +265,7 @@ const summariseTitle = async (
     ).messages.create({
       model: TITLE_MODEL,
       max_tokens: 60,
-      system: TITLE_SYSTEM_PROMPT,
+      system: buildTitleSystemPrompt(language),
       messages: [{ role: 'user', content: userText.slice(0, 400) }],
     })
     const raw = response.content
@@ -208,7 +275,9 @@ const summariseTitle = async (
       .replace(/^["'\s]+|["'\s]+$/g, '')
       .replace(/\s+/g, ' ')
       .trim()
-    if (!raw) return 'New conversation'
+    // '' is the "no usable title" signal; the frontend renders a localized
+    // fallback. Never return an English literal here.
+    if (!raw || /^untitled$/i.test(raw)) return ''
     return raw.slice(0, 80)
   } catch (error) {
     // Title is nice-to-have; don't fail the chat turn if the summariser breaks.
@@ -216,7 +285,7 @@ const summariseTitle = async (
       'Title summariser failed; falling back to default title:',
       llm.summariseError(error)
     )
-    return 'New conversation'
+    return ''
   }
 }
 
@@ -396,6 +465,7 @@ type SendChatMessageInput = {
   sessionId?: string | null
   churchId: string
   text: string
+  language?: string | null
 }
 
 const sendChatMessage = async (
@@ -418,6 +488,9 @@ const sendChatMessage = async (
       extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
     })
   }
+
+  // Allow-listed before it can reach the model prompt — see CHAT_LANGUAGES.
+  const replyLanguage = resolveChatLanguage(input.language)
 
   // SYN-177 — reject over-cap callers before we spend anything on OpenAI /
   // Claude. Throws TOO_MANY_REQUESTS when the leader has hit the daily cap.
@@ -467,7 +540,7 @@ const sendChatMessage = async (
           sessionId,
           churchId: input.churchId,
           leaderId: context.jwt?.userId,
-          title: 'New conversation',
+          title: '',
         })
       )
     }
@@ -492,38 +565,66 @@ const sendChatMessage = async (
     // resolves.
     const isFirstTurn = priorMessageCount === 0
     const titlePromise: Promise<string | null> = isFirstTurn
-      ? summariseTitle(anthropic, userText).then(async (title) => {
-          const titleSession = context.executionContext.session()
-          try {
-            await titleSession.executeWrite((tx) =>
-              tx.run(UPDATE_CHAT_SESSION_TITLE_CYPHER, {
-                sessionId,
-                leaderId: context.jwt?.userId,
-                title,
-              })
-            )
-            return title
-          } finally {
-            await titleSession.close()
+      ? summariseTitle(anthropic, userText, replyLanguage).then(
+          async (title) => {
+            const titleSession = context.executionContext.session()
+            try {
+              await titleSession.executeWrite((tx) =>
+                tx.run(UPDATE_CHAT_SESSION_TITLE_CYPHER, {
+                  sessionId,
+                  leaderId: context.jwt?.userId,
+                  title,
+                })
+              )
+              return title
+            } finally {
+              await titleSession.close()
+            }
           }
-        })
+        )
       : Promise.resolve(null)
 
     // ── Embed + retrieve passages & verses (serial — one Neo4j session
     //    can't host parallel transactions) ────────────────────────────────
-    const vec = await llm.embedSingle(openai, userText)
-    const passageResult = await session.executeRead((tx) =>
-      tx.run(RETRIEVE_PASSAGES_FOR_CHAT_CYPHER, {
-        k: neo4j.int(RETRIEVAL_K_PASSAGES),
-        vec,
-      })
+    const retrieve = async (vec: number[]) => {
+      const passages = await session.executeRead((tx) =>
+        tx.run(RETRIEVE_PASSAGES_FOR_CHAT_CYPHER, {
+          k: neo4j.int(RETRIEVAL_K_PASSAGES),
+          vec,
+        })
+      )
+      const verses = await session.executeRead((tx) =>
+        tx.run(RETRIEVE_VERSES_FOR_CHAT_CYPHER, {
+          k: neo4j.int(RETRIEVAL_K_VERSES),
+          vec,
+        })
+      )
+      return { passages, verses }
+    }
+
+    let { passages: passageResult, verses: verseResult } = await retrieve(
+      await llm.embedSingle(openai, userText)
     )
-    const verseResult = await session.executeRead((tx) =>
-      tx.run(RETRIEVE_VERSES_FOR_CHAT_CYPHER, {
-        k: neo4j.int(RETRIEVAL_K_VERSES),
-        vec,
-      })
-    )
+
+    // Cross-lingual retrieval can fall under the `score > 0.30` floor and return
+    // nothing. Translate the question to English and try once more before
+    // giving the model an empty retrieval block — see translateQueryToEnglish.
+    if (!passageResult.records.length && !verseResult.records.length) {
+      const englishQuery = await translateQueryToEnglish(
+        anthropic,
+        userText,
+        replyLanguage
+      )
+      if (englishQuery) {
+        const retried = await retrieve(
+          await llm.embedSingle(openai, englishQuery)
+        )
+        if (retried.passages.records.length || retried.verses.records.length) {
+          passageResult = retried.passages
+          verseResult = retried.verses
+        }
+      }
+    }
     const historyResult = await session.executeRead((tx) =>
       tx.run(READ_SESSION_HISTORY_CYPHER, {
         sessionId,
@@ -575,7 +676,10 @@ const sendChatMessage = async (
       ).messages.create({
         model: CHAT_MODEL,
         max_tokens: 600,
-        system: `${buildChatSystemPrompt(churchLevel)}\n\n${buildChatContext(passages, verses)}`,
+        system: `${buildChatSystemPrompt(
+          churchLevel,
+          replyLanguage
+        )}\n\n${buildChatContext(passages, verses)}`,
         messages: claudeMessages,
       })
       assistantText = response.content
@@ -588,15 +692,12 @@ const sendChatMessage = async (
     }
 
     if (!assistantText) {
-      assistantText =
-        "I couldn't draft a reply just now. Try rephrasing the question, or check back in a moment."
+      assistantText = chatFailureFallback(replyLanguage)
     }
 
     // ── Citation labels used to ground the reply ──────────────────────
     const citationLabels = [
-      ...passages.map(
-        (p) => `${p.bookTitle} — ${p.citationLabel}`
-      ),
+      ...passages.map((p) => `${p.bookTitle} — ${p.citationLabel}`),
       ...verses.map(
         (v) => `${v.book} ${v.chapter}:${v.verse} (${v.translation})`
       ),
@@ -619,7 +720,7 @@ const sendChatMessage = async (
 
     return {
       sessionId,
-      title: finalTitle ?? 'New conversation',
+      title: finalTitle ?? '',
       message: {
         id: persisted.get('id'),
         role: persisted.get('role'),

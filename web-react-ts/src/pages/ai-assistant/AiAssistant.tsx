@@ -1,9 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useTranslation } from 'react-i18next'
+// The i18n instance from `useTranslation()` is a fresh clone on every render,
+// NOT the singleton — so a value read off it inside a memoized callback is
+// frozen at the render that created the callback. `handleNew` is memoized on
+// [apolloClient, churchId, sessionId], so a leader who switched language
+// mid-session kept sending the old one. Read the singleton instead.
+import i18nInstance from 'lib/i18n'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useApolloClient, useQuery } from '@apollo/client'
 import {
   AssistantRuntimeProvider,
@@ -66,6 +68,7 @@ const SUGGESTIONS = [
 ]
 
 const AiAssistant = () => {
+  const { t } = useTranslation()
   const { selectedScope } = useChurchRoleScope()
   const churchId = selectedScope?.churchId ?? null
   const apolloClient = useApolloClient()
@@ -142,7 +145,15 @@ const AiAssistant = () => {
         >({
           mutation: SEND_CHAT_MESSAGE,
           variables: {
-            input: { sessionId, churchId, text: userText },
+            input: {
+              sessionId,
+              churchId,
+              text: userText,
+              // Ask the model to reply in the language the leader is reading
+              // the app in. Allow-listed server-side. Read off the singleton,
+              // not useTranslation()'s per-render clone — see the import note.
+              language: i18nInstance.resolvedLanguage || i18nInstance.language,
+            },
           },
           refetchQueries: [
             { query: MY_CHAT_SESSIONS, variables: { churchId, limit: 30 } },
@@ -216,12 +227,17 @@ const AiAssistant = () => {
           />
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              AI <span className="text-arrivals">Assistant</span>
+              {t('assistant.titleLead')}{' '}
+              <span className="text-arrivals">
+                {t('assistant.titleAccent')}
+              </span>
             </h1>
             <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {selectedScope?.churchName
-                ? `Anchored to ${selectedScope.churchName}.`
-                : 'Pick a church scope to anchor the conversation.'}
+                ? t('assistant.anchoredTo', {
+                    church: selectedScope.churchName,
+                  })
+                : t('assistant.pickScopeToAnchor')}
             </p>
           </div>
         </div>
@@ -268,113 +284,123 @@ const MobileHistoryTrigger = ({
   open: boolean
   onOpenChange: (v: boolean) => void
   sidebar: ReactNode
-}) => (
-  <Sheet open={open} onOpenChange={onOpenChange}>
-    <SheetTrigger asChild>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-10 shrink-0 lg:hidden"
-        aria-label="Open chat history"
-      >
-        <History className="size-5" />
-      </Button>
-    </SheetTrigger>
-    <SheetContent side="left" className="w-[300px] p-4">
-      <SheetHeader className="mb-3 text-left">
-        <SheetTitle className="flex items-center gap-2 text-base">
-          <PanelLeftOpen className="size-4" /> Past chats
-        </SheetTitle>
-      </SheetHeader>
-      {sidebar}
-    </SheetContent>
-  </Sheet>
-)
+}) => {
+  const { t } = useTranslation()
 
-const ChatThread = ({ disabled }: { disabled: boolean }) => (
-  <ThreadPrimitive.Root className="flex min-h-0 flex-1 flex-col">
-    <ThreadPrimitive.Viewport className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6">
-      <ThreadPrimitive.Empty>
-        <EmptyState disabled={disabled} />
-      </ThreadPrimitive.Empty>
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-10 shrink-0 lg:hidden"
+          aria-label={t('assistant.openHistory')}
+        >
+          <History className="size-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[300px] p-4">
+        <SheetHeader className="mb-3 text-left">
+          <SheetTitle className="flex items-center gap-2 text-base">
+            <PanelLeftOpen className="size-4" /> Past chats
+          </SheetTitle>
+        </SheetHeader>
+        {sidebar}
+      </SheetContent>
+    </Sheet>
+  )
+}
 
-      <ThreadPrimitive.Messages
-        components={{
-          UserMessage,
-          AssistantMessage,
-          EditComposer: () => null,
-        }}
-      />
+const ChatThread = ({ disabled }: { disabled: boolean }) => {
+  const { t } = useTranslation()
 
-      <ThreadPrimitive.If running>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="inline-block size-1.5 animate-pulse rounded-full bg-foreground/40" />
-          Thinking&hellip;
-        </div>
-      </ThreadPrimitive.If>
-    </ThreadPrimitive.Viewport>
+  return (
+    <ThreadPrimitive.Root className="flex min-h-0 flex-1 flex-col">
+      <ThreadPrimitive.Viewport className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-5 sm:px-6">
+        <ThreadPrimitive.Empty>
+          <EmptyState disabled={disabled} />
+        </ThreadPrimitive.Empty>
 
-    {/* Composer — pinned to the bottom of the chat column via flex layout
+        <ThreadPrimitive.Messages
+          components={{
+            UserMessage,
+            AssistantMessage,
+            EditComposer: () => null,
+          }}
+        />
+
+        <ThreadPrimitive.If running>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-block size-1.5 animate-pulse rounded-full bg-foreground/40" />
+            {t('assistant.thinking')}
+          </div>
+        </ThreadPrimitive.If>
+      </ThreadPrimitive.Viewport>
+
+      {/* Composer — pinned to the bottom of the chat column via flex layout
         (NOT sticky inside the scroll container, which created the
         scroll-bug-and-overflow combo on the prior design). */}
-    <div className="border-t border-border bg-card px-3 py-3 sm:px-4 sm:py-4">
-      <ComposerPrimitive.Root
-        className={cn(
-          'flex w-full flex-col rounded-2xl border border-border bg-muted/40 transition-colors focus-within:bg-muted',
-          disabled && 'opacity-60'
-        )}
-      >
-        <ComposerPrimitive.Input
-          placeholder={
-            disabled
-              ? 'Pick a church scope to start chatting…'
-              : 'Ask Daddy anything…'
-          }
-          disabled={disabled}
-          rows={1}
-          className="min-h-11 w-full resize-none bg-transparent px-4 pt-3 pb-1.5 text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed"
-        />
-        <div className="flex items-center justify-end px-2 pb-2">
-          <ComposerPrimitive.Send
-            className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-30"
-            aria-label="Send"
-          >
-            <ArrowUpIcon className="size-4" />
-          </ComposerPrimitive.Send>
-        </div>
-      </ComposerPrimitive.Root>
-    </div>
-  </ThreadPrimitive.Root>
-)
-
-const EmptyState = ({ disabled }: { disabled: boolean }) => (
-  <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-12 text-center">
-    <div
-      className="flex size-14 items-center justify-center rounded-2xl"
-      style={{ backgroundColor: 'hsl(var(--brand) / 0.12)' }}
-    >
-      <HandHeart className="size-7" style={{ color: 'hsl(var(--brand))' }} />
-    </div>
-    <div className="max-w-md space-y-1">
-      <h2 className="text-base font-semibold text-foreground">
-        How can I help you today?
-      </h2>
-      <p className="text-sm text-muted-foreground">
-        {disabled
-          ? 'Pick a church scope from the top of the dashboard to start chatting.'
-          : 'I draw on Prophet&rsquo;s books and Scripture to help you lead with clarity.'}
-      </p>
-    </div>
-    {!disabled && (
-      <div className="mt-2 grid w-full max-w-md gap-2 sm:grid-cols-2">
-        {SUGGESTIONS.map((label) => (
-          <SuggestionChip key={label}>{label}</SuggestionChip>
-        ))}
+      <div className="border-t border-border bg-card px-3 py-3 sm:px-4 sm:py-4">
+        <ComposerPrimitive.Root
+          className={cn(
+            'flex w-full flex-col rounded-2xl border border-border bg-muted/40 transition-colors focus-within:bg-muted',
+            disabled && 'opacity-60'
+          )}
+        >
+          <ComposerPrimitive.Input
+            placeholder={
+              disabled
+                ? t('assistant.composerDisabled')
+                : t('assistant.composerPlaceholder')
+            }
+            disabled={disabled}
+            rows={1}
+            className="min-h-11 w-full resize-none bg-transparent px-4 pt-3 pb-1.5 text-sm placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed"
+          />
+          <div className="flex items-center justify-end px-2 pb-2">
+            <ComposerPrimitive.Send
+              className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-30"
+              aria-label={t('assistant.send')}
+            >
+              <ArrowUpIcon className="size-4" />
+            </ComposerPrimitive.Send>
+          </div>
+        </ComposerPrimitive.Root>
       </div>
-    )}
-  </div>
-)
+    </ThreadPrimitive.Root>
+  )
+}
+
+const EmptyState = ({ disabled }: { disabled: boolean }) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+      <div
+        className="flex size-14 items-center justify-center rounded-2xl"
+        style={{ backgroundColor: 'hsl(var(--brand) / 0.12)' }}
+      >
+        <HandHeart className="size-7" style={{ color: 'hsl(var(--brand))' }} />
+      </div>
+      <div className="max-w-md space-y-1">
+        <h2 className="text-base font-semibold text-foreground">
+          {t('assistant.howCanIHelp')}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {disabled ? t('assistant.pickScopeToChat') : t('assistant.intro')}
+        </p>
+      </div>
+      {!disabled && (
+        <div className="mt-2 grid w-full max-w-md gap-2 sm:grid-cols-2">
+          {SUGGESTIONS.map((label) => (
+            <SuggestionChip key={label}>{label}</SuggestionChip>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const SuggestionChip = ({ children }: { children: string }) => (
   <ThreadPrimitive.Suggestion

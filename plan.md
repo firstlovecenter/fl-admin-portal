@@ -1038,6 +1038,86 @@ Two fixes, chosen per case:
 Live-browser verification of the authenticated app, and native-speaker review
 of the greeting pool and organizational-level terms. Neither is code.
 
+## Phase 9 — AI Assistant chrome (DONE this pass)
+
+Phases 1-8 recorded the AI Assistant as blocked on a product decision. That
+was only half right, and the framing hid an easy win: **the UI chrome needed
+no decision at all** — 18 strings, the same `t()` pass as every other page.
+It is done. What genuinely needs a decision is narrower than "the AI
+Assistant", and is stated precisely below.
+
+### Done — chrome (3 files, 18 keys)
+
+`AiAssistant.tsx`, `ChatHistorySidebar.tsx`, `TodaysTipBanner.tsx` under a new
+`assistant.*` namespace: page title, the anchored-to line, composer
+placeholders (both the enabled and scope-disabled variants), send and
+history controls, empty state, the chat-history sidebar, and the tip banner.
+
+Three components used implicit-return arrow bodies (`const X = () => (…)`)
+with nowhere to put a hook, and were converted to block bodies —
+`MobileHistoryTrigger`, `ChatThread`, `EmptyState`.
+
+**"Daddy" and "Prophet"** are **translated** to each language's form of
+address (Papa/Prophete, Papa/Profeta, Papa/Profeta, Papa/Propheten). An earlier
+pass in this phase assumed the opposite and left them in English; the call was
+reversed deliberately on instruction - they are ordinary words used as address,
+not coined terms. His full name stays as written. See `kb/01-glossary.md`; a
+test pins the translations per language.
+
+### The reply language - superseded by phase 10
+
+This section previously recorded the assistant's reply as deliberately left in
+English, on the grounds that translating a verbatim quotation misattributes
+words to Prophet. **That decision was revisited and reversed on instruction**
+(see phase 10). It is corrected here rather than deleted because the reasoning
+still describes the risk the phase-10 implementation has to manage.
+
+The original three options were: (a) reply in the user's language but keep
+quotations in English; (b) reply in the user's language and paraphrase rather
+than quote; (c) translate the corpus properly. Phase 10 implements a fourth -
+translate at inference time from the supplied passages only, and require the
+citation to be marked as translated.
+
+**The four `SUGGESTIONS` example prompts** (`AiAssistant.tsx:57`) remain in
+English, and that has NOT changed. They look like display copy but are
+**inputs** - tapping one sends it verbatim to the retrieval pipeline over an
+English corpus.
+
+### Tests
+
+`AiAssistant.test.tsx` — renders `TodaysTipBanner` translated (including the
+collapsed half, expanded via its toggle) while asserting the model-generated
+tip text passes through untouched; checks all chrome keys resolve in all five
+languages; and pins the Daddy/Prophet do-not-translate rule.
+
+### Verification
+
+- `tsc --noEmit` clean, `eslint --max-warnings=0` clean on all touched files.
+- Vitest **17 failed / 746 passed (763)** — the same two pre-existing files
+  (`createApolloClient.test.tsx`, and `ServiceForm.test.tsx` which was
+  verified failing identically at HEAD with this branch's work stashed).
+- `npm run build` green, 392 precache entries.
+- **2312 keys × 5 languages, 0 missing / 0 extra / 0 placeholder mismatches.**
+
+### Coverage: 265 localized / 5 English-only
+
+All five remaining are non-issues:
+- **Dead code (3)** — `pages/auth/LoginPage.tsx` (0 refs; `SimpleLogin` is the
+  live login), `components/sidebar-demo-2.tsx` (0 refs),
+  `components/Login.tsx`. **Deleting these is the right fix**, not translating
+  them; left alone because deletion wasn't asked for.
+- **Not real copy (2)** — `SplashSreen.tsx` renders only `title="Synago"`;
+  `SearchBadgeIcon.tsx` renders a literal `<div>SearchBadgeIcon</div>`
+  placeholder.
+
+**Every reachable user-facing string in the frontend is now localized**, bar
+the AI-generated content described above.
+
+### Unchanged, still the real gates on `main`
+
+Live-browser verification of the authenticated app, and native-speaker review
+of the greeting pool and organizational-level terms. Neither is code.
+
 ## Remaining work (not started — future phases)
 
 Roughly in priority order:
@@ -1248,3 +1328,149 @@ all committed together in `e3d93ae7`):**
 - `web-react-ts/src/locales/{en,fr,es,pt,de}.json`
   (`arrivals.*`, `directory.memberGrid.*`, `directory.memberFilters.*`
   added — 737 keys per file at close of sweep)
+
+---
+
+## Phase 10 — the assistant replies in the leader's language (DONE this pass)
+
+Reverses the phase-9 decision on instruction: *"Prophet and daddy should be
+translated to the translation of Prophet in each language. Verbatim quotations
+should be translated too."* Frontend-only was not an option — the quotations are
+generated server-side, so the reply language has to be a prompt constraint.
+
+### What shipped
+
+- `assistant.graphql` — optional `language: String` on `SendChatMessageInput`.
+  Additive; old clients omit it and get English.
+- **`assistant-language.ts` (new)** — `resolveChatLanguage`,
+  `chatLanguageGuidance`, `titleLanguageGuidance`, `chatFailureFallback`,
+  `QUERY_TRANSLATION_SYSTEM_PROMPT`. Extracted from the resolver so the pure
+  functions are testable without pulling in secrets, the LLM clients, and
+  `neo4j-driver`.
+- `assistant-resolvers.ts` — language threaded into both prompts; the hardcoded
+  English failure string replaced; translate-and-retry on empty retrieval; the
+  thread-title fallback delegated to the frontend.
+- `AiAssistant.tsx` / `aiAssistantQueries.ts` — the mutation sends the language.
+
+### The client value is allow-listed, and the first attempt had a real hole
+
+`language` arrives from the client and is interpolated into a system prompt, so
+it is matched against a closed set of five subtags. The first version used an
+**object literal** for that lookup, which walks the prototype chain:
+`CHAT_LANGUAGES['constructor']` returned the `Object` constructor and
+`['__proto__']` an object. Both are truthy, so `?? DEFAULT` never fired, and the
+value was template-interpolated into the prompt — *"Write your ENTIRE reply in
+function Object() { [native code] }"*. Reproduced with a node probe, then fixed
+by switching both lookup tables to `Map`, which has no inherited keys.
+
+Two refinements worth keeping: only `constructor` and `__proto__` were actually
+reachable (`toString`, `valueOf`, `hasOwnProperty` were saved incidentally by
+`.toLowerCase()` mangling their camelCase — not a defence to rely on), and it was
+prompt *corruption* rather than attacker-text *injection*, since both values
+stringify to fixed native strings.
+
+### Three misattribution vectors the reviews found, all closed
+
+1. **Multi-turn re-quoting.** Up to 20 prior turns are replayed, but retrieval
+   for turn N searches on turn N's question only. A passage quoted in English on
+   turn 1 is not in turn N's block, so "write everything in French" pressured the
+   model into translating a quote whose source would not appear in that turn's
+   `citationLabels`. The block now forbids quoting from history.
+2. **Scripture verse text.** The retrieved verse carries a named English
+   translation (NKJV) that the stored citation asserts. Rendering the verse text
+   in French while the citation still says NKJV asserts a translation attribution
+   for text not from that translation. Now: translate the book name and
+   numbering, paraphrase the sense, never present translated verse text.
+3. **Empty retrieval.** With no passages, "always suggest further reading" +
+   "never cite outside the retrieval block" + "never invent quotes" are mutually
+   unsatisfiable, and the cheapest break for the model is a fabricated Prophet
+   quote. There is now a defined resolution, and it is **language-independent** —
+   an English question with no good match hits it too.
+
+### Translate-and-retry, not translate-always
+
+Retrieval embeds the question with `text-embedding-3-small` and queries an index
+over an **English** corpus behind a hard `score > 0.30` floor. A non-English
+question can fall under that floor and return nothing.
+
+The fix translates the question to English and retries **only when the first
+search came back empty**. `text-embedding-3-small` is genuinely multilingual, so
+many non-English questions clear the floor unaided — translating every query
+would be paying on every message to fix a problem nobody had measured. Cost in
+the common case is zero; the retry pays only where the alternative is the empty
+block that causes vector 3 above.
+
+**Not done, deliberately:** measuring how often the retry fires. That wants real
+traffic, not a synthetic probe, and it is what would justify the real long-term
+fix — ingesting the published translations of the books via
+`api/src/scripts/ingest-book.js`, so French questions hit French passages and no
+machine translation is needed at all.
+
+### Two claims in the phase-9 code that were false, both caught in review
+
+- **"The English prompt stays byte-identical."** It did not. The block was
+  spliced in with a hard-coded newline between the level guidance and the
+  language block, which added a newline even when the block was empty — 2840 to
+  2841 bytes. Fixed by having the block own its leading blank line. Byte-identity
+  is now *deliberately* abandoned instead: the empty-retrieval escape hatch and
+  the `QUOTE IT VERBATIM` cross-reference should reach English callers too. What
+  is pinned is that the *language* block contributes exactly nothing for English.
+- **"...so the prompt cache is unaffected."** There is no prompt cache.
+  `cache_control` appears nowhere in this codebase. The claim was removed from
+  the code comments and the test docblock.
+
+### A real app bug found by writing the frontend test
+
+`useTranslation()` returns a **fresh i18n clone per render**, not the singleton,
+and the clone snapshots the language at creation. `handleNew` is memoized on
+`[apolloClient, churchId, sessionId]`, so the closure held a stale clone: a
+leader who switched language mid-session kept sending the old one until the
+session or church changed. Now reads the `lib/i18n` singleton directly.
+
+The code review had reasoned the opposite — that omitting `i18n` from the deps
+was correct because the value would be read "off the stable singleton at call
+time". It is not the singleton. Audited the other five files that destructure
+`i18n` from `useTranslation`: all correctly include `i18n.language` in their dep
+arrays or read it in the render body. This was the only outlier.
+
+### Also fixed
+
+The thread title fell back to the English literal `'New conversation'` on three
+paths, and because `title` is `String!` and always non-empty, the sidebar's
+`s.title || t('assistant.newConversation')` fallback was dead code — a French
+leader saw an English title. The model is now asked for the sentinel `UNTITLED`,
+which maps to `''`, letting the existing translated fallback fire. No SDL change:
+`''` satisfies `String!`.
+
+### Tests
+
+- **`assistant-language.test.ts`** — the allow-list, region stripping, case
+  folding, trim/length hardening, prompt-injection probes, the prototype-chain
+  regression guard (nine inherited keys), the three misattribution guards, and
+  `chatFailureFallback` composed with `resolveChatLanguage`.
+- **`assistant-prompt.test.ts` (new)** — the assembled prompt, which is what the
+  helper tests could not catch: the language block contributes zero bytes for
+  English, no three-newline runs in any language, the block follows the rule it
+  overrides, and the escape hatch is present in all five languages.
+- **`AiAssistantLanguage.test.tsx` (new)** — the mutation variables per language,
+  region-subtag stripping, and the mid-session language switch that exposed the
+  stale-clone bug.
+
+Two test-harness notes worth keeping: mocking `useApolloClient` to return a fresh
+object on each render causes an **infinite render loop** (`apolloClient` is in
+the session-effect's dep array) and OOMs the heap — use a hoisted stable
+reference. And stub `AssistantRuntimeProvider` to `null` rather than stubbing the
+assistant-ui primitives, which otherwise means re-listing every member the
+component uses.
+
+### Still outstanding
+
+Unchanged and still the real gates on `main`: live-browser verification of the
+authenticated app, and native-speaker review of the greeting pool and
+organizational-level terms.
+
+Open and **not** decided here: the persisted `citationLabels` stay English with
+no marker that the quoted text was machine-translated. Graded Medium in security
+review. Fixing it properly means a `language` property on the `ChatMessage` node
+via `APPEND_CHAT_MESSAGE_CYPHER` — a schema change, and a provenance question
+about the audit trail rather than a code question.

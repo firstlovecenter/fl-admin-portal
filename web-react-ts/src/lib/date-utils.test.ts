@@ -166,6 +166,18 @@ describe('pure date maths (inlined from jd-date-utils)', () => {
     )
   })
 
+  it('getMondayThisWeek normalises to local midnight (Yup date-only min bound)', () => {
+    // Regression: ServiceForm Yup.date().min(monday) compares against a
+    // date-only input cast to midnight. A Monday evening source date used to
+    // keep 23:xx as the lower bound, so "today" always failed validation.
+    const mondayEvening = getMondayThisWeek(new Date('2026-07-27T23:45:00'))
+    expect(mondayEvening.getHours()).toBe(0)
+    expect(mondayEvening.getMinutes()).toBe(0)
+    expect(mondayEvening.getSeconds()).toBe(0)
+    expect(mondayEvening.getMilliseconds()).toBe(0)
+    expect(mondayEvening.getDate()).toBe(27)
+  })
+
   it('parseNeoTime zero-pads HH:MM:SS and passes undefined through', () => {
     const stamp = new Date(2026, 6, 26, 8, 5, 3).toISOString()
     expect(parseNeoTime(stamp)).toBe('08:05:03')

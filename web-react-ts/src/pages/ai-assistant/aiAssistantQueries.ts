@@ -83,6 +83,9 @@ export type SendChatMessageVariables = {
     sessionId?: string | null
     churchId: string
     text: string
+    /** Active UI language. The resolver allow-lists this before it reaches
+     * the model prompt; unknown values fall back to English. */
+    language?: string
   }
 }
 

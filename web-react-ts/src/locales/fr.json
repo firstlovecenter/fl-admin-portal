@@ -522,7 +522,7 @@
     },
     "payment": {
       "date": "Date",
-      "stream": "Stream",
+      "stream": "Filière",
       "council": "Council",
       "councilHead": "Responsable du Council",
       "governorship": "Gouvernorat",
@@ -547,8 +547,8 @@
       "noData": "Aucune donnée de paiement des arrivées",
       "nothingToPay": "Rien à payer pour le {{date}} pour l’instant.",
       "downloadCsv": "Télécharger le CSV",
-      "csvFilenameWithStream": "{{streamName}} Stream - {{date}} - Bus à payer.csv",
-      "csvFilename": "Stream - {{date}} - Bus à payer.csv"
+      "csvFilenameWithStream": "{{streamName}} Filière - {{date}} - Bus à payer.csv",
+      "csvFilename": "Filière - {{date}} - Bus à payer.csv"
     },
     "countdown": {
       "expiredDescription": "Il y a un temps et une saison pour toute chose, et votre temps est écoulé !",
@@ -812,7 +812,7 @@
     },
     "times": {
       "title": "Heures d’arrivée",
-      "noStreamInFocus": "Aucun filière en focus",
+      "noStreamInFocus": "Aucune filière en focus",
       "loadError": "Impossible de charger les heures d’arrivée",
       "editTitle": "Modifier les heures d’arrivée",
       "editTimes": "Modifier les heures",
@@ -1702,7 +1702,7 @@
         "step2": "Saisissez votre numéro MoMo — nous envoyons une invite pour autoriser.",
         "step3": "Approuvez sur votre téléphone, puis confirmez ici.",
         "needHelp": "Besoin d'aide ?",
-        "needHelpBody": "Si une transaction semble bloquée ou si les frais semblent incorrects, appuyez sur le culte et contactez l'administrateur de votre Stream.",
+        "needHelpBody": "Si une transaction semble bloquée ou si les frais semblent incorrects, appuyez sur le culte et contactez l'administrateur de votre Filière.",
         "confirmPendingTitle": "Confirmer le paiement en attente",
         "confirmPendingBody": "Le statut de votre transaction est toujours en attente. Appuyez ci-dessous pour confirmer auprès du réseau.",
         "statusPending": "En attente",
@@ -1762,7 +1762,7 @@
         "timeOfBanking": "Heure du dépôt",
         "transactionError": "Erreur de transaction",
         "setTransactionRef": "Définir la référence de transaction",
-        "setTransactionRefHint": "Les admins Stream peuvent définir manuellement une référence pour relancer la confirmation.",
+        "setTransactionRefHint": "Les admins de filière peuvent définir manuellement une référence pour relancer la confirmation.",
         "transactionReference": "Référence de transaction",
         "nextSteps": "Étapes suivantes",
         "goHome": "Retour à l'accueil"
@@ -1849,8 +1849,8 @@
         "confirmError": "Une erreur s'est produite lors de la confirmation. Veuillez réessayer.",
         "emptyAllTitle": "Tout est à jour",
         "emptyAllBody": "Aucune offrande n'attend d'être confirmée cette semaine.",
-        "emptyScopeTitle": "Choisissez un Stream en focus",
-        "emptyScopeBody": "Sélectionnez un Stream dans la barre latérale pour voir les cultes en attente de confirmation.",
+        "emptyScopeTitle": "Choisissez une Filière en focus",
+        "emptyScopeBody": "Sélectionnez une Filière dans la barre latérale pour voir les cultes en attente de confirmation.",
         "noMatches": "Aucun résultat pour « {{search}} »",
         "noMatchesBody": "Essayez un autre terme de recherche ou effacez-le pour voir toutes les confirmations en attente.",
         "clearSearch": "Effacer la recherche"
@@ -1870,7 +1870,7 @@
         "removeBody": "Voulez-vous supprimer {{name}} en tant que guichetier ?",
         "tellerRequired": "Veuillez sélectionner un guichetier dans la liste",
         "deletedSuccess": "{{name}} supprimé avec succès",
-        "addedSuccess": "Le guichetier Stream a été ajouté avec succès",
+        "addedSuccess": "Le guichetier Filière a été ajouté avec succès",
         "saveChanges": "Enregistrer les modifications"
       }
     },
@@ -2136,7 +2136,7 @@
       "byCouncil": "Par conseil",
       "byGovernorship": "Par gouvernorat",
       "activeBacentas": "Bacentas actives",
-      "activeStreams": "Streams actifs",
+      "activeStreams": "Filières actives",
       "servicesThisWeekLabel": "Services cette semaine",
       "formNotFilled": "Formulaire non rempli",
       "formNotFilledThisWeek": "Formulaire non rempli cette semaine",
@@ -2710,5 +2710,25 @@
       "highSchool": "Lycée",
       "hostel": "Résidence"
     }
+  },
+  "assistant": {
+    "titleLead": "IA",
+    "titleAccent": "Assistant",
+    "anchoredTo": "Rattaché à {{church}}.",
+    "pickScopeToAnchor": "Choisissez une église pour rattacher la conversation.",
+    "thinking": "Réflexion…",
+    "howCanIHelp": "Comment puis-je vous aider aujourd’hui ?",
+    "intro": "Je m’appuie sur les livres du Prophète et sur les Écritures pour vous aider à diriger avec clarté.",
+    "pickScopeToChat": "Choisissez une église en haut du tableau de bord pour commencer à discuter.",
+    "composerDisabled": "Choisissez une église pour commencer à discuter…",
+    "composerPlaceholder": "Posez une question à Papa…",
+    "send": "Envoyer",
+    "openHistory": "Ouvrir l’historique des conversations",
+    "newChat": "Nouvelle discussion",
+    "newConversation": "Nouvelle conversation",
+    "noPastChats": "Aucune conversation pour le moment. Posez une question pour commencer.",
+    "deleteChat": "Supprimer la conversation",
+    "todaysTip": "Conseil du jour",
+    "readNext": "À lire ensuite :"
   }
 }

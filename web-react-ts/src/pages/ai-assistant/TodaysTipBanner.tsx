@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { ChevronDown, Sparkles } from 'lucide-react'
@@ -22,6 +23,7 @@ type Props = {
  * full WeeklyTipCard's separate framed sections.
  */
 const TodaysTipBanner = ({ churchId, authRole }: Props) => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const permitted = isLeaderOrAdminRole(authRole)
   const { data, loading } = useQuery<WeeklyTipForChurchResult>(
@@ -46,7 +48,8 @@ const TodaysTipBanner = ({ churchId, authRole }: Props) => {
   if (!tip) return null
 
   const summary = tip.body.split(/\.\s/)[0]
-  const truncated = summary.length > 90 ? `${summary.slice(0, 90)}…` : `${summary}.`
+  const truncated =
+    summary.length > 90 ? `${summary.slice(0, 90)}…` : `${summary}.`
 
   return (
     <div className="border-b border-border bg-card">
@@ -67,7 +70,7 @@ const TodaysTipBanner = ({ churchId, authRole }: Props) => {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Today&rsquo;s tip
+            {t('assistant.todaysTip')}
           </p>
           <p className="truncate text-sm text-foreground">{truncated}</p>
         </div>
@@ -93,7 +96,9 @@ const TodaysTipBanner = ({ churchId, authRole }: Props) => {
           )}
           {tip.recommendedBook && (
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">Read next:</span>{' '}
+              <span className="font-medium text-foreground">
+                {t('assistant.readNext')}
+              </span>{' '}
               {tip.recommendedBook.title} —{' '}
               <span className="italic">{tip.recommendedBook.author}</span>
             </p>
