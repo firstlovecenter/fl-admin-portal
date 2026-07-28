@@ -54,7 +54,9 @@ const AssistantMessageContent = ({ text, className }: Props) => (
           <ul className="my-1 list-disc space-y-1 pl-5 text-sm">{children}</ul>
         ),
         ol: ({ children }) => (
-          <ol className="my-1 list-decimal space-y-1 pl-5 text-sm">{children}</ol>
+          <ol className="my-1 list-decimal space-y-1 pl-5 text-sm">
+            {children}
+          </ol>
         ),
         li: ({ children }) => (
           <li className="text-sm leading-relaxed">{children}</li>

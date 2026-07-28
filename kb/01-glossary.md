@@ -10,9 +10,13 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
 - **Denomination** — top of the hierarchy (one node: First Love Center).
 - **Oversight** — a regional grouping of campuses.
 - **Campus** — a geographic campus of the church.
-- **Stream** — a service-track within a campus. The four canonical names are
-  `Anagkazo Encounter`, `Gospel Encounter`, `Holy Ghost Encounter`,
-  `First Love Experience` (`StreamOptions` in `web-react-ts/src/global-types.ts`).
+- **Stream** — a service-track within a campus (not a watercourse). The four
+  canonical names are `Anagkazo Encounter`, `Gospel Encounter`,
+  `Holy Ghost Encounter`, `First Love Experience` (`StreamOptions` in
+  `web-react-ts/src/global-types.ts`). UI copy translates the level name as
+  service-track terms: FR **Filière**, ES **Vía**, PT **Via**, DE **Zweig**
+  (`shared.churchLevel.Stream`). Never use water/flow words (*Corriente*,
+  *Fluxo*, *Ruisseau*, *Strom*).
 - **Council** — a sub-grouping under a Stream that owns Governorships.
 - **Governorship** — a sub-grouping under a Council that owns Bacentas.
 - **Bacenta** — the leaf node of the church hierarchy; a mid-week home cell.
@@ -169,6 +173,13 @@ translation, machine or human:
 By contrast, **Governorship, Oversight, Council, Denomination, Fellowship,
 Bussing** are real English words used in a domain-specific sense — these
 **are** translated normally per target language.
+
+**Prophet** and **Daddy** — the forms of address leaders use for the founder,
+Bishop Dag Heward-Mills — are likewise **translated** to each language's
+equivalent (Prophète / Papa, Profeta / Papá, Profeta / Papá, Prophet / Papa).
+They are ordinary words used as address, not coined terms. His **full name**
+stays as written. Recorded here because an earlier i18n pass assumed the
+opposite and left them in English; the call was reversed deliberately.
 
 ## Codebase patterns
 

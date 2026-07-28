@@ -149,6 +149,10 @@ input SendChatMessageInput {
   sessionId: ID
   churchId: ID!
   text: String!
+  # BCP 47 language subtag of the caller's UI (en | fr | es | pt | de).
+  # Allow-listed by the resolver before it reaches the model prompt — never
+  # interpolated raw. Unknown or absent values fall back to English.
+  language: String
 }
 
 type SendChatMessageResponse {

@@ -2710,5 +2710,25 @@
       "highSchool": "High School",
       "hostel": "Hostel"
     }
+  },
+  "assistant": {
+    "titleLead": "AI",
+    "titleAccent": "Assistant",
+    "anchoredTo": "Anchored to {{church}}.",
+    "pickScopeToAnchor": "Pick a church scope to anchor the conversation.",
+    "thinking": "Thinking…",
+    "howCanIHelp": "How can I help you today?",
+    "intro": "I draw on Prophet’s books and Scripture to help you lead with clarity.",
+    "pickScopeToChat": "Pick a church scope from the top of the dashboard to start chatting.",
+    "composerDisabled": "Pick a church scope to start chatting…",
+    "composerPlaceholder": "Ask Daddy anything…",
+    "send": "Send",
+    "openHistory": "Open chat history",
+    "newChat": "New chat",
+    "newConversation": "New conversation",
+    "noPastChats": "No past chats yet. Ask a question to start one.",
+    "deleteChat": "Delete chat",
+    "todaysTip": "Today’s tip",
+    "readNext": "Read next:"
   }
 }

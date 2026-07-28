@@ -60,6 +60,10 @@ export const getMondayThisWeek = (date: Date): Date => {
   } else {
     firstDate.setDate(firstDate.getDate() - numberOfDaysBefore + 1)
   }
+  // Calendar-day bound for Yup.date().min() against <input type="date">
+  // values (parsed as midnight). Keeping the source time-of-day made every
+  // Monday service date fail after 00:00, because midnight < "now".
+  firstDate.setHours(0, 0, 0, 0)
   return firstDate
 }
 

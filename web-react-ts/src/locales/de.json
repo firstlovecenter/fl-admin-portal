@@ -259,9 +259,9 @@
       "councilAccountsTitle": "Rat {{name}}",
       "councilAccountsFallback": "Rat",
       "chooseCouncil": "Wählen Sie einen Rat, um fortzufahren.",
-      "switchScopeHint": "Wechseln Sie zu einem Stream-, Rat- oder Campus-Bereich, um Konten anzuzeigen.",
+      "switchScopeHint": "Wechseln Sie zu einem Zweig-, Rat- oder Campus-Bereich, um Konten anzuzeigen.",
       "noCouncilsYet": "Noch keine Räte",
-      "noCouncilsBody": "Dieser Stream hat keine Räte.",
+      "noCouncilsBody": "Dieser Zweig hat keine Räte.",
       "openAccountsAria": "Konten von {{name}} öffnen"
     },
     "dashboard": {
@@ -291,15 +291,15 @@
       "campusTotals": "Campus-Summen",
       "searchPlaceholder": "Räte oder Leiter suchen",
       "searchAria": "Räte oder Leiter suchen",
-      "noCouncilsUnderStream": "Keine Räte unter diesem Stream",
+      "noCouncilsUnderStream": "Keine Räte unter diesem Zweig",
       "noCouncilsMatch": "Keine Räte entsprechen Ihrer Suche"
     },
     "oversightList": {
       "oversightCampuses": "Campusse der Aufsicht {{name}}",
       "searchPlaceholder": "Räte oder Leiter suchen",
-      "noStreamsUnderCampus": "Es gibt keine Streams unter diesem Campus",
+      "noStreamsUnderCampus": "Es gibt keine Zweige unter diesem Campus",
       "campusLabel": "Campus {{name}}",
-      "streamLabel": "Stream {{name}}"
+      "streamLabel": "Zweig {{name}}"
     },
     "approvals": {
       "titlePrefix": "Ausstehend",
@@ -522,7 +522,7 @@
     },
     "payment": {
       "date": "Datum",
-      "stream": "Stream",
+      "stream": "Zweig",
       "council": "Council",
       "councilHead": "Leitung des Council",
       "governorship": "Governorship",
@@ -547,8 +547,8 @@
       "noData": "Keine Ankunftszahlungsdaten",
       "nothingToPay": "Für {{date}} gibt es noch nichts zu bezahlen.",
       "downloadCsv": "CSV herunterladen",
-      "csvFilenameWithStream": "{{streamName}} Stream - {{date}} - Zu zahlende Busse.csv",
-      "csvFilename": "Stream - {{date}} - Zu zahlende Busse.csv"
+      "csvFilenameWithStream": "{{streamName}} Zweig - {{date}} - Zu zahlende Busse.csv",
+      "csvFilename": "Zweig - {{date}} - Zu zahlende Busse.csv"
     },
     "countdown": {
       "expiredDescription": "Alles hat seine Zeit und seine Jahreszeit, und Ihre Zeit ist abgelaufen!",
@@ -1441,20 +1441,20 @@
       }
     },
     "arrivalsCounter": {
-      "selectStream": "Wählen Sie einen Stream aus, um Ankünfte zu zählen.",
+      "selectStream": "Wählen Sie einen Zweig aus, um Ankünfte zu zählen.",
       "startCounting": "Zählung beginnen",
       "startCountingDescription": "Öffnen Sie die Liste der Fahrzeuge, die am Zentrum gezählt werden sollen.",
       "avgWeeklyBussingAttendance": "Durchschnittliche wöchentliche Transportteilnahme",
       "noRecentBussing": "Keine aktuellen Transportdaten",
       "sundayBussingTrend": "Sonntagstransport — wöchentlicher Trend",
       "trendForChurch": "{{churchName}} · {{stream}}",
-      "streamLevelTotals": "Gesamtwerte auf Stream-Ebene",
+      "streamLevelTotals": "Gesamtwerte auf Zweig-Ebene",
       "yourPost": "Ihre Aufgabe",
-      "stream": "Stream",
+      "stream": "Zweig",
       "role": "Rolle"
     },
     "streamTeller": {
-      "selectStream": "Wählen Sie einen Stream aus, um Bankeinzahlungen zu bestätigen.",
+      "selectStream": "Wählen Sie einen Zweig aus, um Bankeinzahlungen zu bestätigen.",
       "confirmBankings": "Einzahlungen bestätigen",
       "checkingPending": "Es wird geprüft, was diese Woche bestätigt werden muss…",
       "pendingCentres_one": "{{count}} Zentrum wartet diese Woche auf Ihre Bestätigung",
@@ -1462,15 +1462,15 @@
       "noPendingCentres": "Diese Woche warten keine Zentren auf Bestätigung",
       "manualBankingNotActive": "Manuelle Einzahlung ist nicht aktiv",
       "nothingToConfirm": "Nichts zu bestätigen",
-      "manualBankingInactiveDescription": "Dieser Stream verwendet keine manuellen Einzahlungen; daher gibt es keine Opfergaben für Sie entgegenzunehmen.",
+      "manualBankingInactiveDescription": "Dieser Zweig verwendet keine manuellen Einzahlungen; daher gibt es keine Opfergaben für Sie entgegenzunehmen.",
       "quickActions": "Schnellaktionen",
       "servicesToConfirm": "Zu bestätigende Gottesdienste",
       "servicesToConfirmDescription": "Nach Zentrum und Governorship — bestätigen Sie die abgegebenen Opfergaben",
-      "servicesToConfirmUnavailable": "Verfügbar, sobald dieser Stream manuelle Einzahlungen verwendet",
+      "servicesToConfirmUnavailable": "Verfügbar, sobald dieser Zweig manuelle Einzahlungen verwendet",
       "settings": "Einstellungen",
       "settingsDescription": "Profil, Design, abmelden",
       "yourPost": "Ihre Aufgabe",
-      "stream": "Stream",
+      "stream": "Zweig",
       "role": "Rolle",
       "bankingMethod": "Einzahlungsmethode",
       "manual": "Manuell",
@@ -1702,7 +1702,7 @@
         "step2": "Geben Sie Ihre MoMo-Nummer ein — wir senden eine Aufforderung zur Autorisierung.",
         "step3": "Bestätigen Sie auf dem Telefon und schließen Sie hier ab.",
         "needHelp": "Brauchen Sie Hilfe?",
-        "needHelpBody": "Wenn eine Transaktion hängen bleibt oder Gebühren falsch wirken, tippen Sie den Gottesdienst an und wenden Sie sich an Ihren Stream-Administrator.",
+        "needHelpBody": "Wenn eine Transaktion hängen bleibt oder Gebühren falsch wirken, tippen Sie den Gottesdienst an und wenden Sie sich an Ihren Zweig-Administrator.",
         "confirmPendingTitle": "Ausstehende Zahlung bestätigen",
         "confirmPendingBody": "Der Status Ihrer Transaktion ist noch ausstehend. Tippen Sie unten, um beim Netzwerk zu bestätigen.",
         "statusPending": "Ausstehend",
@@ -1762,7 +1762,7 @@
         "timeOfBanking": "Uhrzeit der Einzahlung",
         "transactionError": "Transaktionsfehler",
         "setTransactionRef": "Transaktionsreferenz setzen",
-        "setTransactionRefHint": "Stream-Admins können manuell eine Referenz setzen, um die Bestätigung erneut zu versuchen.",
+        "setTransactionRefHint": "Zweig-Admins können manuell eine Referenz setzen, um die Bestätigung erneut zu versuchen.",
         "transactionReference": "Transaktionsreferenz",
         "nextSteps": "Nächste Schritte",
         "goHome": "Zur Startseite"
@@ -1849,8 +1849,8 @@
         "confirmError": "Beim Bestätigen ist etwas schiefgelaufen. Bitte versuchen Sie es erneut.",
         "emptyAllTitle": "Alles erledigt",
         "emptyAllBody": "Diese Woche warten keine Opfergaben auf Bestätigung.",
-        "emptyScopeTitle": "Stream im Fokus wählen",
-        "emptyScopeBody": "Wählen Sie in der Seitenleiste einen Stream, um Gottesdienste mit ausstehender Bestätigung zu sehen.",
+        "emptyScopeTitle": "Zweig im Fokus wählen",
+        "emptyScopeBody": "Wählen Sie in der Seitenleiste einen Zweig, um Gottesdienste mit ausstehender Bestätigung zu sehen.",
         "noMatches": "Keine Treffer für „{{search}}“",
         "noMatchesBody": "Versuchen Sie einen anderen Suchbegriff oder löschen Sie die Suche, um alle ausstehenden Bestätigungen zu sehen.",
         "clearSearch": "Suche löschen"
@@ -1870,7 +1870,7 @@
         "removeBody": "Möchten Sie {{name}} als Kassierer löschen?",
         "tellerRequired": "Bitte wählen Sie einen Kassierer aus der Liste",
         "deletedSuccess": "{{name}} erfolgreich gelöscht",
-        "addedSuccess": "Stream-Kassierer wurde erfolgreich hinzugefügt",
+        "addedSuccess": "Zweig-Kassierer wurde erfolgreich hinzugefügt",
         "saveChanges": "Änderungen speichern"
       }
     },
@@ -1888,7 +1888,7 @@
       "bankingSlipsDescription": "Bankbelege hochladen und prüfen",
       "selfBanking": "Selbst-Einzahlung",
       "selfBankingDescription": "Gottesdienst-Opfergaben selbst einzahlen",
-      "addStreamTellers": "Stream-Kassierer hinzufügen",
+      "addStreamTellers": "Zweig-Kassierer hinzufügen",
       "addStreamTellersDescription": "Kassierer für Wochenmitte-Opfergaben zuweisen",
       "receiveMidweekOffering": "Wochenmitte-Opfergabe empfangen",
       "receiveMidweekOfferingDescription": "Von Bacentas abgegebene Opfergaben erfassen",
@@ -2136,7 +2136,7 @@
       "byCouncil": "Nach Rat",
       "byGovernorship": "Nach Governorship",
       "activeBacentas": "Aktive Bacentas",
-      "activeStreams": "Aktive Streams",
+      "activeStreams": "Aktive Zweige",
       "servicesThisWeekLabel": "Gottesdienste diese Woche",
       "formNotFilled": "Formular nicht ausgefüllt",
       "formNotFilledThisWeek": "Formular diese Woche nicht ausgefüllt",
@@ -2429,12 +2429,12 @@
       "nothingToPreview": "Nichts zur Vorschau",
       "selectScope": "Wählen Sie eine Kirche, um den Ankunftsbericht voranzusehen.",
       "subtitle": "Vorschau der Ankunftsübersicht für jeden Sonntag — Detail pro Bacenta, Detail pro Fahrzeug und eine Zusammenfassung nach Untergemeinde ab Council — dann das vollständige Arbeitsbuch herunterladen.",
-      "unavailableScope": "Der Ankunfts-Download ist auf Governorship-, Council-, Stream- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um ihn zu aktivieren.",
+      "unavailableScope": "Der Ankunfts-Download ist auf Governorship-, Council-, Zweig- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um ihn zu aktivieren.",
       "noDataForDate": "Keine Ankunftsdaten für {{church}} am {{date}} erfasst. Wählen Sie einen anderen Sonntag für diese Woche.",
       "previewDescription": "Bacenta-Detail, Fahrzeugdetail und eine Untergemeinde-Zusammenfassung ab Council.",
       "vehicleDetailFootnote_one": "Fahrzeugdetail ({{count}} Zeile) ist als separates Blatt im Download enthalten.",
       "vehicleDetailFootnote_other": "Fahrzeugdetail ({{count}} Zeilen) ist als separates Blatt im Download enthalten.",
-      "subChurchUnavailable": "Die Ankunftsaufschlüsselung nach Untergemeinde ist auf Council-, Stream- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um sie zu aktivieren.",
+      "subChurchUnavailable": "Die Ankunftsaufschlüsselung nach Untergemeinde ist auf Council-, Zweig- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um sie zu aktivieren.",
       "emptyMessage": "Keine Ankunftsdaten für {{church}} am {{date}}.",
       "reportName": "Ankünfte"
     },
@@ -2446,8 +2446,8 @@
       "subtitle": "Laden Sie eine umfassende Säumigenliste für jede Woche herunter. Enthält eine Aufschlüsselung pro Bacenta und ab Council eine Zusammenfassung nach Untergemeinde.",
       "listTitle": "Umfassende Säumigenliste",
       "listDescription": "Jede Bacenta in {{church}} für die ausgewählte Woche — Bankstatus, Formularabgabe, Anwesenheit, Einnahmen und Urlaubsstatus.",
-      "unavailableScope": "Der Säumigen-Download ist auf Governorship-, Council-, Stream- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um ihn zu aktivieren.",
-      "subChurchUnavailable": "Die Säumigenaufschlüsselung nach Untergemeinde ist auf Council-, Stream- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um sie zu aktivieren.",
+      "unavailableScope": "Der Säumigen-Download ist auf Governorship-, Council-, Zweig- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um ihn zu aktivieren.",
+      "subChurchUnavailable": "Die Säumigenaufschlüsselung nach Untergemeinde ist auf Council-, Zweig- und Campus-Ebene verfügbar. Wechseln Sie die fokussierte Kirche, um sie zu aktivieren.",
       "emptyMessage": "Keine Säumigendaten für {{church}} in {{period}}.",
       "reportName": "Säumige"
     },
@@ -2710,5 +2710,25 @@
       "highSchool": "Oberstufenschule",
       "hostel": "Wohnheim"
     }
+  },
+  "assistant": {
+    "titleLead": "KI",
+    "titleAccent": "Assistent",
+    "anchoredTo": "Verankert bei {{church}}.",
+    "pickScopeToAnchor": "Wählen Sie eine Gemeinde, um das Gespräch zu verankern.",
+    "thinking": "Denkt nach…",
+    "howCanIHelp": "Wie kann ich Ihnen heute helfen?",
+    "intro": "Ich stütze mich auf die Bücher des Propheten und auf die Schrift, um Ihnen zu klarer Führung zu verhelfen.",
+    "pickScopeToChat": "Wählen Sie oben im Dashboard eine Gemeinde, um mit dem Chat zu beginnen.",
+    "composerDisabled": "Wählen Sie eine Gemeinde, um zu chatten…",
+    "composerPlaceholder": "Fragen Sie Papa alles…",
+    "send": "Senden",
+    "openHistory": "Chatverlauf öffnen",
+    "newChat": "Neuer Chat",
+    "newConversation": "Neue Unterhaltung",
+    "noPastChats": "Noch keine früheren Chats. Stellen Sie eine Frage, um einen zu beginnen.",
+    "deleteChat": "Chat löschen",
+    "todaysTip": "Tipp des Tages",
+    "readNext": "Als Nächstes lesen:"
   }
 }

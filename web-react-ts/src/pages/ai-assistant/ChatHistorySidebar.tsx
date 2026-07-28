@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useMutation } from '@apollo/client'
 import { MessageSquarePlus, Trash2 } from 'lucide-react'
@@ -42,6 +43,7 @@ const ChatHistorySidebar = ({
   onSelectSession,
   onSessionDeleted,
 }: Props) => {
+  const { t } = useTranslation()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteSession] = useMutation<DeleteChatSessionResult>(
     DELETE_CHAT_SESSION,
@@ -78,7 +80,7 @@ const ChatHistorySidebar = ({
         className="w-full justify-start gap-2"
       >
         <MessageSquarePlus className="size-4" />
-        New chat
+        {t('assistant.newChat')}
       </Button>
 
       <div className="flex-1 overflow-y-auto pr-1">
@@ -90,7 +92,7 @@ const ChatHistorySidebar = ({
           </div>
         ) : sessions.length === 0 ? (
           <p className="px-2 py-4 text-xs text-muted-foreground">
-            No past chats yet. Ask a question to start one.
+            {t('assistant.noPastChats')}
           </p>
         ) : (
           <ul className="space-y-1">
@@ -110,7 +112,7 @@ const ChatHistorySidebar = ({
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">
-                        {s.title || 'New conversation'}
+                        {s.title || t('assistant.newConversation')}
                       </p>
                       {s.preview && (
                         <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
@@ -125,12 +127,13 @@ const ChatHistorySidebar = ({
                       <span
                         role="button"
                         tabIndex={-1}
-                        aria-label="Delete chat"
+                        aria-label={t('assistant.deleteChat')}
                         onClick={(e) => handleDelete(e, s.id)}
                         className={cn(
                           'flex size-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100',
                           isActive && 'opacity-100',
-                          deletingId === s.id && 'pointer-events-none opacity-50'
+                          deletingId === s.id &&
+                            'pointer-events-none opacity-50'
                         )}
                       >
                         <Trash2 className="size-3.5" />
