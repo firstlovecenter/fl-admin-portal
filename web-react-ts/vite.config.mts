@@ -99,6 +99,14 @@ export default defineConfig(({ command, mode }) => {
               // and need `project:releases` and `org:read` scopes
               authToken: env.SENTRY_AUTH_TOKEN,
 
+              // Amplify injects SENTRY_AUTH_TOKEN from Secrets Manager. Default
+              // plugin behaviour throws on upload/release errors and fails the
+              // whole deploy even when Vite already produced a valid dist.
+              // Warn and continue — amplify.yml still strips any leftover maps.
+              errorHandler: (err) => {
+                console.warn('[sentry] upload/release warning (build continues):', err)
+              },
+
               sourcemaps: {
                 // Specify the directory containing build artifacts
                 assets: './dist/**',
