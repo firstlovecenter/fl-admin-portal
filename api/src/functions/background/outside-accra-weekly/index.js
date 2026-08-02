@@ -448,7 +448,10 @@ const handler = async (event = {}, targetDate = null) => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        recipient: ['233592219407', '233263995059'],
+        recipient: [
+          '233248846233', // Kayla
+          '233263995059',
+        ],
         sender: 'FLC Admin',
         message: `WEEK ${weekNumber} ${modeConfig.smsLabel.toUpperCase()} UPDATE\n\nOutside Accra Google Sheets updated successfully on date ${reportDateString}`,
       },
@@ -484,7 +487,7 @@ const handler = async (event = {}, targetDate = null) => {
         'x-secret-key': SECRETS.FLC_NOTIFY_KEY,
       },
       data: {
-        to: ['flcexpense22@gmail.com', 'charajoy64@gmail.com'],
+        to: ['charajoy64@gmail.com'],
         subject: modeConfig.subject,
         html,
         attachments: [
