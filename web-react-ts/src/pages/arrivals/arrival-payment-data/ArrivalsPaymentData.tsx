@@ -52,8 +52,8 @@ interface ArrivalPaymentRow {
   confirmedAttendance: number
   vehicle: string
   outbound: string
-  topUp: number
-  vehicleCost: number
+  topUp: number | null
+  vehicleCost: number | null
   momoNumber: string
   momoName: string
   comments: string
@@ -203,20 +203,26 @@ const ArrivalsPaymentData = () => {
       columnHelper.accessor('topUp', {
         header: t('arrivals.payment.topUp'),
         sortingFn: 'basic',
-        cell: (info) => (
-          <span className="tabular-nums">
-            {info.getValue().toLocaleString(i18n.language)}
-          </span>
-        ),
+        cell: (info) => {
+          const value = info.getValue()
+          return (
+            <span className="tabular-nums">
+              {value == null ? '' : value.toLocaleString(i18n.language)}
+            </span>
+          )
+        },
       }),
       columnHelper.accessor('vehicleCost', {
         header: t('arrivals.payment.cost'),
         sortingFn: 'basic',
-        cell: (info) => (
-          <span className="tabular-nums">
-            {info.getValue().toLocaleString(i18n.language)}
-          </span>
-        ),
+        cell: (info) => {
+          const value = info.getValue()
+          return (
+            <span className="tabular-nums">
+              {value == null ? '' : value.toLocaleString(i18n.language)}
+            </span>
+          )
+        },
       }),
       columnHelper.accessor('momoNumber', {
         header: t('arrivals.payment.momo'),
