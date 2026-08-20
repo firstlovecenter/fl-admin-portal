@@ -37,6 +37,7 @@ import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
 import {
+  CALLER_HANDLES_ERRORS_CONTEXT,
   createApolloClient,
   RETRY_LINK_MAX_ATTEMPTS,
 } from 'lib/createApolloClient'
@@ -384,6 +385,159 @@ describe('createApolloClient — error link', () => {
       expect((opts as { id?: string } | undefined)?.id).toBeTruthy()
     }
   })
+})
+
+// ---------------------------------------------------------------------------
+// Error link — caller-handled errors (SYN-208)
+// ---------------------------------------------------------------------------
+
+/**
+ * The collision error UpdateMember.tsx renders as <MemberCollisionDialog>.
+ * Shape mirrors api/src/resolvers/utils/utils.ts → memberContactCollisionError.
+ */
+const collisionError = {
+  message: 'This email already belongs to Ama Mensah',
+  path: ['ping'],
+  extensions: {
+    code: 'BAD_USER_INPUT',
+    severity: 'USER_ERROR',
+    collision: {
+      field: 'email',
+      status: 'inactive',
+      memberId: 'member-1',
+      firstName: 'Ama',
+      lastName: 'Mensah',
+      bacentaName: null,
+    },
+  },
+}
+
+const respondWithErrors = (errors: unknown[]) =>
+  server.use(
+    http.post(GRAPHQL_URL, async () =>
+      HttpResponse.json({ data: null, errors })
+    )
+  )
+
+describe('createApolloClient — error link, caller-handled errors', () => {
+  beforeEach(() => {
+    vi.mocked(toast.error).mockClear()
+  })
+
+  it('does NOT toast when the caller opted out — it renders its own UI', async () => {
+    // SYN-208 — the generic "Something went wrong" toast used to stack on top
+    // of the friendly collision dialog, contradicting it. A caller that passes
+    // CALLER_HANDLES_ERRORS_CONTEXT owns the surface; the link stays quiet.
+    respondWithErrors([collisionError])
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({
+        query: PING_QUERY,
+        fetchPolicy: 'no-cache',
+        context: CALLER_HANDLES_ERRORS_CONTEXT,
+      })
+      .catch(() => undefined)
+
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('still logs the suppressed error to the dev console', async () => {
+    // The suppression must not cost debuggability: the early return sits after
+    // the DEV console.error, never before it.
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    respondWithErrors([collisionError])
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({
+        query: PING_QUERY,
+        fetchPolicy: 'no-cache',
+        context: CALLER_HANDLES_ERRORS_CONTEXT,
+      })
+      .catch(() => undefined)
+
+    expect(consoleError).toHaveBeenCalledWith(
+      `[GraphQL error]: ${collisionError.message}`,
+      expect.anything()
+    )
+    consoleError.mockRestore()
+  })
+
+  it('still toasts the SAME error for a caller that did not opt out', async () => {
+    // The guard against over-suppression: EditPage.tsx awaits this same
+    // mutation with no error handling at all, so keying off the error payload
+    // instead of the caller would turn its failed write into a silent no-op.
+    respondWithErrors([collisionError])
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({ query: PING_QUERY, fetchPolicy: 'no-cache' })
+      .catch(() => undefined)
+
+    expect(toast.error).toHaveBeenCalledTimes(1)
+    expect(toast.error).toHaveBeenCalledWith(
+      'Something went wrong',
+      expect.objectContaining({ id: `gql:${collisionError.message}:ping` })
+    )
+  })
+
+  it('suppresses every GraphQL error on an opted-out operation', async () => {
+    // Opting out is a claim about the CALLER, not about one error shape —
+    // UpdateMember routes non-collision errors through displayError, which
+    // toasts a specific message of its own.
+    respondWithErrors([collisionError, { message: 'boom', path: ['ping'] }])
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({
+        query: PING_QUERY,
+        fetchPolicy: 'no-cache',
+        context: CALLER_HANDLES_ERRORS_CONTEXT,
+      })
+      .catch(() => undefined)
+
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('still toasts a network error on an opted-out operation', async () => {
+    // A dropped connection is not something a caller's dialog can explain, so
+    // the opt-out covers the GraphQL branch only.
+    server.use(
+      http.post(GRAPHQL_URL, async () =>
+        HttpResponse.json({ message: 'nope' }, { status: 503 })
+      )
+    )
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({
+        query: PING_QUERY,
+        fetchPolicy: 'no-cache',
+        context: CALLER_HANDLES_ERRORS_CONTEXT,
+      })
+      .catch(() => undefined)
+
+    expect(toast.error).toHaveBeenCalledWith(
+      'Network Error',
+      expect.objectContaining({ id: expect.stringMatching(/^network:/) })
+    )
+  }, 20000)
 })
 
 // ---------------------------------------------------------------------------

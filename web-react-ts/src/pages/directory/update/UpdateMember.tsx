@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { parsePhoneNum, throwToSentry } from 'global-utils'
 import { displayError } from 'utils/errorHandler'
+import { CALLER_HANDLES_ERRORS_CONTEXT } from 'lib/createApolloClient'
 import {
   UPDATE_MEMBER_MUTATION,
   UPDATE_MEMBER_BACENTA,
@@ -74,6 +75,8 @@ const UpdateMember = () => {
   const navigate = useNavigate()
 
   const [UpdateMember] = useMutation(UPDATE_MEMBER_MUTATION, {
+    // SYN-208 — onSubmit surfaces every error from this mutation itself.
+    context: CALLER_HANDLES_ERRORS_CONTEXT,
     refetchQueries: [
       { query: DISPLAY_MEMBER_BIO, variables: { id: memberId } },
       { query: DISPLAY_MEMBER_CHURCH, variables: { id: memberId } },

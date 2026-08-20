@@ -34,6 +34,24 @@ export const AUTH_LINK_TOKEN_TIMEOUT_MS = 8000
 
 export const RETRY_LINK_MAX_ATTEMPTS = 5
 
+/**
+ * SYN-208 — opt one operation out of the generic GraphQL error toast. Pass as
+ * the `context` of a `useMutation` / `useQuery` whose caller renders its own UI
+ * for every GraphQL error it can return: `UpdateMember.tsx` opens
+ * <MemberCollisionDialog> on a contact collision and calls `displayError` for
+ * anything else, so the extra "Something went wrong" is redundant and
+ * contradicts the dialog's friendly copy.
+ *
+ * Opting in per caller is deliberate. Keying off the error payload instead
+ * would also silence callers that do no handling at all (`EditPage.tsx` awaits
+ * the same mutation and navigates away regardless), turning a rejected write
+ * into a silent no-op. The network-error toast is never suppressed — a dropped
+ * connection is not something a caller's error UI can explain.
+ */
+export const CALLER_HANDLES_ERRORS_CONTEXT = Object.freeze({
+  callerHandlesErrors: true,
+})
+
 export interface CreateApolloClientOptions {
   /**
    * Resolver for the per-request access token. Returns the raw JWT, or rejects
@@ -119,7 +137,13 @@ export function createApolloClient({
     },
   })
 
-  const errorLink = onError(({ graphQLErrors, networkError }) => {
+  const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
+    // SYN-208 — honoured by the GraphQL branch only; see
+    // CALLER_HANDLES_ERRORS_CONTEXT.
+    const { callerHandlesErrors } = operation.getContext() as {
+      callerHandlesErrors?: boolean
+    }
+
     // SYN-178 — never render raw GraphQL/network internals (message, locations,
     // path, Neo4j error text) into a user-facing toast. Show a generic message;
     // the technical detail only reaches the dev console (compiled out of the
@@ -135,6 +159,8 @@ export function createApolloClient({
             locations ? { locations, path } : { path }
           )
         }
+
+        if (callerHandlesErrors) return
 
         toast.error('Something went wrong', {
           id: `gql:${message}:${path?.join('.') ?? ''}`,
