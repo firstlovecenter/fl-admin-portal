@@ -40,7 +40,13 @@ import { describe, it, expect, vi, afterEach, beforeAll } from 'vitest'
 import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { MockedProvider, MockedResponse } from '@apollo/client/testing'
+import { ApolloLink, DefaultContext } from '@apollo/client'
+import {
+  MockedProvider,
+  MockedResponse,
+  MockLink,
+} from '@apollo/client/testing'
+import { CALLER_HANDLES_ERRORS_CONTEXT } from 'lib/createApolloClient'
 import { toast } from 'sonner'
 import 'lib/i18n'
 
@@ -313,7 +319,15 @@ const baseUpdateVariables = (email: string) => ({
   bacenta: BACENTA_ID,
 })
 
-const renderUpdateMember = (mocks: readonly MockedResponse[]) =>
+/**
+ * `recordContext` (SYN-208) captures the Apollo `context` each operation is
+ * issued with. MockedProvider ignores `mocks` when handed a `link`, so the
+ * recorder is composed in front of a MockLink built from the same mocks.
+ */
+const renderUpdateMember = (
+  mocks: readonly MockedResponse[],
+  recordContext?: (operationName: string, context: DefaultContext) => void
+) =>
   render(
     <MemoryRouter initialEntries={['/member/edit']}>
       <MemberContext.Provider
@@ -330,6 +344,20 @@ const renderUpdateMember = (mocks: readonly MockedResponse[]) =>
           <MockedProvider
             mocks={mocks}
             addTypename={false}
+            link={
+              recordContext
+                ? ApolloLink.from([
+                    new ApolloLink((operation, forward) => {
+                      recordContext(
+                        operation.operationName,
+                        operation.getContext()
+                      )
+                      return forward(operation)
+                    }),
+                    new MockLink(mocks as MockedResponse[], false),
+                  ])
+                : undefined
+            }
             defaultOptions={{
               // Mirrors prod's createApolloClient defaultOptions.mutate:
               // GraphQL errors land in `result.errors`, they do not reject
@@ -406,6 +434,46 @@ describe('UpdateMember — SYN-205 email-collision handling', () => {
 
     // The whole point of the bug: this must NOT have fired.
     expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  it('issues the update opted out of the global error toast (SYN-208)', async () => {
+    // The collision dialog is this component's own error UI. Without this
+    // context the global error link ALSO toasts "Something went wrong" over
+    // the dialog — the SYN-208 double-surface. Pinning the wiring here because
+    // the suppression itself is exercised in lib/createApolloClient.test.tsx.
+    const variables = baseUpdateVariables('taken@example.com')
+    const contexts: Record<string, DefaultContext> = {}
+
+    renderUpdateMember(
+      [
+        memberBioMock,
+        memberChurchMock,
+        basontasMock,
+        memberBacentaSearchMock,
+        collisionUpdateMock(variables),
+        memberBioMock,
+        memberChurchMock,
+      ],
+      (operationName, context) => {
+        contexts[operationName] = context
+      }
+    )
+
+    await screen.findByDisplayValue('ama@example.com')
+    await selectBacentaFromDropdown()
+
+    const emailInput = screen.getByLabelText(/email address/i)
+    await userEvent.setup().clear(emailInput)
+    await userEvent.setup().type(emailInput, 'taken@example.com')
+
+    await submitForm()
+
+    await waitFor(() => expect(contexts.UpdateMemberDetails).toBeDefined())
+    expect(contexts.UpdateMemberDetails).toMatchObject(
+      CALLER_HANDLES_ERRORS_CONTEXT
+    )
+    // Reads are NOT opted out — a failed query has no caller-side UI here.
+    expect(contexts.DisplayMemberBio?.callerHandlesErrors).toBeUndefined()
   })
 
   it('navigates away on a genuine successful update', async () => {
