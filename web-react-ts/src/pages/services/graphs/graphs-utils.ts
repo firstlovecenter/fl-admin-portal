@@ -172,14 +172,18 @@ export type GraphTypes =
 // partial or mis-dated records happen to carry its date — SYN-214, where that
 // bar mirrored the previous week's figures.
 //
-// Scoped to the service categories named in that ticket. Rehearsals, ministry
-// meetings and on-stage attendance genuinely happen mid-week, so gating them
-// would hide data that really was submitted. Bussing is Sunday-only and has the
-// same exposure, but it is a separate tab and is left to a follow-up.
+// Bussing runs on that same cadence and carries the same exposure: Sunday's
+// bussing belongs to the week that ends on it (kb/01-glossary.md), so the
+// in-progress week is not yet due at any church level — SYN-216.
+//
+// Categories left out are the ones whose records genuinely land mid-week;
+// gating those would hide data that really was submitted.
 const SUNDAY_CADENCE_CATEGORIES = [
   'services',
   'serviceAggregate',
   'serviceAggregateWithDollar',
+  'bussing',
+  'bussingAggregate',
 ] as const satisfies readonly GraphTypes[]
 
 /** The calendar years the ISO week containing `now` falls in — usually one, but

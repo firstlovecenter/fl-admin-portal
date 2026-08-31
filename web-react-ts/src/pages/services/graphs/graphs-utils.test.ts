@@ -4,6 +4,9 @@
  * whatever stray records carry that week's date, which charted as a phantom bar
  * mirroring the previous week.
  *
+ * SYN-216 extends the same suppression to the bussing categories, which run on
+ * the identical Sunday cadence.
+ *
  * Weeks used below are ISO weeks of 2026:
  *   W34 = Mon 2026-08-17 … Sun 2026-08-23
  *   W35 = Mon 2026-08-24 … Sun 2026-08-30
@@ -195,12 +198,133 @@ describe('getServiceGraphData — in-progress week suppression', () => {
     expect(result.map((r) => r.week)).toEqual([34])
   })
 
-  it.each<GraphTypes>(['bussingAggregate', 'rehearsalAggregate'])(
+  // SYN-216 — bussing runs on the same Sunday cadence, so its in-progress week
+  // is suppressed exactly like the service categories above.
+  it('drops the in-progress week from the All Bussing dataset', () => {
+    const church = {
+      // Above Bacenta the aggregator MERGEs the in-progress week into existence
+      // mid-week and zeroes it, so W35 arrives as an empty bar.
+      aggregateBussingRecords: [aggregate(35, 0, 0), aggregate(34, 70, 0)],
+    } as never
+
+    const result = getServiceGraphData(church, 'bussingAggregate', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34])
+  })
+
+  it('drops a stray mid-week record from the Bacenta bussing dataset', () => {
+    const church = {
+      bussing: [
+        // Bussed on the Thursday of the in-progress week — the shape the dev
+        // data still carries for weeks 19 and 24.
+        {
+          id: 'a',
+          week: 35,
+          attendance: 41,
+          serviceDate: { date: '2026-08-27' },
+        },
+        {
+          id: 'b',
+          week: 34,
+          attendance: 83,
+          serviceDate: { date: '2026-08-23' },
+        },
+      ],
+    } as never
+
+    const result = getServiceGraphData(church, 'bussing', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34])
+  })
+
+  // A non-zero phantom is the Bacenta (per-record) shape: a stray mid-week
+  // `BussingRecord` carries real attendance, so `getMonthlyStatAverage`'s
+  // existing zero-drop would not catch it. Only the filter does.
+  it('keeps a stray mid-week record out of the bussing stat-card average', () => {
+    const church = {
+      bussing: [
+        {
+          id: 'a',
+          week: 35,
+          attendance: 900,
+          serviceDate: { date: '2026-08-27' },
+        },
+        {
+          id: 'b',
+          week: 34,
+          attendance: 200,
+          serviceDate: { date: '2026-08-23' },
+        },
+        {
+          id: 'c',
+          week: 33,
+          attendance: 100,
+          serviceDate: { date: '2026-08-16' },
+        },
+      ],
+    } as never
+
+    const data = getServiceGraphData(church, 'bussing', 24) ?? []
+
+    // (100 + 200) / 2 — the stray 900 must not drag the average up.
+    expect(getMonthlyStatAverage(data as never, 'attendance')).toBe('150.00')
+  })
+
+  // The aggregate phantom arrives as a zero, which the zero-drop already
+  // excluded from the mean. What the filter buys here is the window SLOT: with
+  // the default windowSize of 4, an unfiltered W35 would push W31 out and the
+  // mean would be taken over W32–W34 only.
+  it('stops the zeroed in-progress aggregate consuming a four-week window slot', () => {
+    const church = {
+      aggregateBussingRecords: [
+        aggregate(35, 0, 0),
+        aggregate(34, 200, 0),
+        aggregate(33, 100, 0),
+        aggregate(32, 50, 0),
+        aggregate(31, 30, 0),
+      ],
+    } as never
+
+    const data = getServiceGraphData(church, 'bussingAggregate', 24) ?? []
+
+    // (30 + 50 + 100 + 200) / 4 — W31 keeps the slot W35 would have taken.
+    expect(getMonthlyStatAverage(data as never, 'attendance')).toBe('95.00')
+  })
+
+  // A Bacenta whose only bussing record is in the current week charts nothing
+  // Mon–Sat. That is intended, but it is a new empty state for bussing.
+  it('falls back to the empty placeholder when the only bussing week is in progress', () => {
+    const church = {
+      bussing: [
+        {
+          id: 'a',
+          week: 35,
+          attendance: 41,
+          serviceDate: { date: '2026-08-27' },
+        },
+      ],
+    } as never
+
+    expect(getServiceGraphData(church, 'bussing', 24)).toEqual([
+      {
+        __typename: 'bussing',
+        date: '',
+        week: null,
+        attendance: null,
+        income: null,
+      },
+    ])
+  })
+
+  it.each<GraphTypes>(['rehearsalAggregate', 'onStageAttendanceAggregate'])(
     'leaves the current week alone for non-Sunday-cadence category %s',
     (category) => {
       const church = {
-        aggregateBussingRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
         aggregateRehearsalRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
+        aggregateStageAttendanceRecords: [
+          aggregate(35, 83, 0),
+          aggregate(34, 70, 0),
+        ],
       } as never
 
       const result = getServiceGraphData(church, category, 24) ?? []
@@ -220,6 +344,41 @@ describe('getServiceGraphData — on Sunday the week becomes visible', () => {
     ])
 
     const result = getServiceGraphData(church, 'serviceAggregate', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
+
+  it('renders the current bussing week once its Sunday has arrived', () => {
+    const church = {
+      aggregateBussingRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
+    } as never
+
+    const result = getServiceGraphData(church, 'bussingAggregate', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
+
+  // The per-record path is the riskier one: it has no `year` on the wire and
+  // derives it from `serviceDate.date`. Sunday's own bussing must chart today.
+  it('renders a Sunday-dated bussing record on the day it is bussed', () => {
+    const church = {
+      bussing: [
+        {
+          id: 'a',
+          week: 35,
+          attendance: 83,
+          serviceDate: { date: '2026-08-30' },
+        },
+        {
+          id: 'b',
+          week: 34,
+          attendance: 70,
+          serviceDate: { date: '2026-08-23' },
+        },
+      ],
+    } as never
+
+    const result = getServiceGraphData(church, 'bussing', 24) ?? []
 
     expect(result.map((r) => r.week)).toEqual([34, 35])
   })
