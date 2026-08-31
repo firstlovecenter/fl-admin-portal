@@ -1,22 +1,31 @@
+// SYN-215 — these queries now mirror sevice-cypher.js on two points (ADR-014):
+//   1. The record MATCH precedes the MERGE. With the MERGE first, a run on a
+//      day with no bussing records still created the current-week aggregate
+//      before the MATCH eliminated the row, leaving an empty node that the
+//      zero-out pass below filled with zeros — a phantom current-week row in
+//      graphs, reports and downloads.
+//   2. Records are filtered by the current ISO *week*, not by `date()`. The
+//      node is week-keyed, so a day filter meant a week with bussing on two
+//      days had the earlier day silently overwritten by the later one.
 const aggregateBussingOnGovernorshipQuery = `
-   MATCH (governorship:Governorship)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: governorship.id + '-' + toString(date().week) + '-' + toString(date().year)})
-    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
-    SET aggregate.month = date().month
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+   MATCH (governorship:Governorship)-[:HAS]->(bacentas:Bacenta)
+   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate:TimeGraph)
+   WHERE serviceDate.date.week = date().week AND serviceDate.date.year = date().year
 
-   WITH governorship, aggregate
-
-   MATCH (governorship)-[:HAS]->(bacentas:Bacenta)
-   MATCH (serviceDate:TimeGraph {date: date()})
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate)
-   WITH DISTINCT governorship, aggregate, record
-   WITH governorship, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
+   WITH DISTINCT governorship, record
+   WITH governorship, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
    SUM(record.numberOfSprinters) AS numberOfSprinters,
    SUM(record.numberOfUrvans) AS numberOfUrvans,
    SUM(record.numberOfCars) AS numberOfCars
 
-   SET aggregate.leaderDeclaration = leaderDeclaration,
+   MATCH (governorship)-[:CURRENT_HISTORY]->(log:ServiceLog)
+
+   MERGE (aggregate:AggregateBussingRecord {id: governorship.id + '-' + toString(date().week) + '-' + toString(date().year)})
+    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+    SET aggregate.month = date().month
+
+   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+    SET aggregate.leaderDeclaration = leaderDeclaration,
     aggregate.attendance = attendance,
     aggregate.bussingTopUp = bussingTopUp,
     aggregate.componentBussingIds = componentBussingIds,
@@ -29,24 +38,24 @@ const aggregateBussingOnGovernorshipQuery = `
 `
 
 const aggregateBussingOnCouncilQuery = `
-   MATCH (council:Council)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: council.id + '-' + toString(date().week) + '-' + toString(date().year)})
-    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
-    SET aggregate.month = date().month
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+   MATCH (council:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
+   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate:TimeGraph)
+   WHERE serviceDate.date.week = date().week AND serviceDate.date.year = date().year
 
-   WITH council, aggregate
-   MATCH (council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
-   MATCH (serviceDate:TimeGraph {date: date()})
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate)
-   WITH DISTINCT council, aggregate, record
-   WITH council, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
+   WITH DISTINCT council, record
+   WITH council, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
    SUM(record.numberOfSprinters) AS numberOfSprinters,
    SUM(record.numberOfUrvans) AS numberOfUrvans,
    SUM(record.numberOfCars) AS numberOfCars
 
+   MATCH (council)-[:CURRENT_HISTORY]->(log:ServiceLog)
 
-   SET aggregate.leaderDeclaration = leaderDeclaration,
+   MERGE (aggregate:AggregateBussingRecord {id: council.id + '-' + toString(date().week) + '-' + toString(date().year)})
+    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+    SET aggregate.month = date().month
+
+   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+    SET aggregate.leaderDeclaration = leaderDeclaration,
     aggregate.attendance = attendance,
     aggregate.bussingTopUp = bussingTopUp,
     aggregate.componentBussingIds = componentBussingIds,
@@ -59,24 +68,24 @@ const aggregateBussingOnCouncilQuery = `
 `
 
 const aggregateBussingOnStreamQuery = `
-   MATCH (stream:Stream)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: stream.id + '-' + toString(date().week) + '-' + toString(date().year)})
-    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
-    SET aggregate.month = date().month
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+   MATCH (stream:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
+   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate:TimeGraph)
+   WHERE serviceDate.date.week = date().week AND serviceDate.date.year = date().year
 
-   WITH stream, aggregate
-   MATCH (stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
-   MATCH (serviceDate:TimeGraph {date: date()})
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate)
-   WITH DISTINCT stream, aggregate, record
-   WITH stream, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
+   WITH DISTINCT stream, record
+   WITH stream, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
    SUM(record.numberOfSprinters) AS numberOfSprinters,
    SUM(record.numberOfUrvans) AS numberOfUrvans,
    SUM(record.numberOfCars) AS numberOfCars
 
+   MATCH (stream)-[:CURRENT_HISTORY]->(log:ServiceLog)
 
-   SET aggregate.leaderDeclaration = leaderDeclaration,
+   MERGE (aggregate:AggregateBussingRecord {id: stream.id + '-' + toString(date().week) + '-' + toString(date().year)})
+    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+    SET aggregate.month = date().month
+
+   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+    SET aggregate.leaderDeclaration = leaderDeclaration,
     aggregate.attendance = attendance,
     aggregate.bussingTopUp = bussingTopUp,
     aggregate.componentBussingIds = componentBussingIds,
@@ -89,24 +98,24 @@ const aggregateBussingOnStreamQuery = `
 `
 
 const aggregateBussingOnCampusQuery = `
-   MATCH (campus:Campus)-[:CURRENT_HISTORY]->(log:ServiceLog)
-   MERGE (aggregate:AggregateBussingRecord {id: campus.id + '-' + toString(date().week) + '-' + toString(date().year)})
-    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
-    SET aggregate.month = date().month
-   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+   MATCH (campus:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
+   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate:TimeGraph)
+   WHERE serviceDate.date.week = date().week AND serviceDate.date.year = date().year
 
-   WITH campus, aggregate
-   MATCH (campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
-   MATCH (serviceDate:TimeGraph {date: date()})
-   MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate)
-   WITH DISTINCT campus, aggregate, record
-   WITH campus, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
+   WITH DISTINCT campus, record
+   WITH campus, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
    SUM(record.numberOfSprinters) AS numberOfSprinters,
    SUM(record.numberOfUrvans) AS numberOfUrvans,
    SUM(record.numberOfCars) AS numberOfCars
 
+   MATCH (campus)-[:CURRENT_HISTORY]->(log:ServiceLog)
 
-   SET aggregate.leaderDeclaration = leaderDeclaration,
+   MERGE (aggregate:AggregateBussingRecord {id: campus.id + '-' + toString(date().week) + '-' + toString(date().year)})
+    ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+    SET aggregate.month = date().month
+
+   MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+    SET aggregate.leaderDeclaration = leaderDeclaration,
     aggregate.attendance = attendance,
     aggregate.bussingTopUp = bussingTopUp,
     aggregate.componentBussingIds = componentBussingIds,
@@ -119,24 +128,24 @@ const aggregateBussingOnCampusQuery = `
 `
 
 const aggregateBussingOnOversightQuery = `
-    MATCH (oversight:Oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateBussingRecord {id: oversight.id + '-' + toString(date().week) + '-' + toString(date().year)})
-     ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
-     SET aggregate.month = date().month
-    MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+    MATCH (oversight:Oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
+    MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate:TimeGraph)
+    WHERE serviceDate.date.week = date().week AND serviceDate.date.year = date().year
 
-    WITH oversight, aggregate
-    MATCH (oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
-    MATCH (serviceDate:TimeGraph {date: date()})
-    MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate)
-    WITH DISTINCT oversight, aggregate, record
-    WITH oversight, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
+    WITH DISTINCT oversight, record
+    WITH oversight, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
     SUM(record.numberOfSprinters) AS numberOfSprinters,
     SUM(record.numberOfUrvans) AS numberOfUrvans,
     SUM(record.numberOfCars) AS numberOfCars
 
+    MATCH (oversight)-[:CURRENT_HISTORY]->(log:ServiceLog)
 
-    SET aggregate.leaderDeclaration = leaderDeclaration,
+    MERGE (aggregate:AggregateBussingRecord {id: oversight.id + '-' + toString(date().week) + '-' + toString(date().year)})
+     ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+     SET aggregate.month = date().month
+
+    MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+     SET aggregate.leaderDeclaration = leaderDeclaration,
      aggregate.attendance = attendance,
      aggregate.bussingTopUp = bussingTopUp,
      aggregate.componentBussingIds = componentBussingIds,
@@ -149,23 +158,24 @@ const aggregateBussingOnOversightQuery = `
     `
 
 const aggregateBussingOnDenominationQuery = `
-    MATCH (denomination:Denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
-    MERGE (aggregate:AggregateBussingRecord {id: denomination.id + '-' + toString(date().week) + '-' + toString(date().year)})
-     ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
-     SET aggregate.month = date().month
-    MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+    MATCH (denomination:Denomination)-[:HAS]->(:Oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
+    MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate:TimeGraph)
+    WHERE serviceDate.date.week = date().week AND serviceDate.date.year = date().year
 
-    WITH denomination, aggregate
-    MATCH (denomination)-[:HAS]->(:Oversight)-[:HAS]->(:Campus)-[:HAS]->(:Stream)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacentas:Bacenta)
-    MATCH (serviceDate:TimeGraph {date: date()})
-    MATCH (bacentas)-[:CURRENT_HISTORY]->(:ServiceLog)-[:HAS_BUSSING]->(record:BussingRecord)-[:BUSSED_ON]->(serviceDate)
-    WITH DISTINCT denomination, aggregate, record
-    WITH denomination, aggregate, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
+    WITH DISTINCT denomination, record
+    WITH denomination, collect(record.id) AS componentBussingIds, SUM(record.leaderDeclaration) AS leaderDeclaration, SUM(record.attendance) AS attendance, SUM(record.bussingTopUp) AS bussingTopUp,
     SUM(record.numberOfSprinters) AS numberOfSprinters,
     SUM(record.numberOfUrvans) AS numberOfUrvans,
     SUM(record.numberOfCars) AS numberOfCars
 
-    SET aggregate.leaderDeclaration = leaderDeclaration,
+    MATCH (denomination)-[:CURRENT_HISTORY]->(log:ServiceLog)
+
+    MERGE (aggregate:AggregateBussingRecord {id: denomination.id + '-' + toString(date().week) + '-' + toString(date().year)})
+     ON CREATE SET aggregate.week = date().week, aggregate.year = date().year
+     SET aggregate.month = date().month
+
+    MERGE (log)-[:HAS_BUSSING_AGGREGATE]->(aggregate)
+     SET aggregate.leaderDeclaration = leaderDeclaration,
         aggregate.attendance = attendance,
         aggregate.bussingTopUp = bussingTopUp,
         aggregate.componentBussingIds = componentBussingIds,

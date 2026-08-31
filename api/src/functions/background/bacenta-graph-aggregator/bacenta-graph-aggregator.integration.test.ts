@@ -409,18 +409,20 @@ describe('vacation Bacenta exclusion — SM3', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 7. Empty hierarchy edge — no Bacentas with bussing → zeroAllNullBussingRecords
-//    zeros the null vehicle-count fields (not left as NULL)
+// 7. Empty hierarchy edge (SYN-215) — a church with no bussing records this
+//    week must get NO aggregate node at all. The zero-out pass remains, but it
+//    now only ever touches legacy / backfilled rows.
 // ---------------------------------------------------------------------------
 
-describe('empty hierarchy edge — zeroAllNullBussingRecords', () => {
+describe('empty hierarchy edge — SYN-215 no phantom aggregate', () => {
   const EMPTY_GOVN_ID = `${RUN_ID}-empty-govn`
   const EMPTY_LOG_ID = `${RUN_ID}-empty-log`
 
   beforeAll(async () => {
     // A Governorship with a CURRENT_HISTORY log but NO Bacentas with bussing
-    // records. The aggregator MERGE creates the aggregate node but the SET block
-    // never executes (no matching MATCH pattern), leaving vehicle counts NULL.
+    // records. Before SYN-215 the aggregator MERGEd the aggregate node before
+    // MATCHing the records, so this hierarchy still produced a node whose SET
+    // block never ran — a phantom the zero-out pass then filled with zeros.
     const s = driver.session()
     await s
       .run(
@@ -450,41 +452,57 @@ describe('empty hierarchy edge — zeroAllNullBussingRecords', () => {
     }
   })
 
-  it('zeroAllNullBussingRecords zeros vehicle counts that are NULL after an empty-hierarchy run', async () => {
-    // First run: creates the aggregate node with NULL vehicle counts
+  it('writes no aggregate node for a hierarchy with no bussing records this week', async () => {
     await aggregateBussingOnGovernorship(driver)
 
-    // Verify the aggregate was created with NULL numberOfSprinters
-    const before = driver.session()
-    const beforeResult = await before
+    const s = driver.session()
+    const result = await s
       .run(
         `
         MATCH (agg:AggregateBussingRecord)
         WHERE agg.id STARTS WITH $prefix
-        RETURN agg.numberOfSprinters AS numberOfSprinters
+        RETURN agg.id AS id
         `,
         { prefix: EMPTY_GOVN_ID }
       )
-      .finally(() => before.close())
+      .finally(() => s.close())
 
-    expect(beforeResult.records).toHaveLength(1)
-    expect(beforeResult.records[0].get('numberOfSprinters')).toBeNull()
+    // The phantom this ticket removed. Before SYN-215 this was 1 node with
+    // NULL vehicle counts, which the zero-out pass turned into a zeroed row.
+    expect(result.records).toHaveLength(0)
+  })
 
-    // Zero-out pass
+  it('zeroAllNullBussingRecords still zeros NULL vehicle counts on legacy rows', async () => {
+    // The zero-out pass exists for legacy / backfilled nodes that predate
+    // SYN-215, so seed one directly rather than relying on the aggregator to
+    // manufacture it. The non-null Int! fields in aggregates.graphql depend on
+    // this pass, so it must keep working.
+    const legacyId = `${EMPTY_GOVN_ID}-legacy`
+    const seed = driver.session()
+    await seed
+      .run(
+        `
+        MATCH (log:ServiceLog {id: $logId})
+        CREATE (agg:AggregateBussingRecord {id: $aggId, week: 1, year: 1970})
+        CREATE (log)-[:HAS_BUSSING_AGGREGATE]->(agg)
+        `,
+        { logId: EMPTY_LOG_ID, aggId: legacyId }
+      )
+      .finally(() => seed.close())
+
     await zeroAllNullBussingRecords(driver)
 
     const after = driver.session()
     const afterResult = await after
       .run(
         `
-        MATCH (agg:AggregateBussingRecord)
-        WHERE agg.id STARTS WITH $prefix
+        MATCH (agg:AggregateBussingRecord {id: $aggId})
         RETURN agg.attendance        AS attendance,
                agg.numberOfSprinters AS numberOfSprinters,
                agg.numberOfUrvans    AS numberOfUrvans,
                agg.numberOfCars      AS numberOfCars
         `,
-        { prefix: EMPTY_GOVN_ID }
+        { aggId: legacyId }
       )
       .finally(() => after.close())
 
