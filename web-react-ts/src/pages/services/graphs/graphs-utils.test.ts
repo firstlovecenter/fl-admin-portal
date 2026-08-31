@@ -14,7 +14,7 @@ import {
   getServiceGraphData,
   getMonthlyStatAverage,
   isInProgressServiceWeek,
-  GraphTypes,
+  weekLabelFor,
 } from './graphs-utils'
 
 const MID_WEEK_35 = new Date('2026-08-26T09:00:00') // Wednesday of W35
@@ -110,6 +110,20 @@ describe('isInProgressServiceWeek', () => {
   })
 })
 
+describe('weekLabelFor', () => {
+  it('labels a week in the current year without a year suffix', () => {
+    expect(weekLabelFor(34, 2026, undefined, 2026)).toBe('W34')
+  })
+
+  it('suffixes a week carried over from another year', () => {
+    expect(weekLabelFor(52, 2025, undefined, 2026)).toBe("W52'25")
+  })
+
+  it('omits the suffix when the year is unknown', () => {
+    expect(weekLabelFor(34, undefined, undefined, 2026)).toBe('W34')
+  })
+})
+
 describe('getServiceGraphData — in-progress week suppression', () => {
   beforeEach(() => useClock(MID_WEEK_35))
 
@@ -195,19 +209,53 @@ describe('getServiceGraphData — in-progress week suppression', () => {
     expect(result.map((r) => r.week)).toEqual([34])
   })
 
-  it.each<GraphTypes>(['bussingAggregate', 'rehearsalAggregate'])(
-    'leaves the current week alone for non-Sunday-cadence category %s',
-    (category) => {
-      const church = {
-        aggregateBussingRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
-        aggregateRehearsalRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
-      } as never
+  // SYN-217: bussing is Sunday-only, so its in-progress week is as premature as
+  // a service week's. This is what the arrivals TrendSpark charts.
+  it('drops the in-progress week from the bussing aggregate dataset', () => {
+    const church = {
+      aggregateBussingRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
+    } as never
 
-      const result = getServiceGraphData(church, category, 24) ?? []
+    const result = getServiceGraphData(church, 'bussingAggregate', 24) ?? []
 
-      expect(result.map((r) => r.week)).toEqual([34, 35])
-    }
-  )
+    expect(result.map((r) => r.week)).toEqual([34])
+  })
+
+  // `BussingRecord` carries `week` but no `year` (see GraphsQueries) — the gate
+  // only fires because the year is derived from `serviceDate.date`, so the
+  // fixture uses that shape rather than a `year` the API never sends.
+  it('drops the in-progress week from the per-Bacenta bussing dataset', () => {
+    const church = {
+      bussing: [
+        {
+          id: 'a',
+          week: 35,
+          attendance: 41,
+          serviceDate: { date: '2026-08-30' },
+        },
+        {
+          id: 'b',
+          week: 34,
+          attendance: 38,
+          serviceDate: { date: '2026-08-23' },
+        },
+      ],
+    } as never
+
+    const result = getServiceGraphData(church, 'bussing', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34])
+  })
+
+  it('leaves the current week alone for rehearsal aggregates', () => {
+    const church = {
+      aggregateRehearsalRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
+    } as never
+
+    const result = getServiceGraphData(church, 'rehearsalAggregate', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
 })
 
 describe('getServiceGraphData — on Sunday the week becomes visible', () => {
@@ -220,6 +268,16 @@ describe('getServiceGraphData — on Sunday the week becomes visible', () => {
     ])
 
     const result = getServiceGraphData(church, 'serviceAggregate', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
+
+  it('renders the current bussing week once its Sunday has arrived', () => {
+    const church = {
+      aggregateBussingRecords: [aggregate(35, 83, 0), aggregate(34, 70, 0)],
+    } as never
+
+    const result = getServiceGraphData(church, 'bussingAggregate', 24) ?? []
 
     expect(result.map((r) => r.week)).toEqual([34, 35])
   })

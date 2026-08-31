@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import ChurchGraph from 'components/ChurchGraph/ChurchGraph'
 import { ChurchLevelLower } from 'global-types'
+import { weekLabelFor } from 'pages/services/graphs/graphs-utils'
 import {
   AggregateRecord,
   AnchorWeekYear,
@@ -31,6 +32,10 @@ type Props = {
 type ChartRow = {
   week: number | null
   year: number | null
+  // `ChurchGraph` reads its category axis off `weekLabel`. Without it every row
+  // resolves to `undefined`, the axis domain comes out empty and recharts draws
+  // neither ticks nor bars — the projection chart rendered a blank plot area.
+  weekLabel: string
   attendance: number | null
   income: number | null
   target: number | null
@@ -88,6 +93,9 @@ const ProjectionChart = ({
       const row: ChartRow = {
         week: rA.week ?? null,
         year: rA.year ?? null,
+        // Labelled through the trends graphs' own helper so both charts read
+        // `W12` / `W52'25` identically.
+        weekLabel: rA.week == null ? '' : weekLabelFor(rA.week, rA.year, t),
         attendance: null,
         income: null,
         target: null,
@@ -111,6 +119,7 @@ const ProjectionChart = ({
     dataKeyA,
     dataKeyB,
     stat2Slot,
+    t,
   ])
 
   const sameUnit =

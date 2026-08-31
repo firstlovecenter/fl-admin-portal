@@ -172,14 +172,20 @@ export type GraphTypes =
 // partial or mis-dated records happen to carry its date — SYN-214, where that
 // bar mirrored the previous week's figures.
 //
-// Scoped to the service categories named in that ticket. Rehearsals, ministry
-// meetings and on-stage attendance genuinely happen mid-week, so gating them
-// would hide data that really was submitted. Bussing is Sunday-only and has the
-// same exposure, but it is a separate tab and is left to a follow-up.
+// Rehearsals, ministry meetings and on-stage attendance genuinely happen
+// mid-week, so gating them would hide data that really was submitted.
+//
+// Bussing is Sunday-only and carries exactly the same exposure — SYN-214 left it
+// to a follow-up, and SYN-217 is that follow-up: the arrivals TrendSpark charts
+// nothing but bussing, so without it that dashboard still opened on a partial
+// week. `swellBussing` is Sunday-cadence too but no page charts that category
+// yet, so it stays out until one does.
 const SUNDAY_CADENCE_CATEGORIES = [
   'services',
   'serviceAggregate',
   'serviceAggregateWithDollar',
+  'bussing',
+  'bussingAggregate',
 ] as const satisfies readonly GraphTypes[]
 
 /** The calendar years the ISO week containing `now` falls in — usually one, but
@@ -217,6 +223,28 @@ export const isInProgressServiceWeek = (
   // `getWeekNumber` mutates the Date it is handed, hence the copy.
   if (recordWeek !== getWeekNumber(new Date(now))) return false
   return calendarYearsOfIsoWeek(now).includes(recordYear)
+}
+
+/** `W12`, or `W52'25` once a dataset reaches back past New Year. Shared with
+ *  shepherding-control's `ProjectionChart` so both charts label weeks the same
+ *  way. `t` is optional because some callers chart without a translator and
+ *  fall back to the English form. */
+export const weekLabelFor = (
+  week: number | string,
+  year: number | null | undefined,
+  t?: TFunction,
+  currentYear: number = new Date().getFullYear()
+): string => {
+  const yearSuffix =
+    typeof year === 'number' && year !== currentYear
+      ? String(year).slice(-2)
+      : ''
+
+  if (!t) return yearSuffix ? `W${week}'${yearSuffix}` : `W${week}`
+
+  return yearSuffix
+    ? t('services.graphs.weekShortYear', { week, yearSuffix })
+    : t('services.graphs.weekShort', { week })
 }
 
 export const getServiceGraphData = (
@@ -270,19 +298,7 @@ export const getServiceGraphData = (
           year = parsed
         }
       }
-      const yearSuffix =
-        typeof year === 'number' && year !== currentYear
-          ? String(year).slice(-2)
-          : ''
-      const weekLabel = week
-        ? t
-          ? yearSuffix
-            ? t('services.graphs.weekShortYear', { week, yearSuffix })
-            : t('services.graphs.weekShort', { week })
-          : yearSuffix
-            ? `W${week}'${yearSuffix}`
-            : `W${week}`
-        : null
+      const weekLabel = week ? weekLabelFor(week, year, t, currentYear) : null
       data.push({
         id: record?.id,
         category,
