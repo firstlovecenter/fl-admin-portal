@@ -284,6 +284,14 @@ const directoryMutation = {
     context: Context
   ) => {
     isAuth([...permitLeaderAdmin('Governorship')], context.jwt?.roles)
+
+    // isAuth only checks the caller HOLDS a governorship-level role, not WHERE.
+    // Without this, any governorship leader/admin could deactivate any member
+    // org-wide by id — the same IDOR class as UpdateMemberDetails (SYN-207).
+    // Must stay above the `duplicate` fork below, which routes to the
+    // destructive removeDuplicateMember (SYN-210).
+    await assertScopeViaMember(context, args.id)
+
     const session = context.executionContext.session()
 
     try {
