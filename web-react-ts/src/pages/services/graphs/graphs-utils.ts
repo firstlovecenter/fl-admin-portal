@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import { average } from 'global-utils'
+import { average, getWeekNumber } from 'global-utils'
 
 const numberOfWeeks = 4
 
@@ -166,6 +166,59 @@ export type GraphTypes =
   | 'multiplicationAggregate'
   | 'swellBussing'
 
+// The church week runs Monday→Sunday with Sunday as its LAST day
+// (kb/01-glossary.md, "Church week"), so a week's figures are only due once its
+// Sunday arrives. Charting the week we are still living through plots whatever
+// partial or mis-dated records happen to carry its date — SYN-214, where that
+// bar mirrored the previous week's figures.
+//
+// Scoped to the service categories named in that ticket. Rehearsals, ministry
+// meetings and on-stage attendance genuinely happen mid-week, so gating them
+// would hide data that really was submitted. Bussing is Sunday-only and has the
+// same exposure, but it is a separate tab and is left to a follow-up.
+const SUNDAY_CADENCE_CATEGORIES = [
+  'services',
+  'serviceAggregate',
+  'serviceAggregateWithDollar',
+] as const satisfies readonly GraphTypes[]
+
+/** The calendar years the ISO week containing `now` falls in — usually one, but
+ *  a week straddling New Year spans two. Aggregates are keyed on Neo4j's
+ *  `date().year` (calendar year, not ISO week-year), so such a week is stored
+ *  under both; recognising only one leaves the phantom bar visible under the
+ *  other for the few days either side of New Year. */
+const calendarYearsOfIsoWeek = (now: Date): number[] => {
+  const monday = new Date(now)
+  monday.setHours(0, 0, 0, 0)
+  monday.setDate(monday.getDate() - ((now.getDay() + 6) % 7))
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+
+  const first = monday.getFullYear()
+  const last = sunday.getFullYear()
+  return first === last ? [first] : [first, last]
+}
+
+/** True while `(week, year)` is the week we are currently living through and
+ *  its Sunday has not arrived yet — i.e. nothing is due to have been submitted. */
+export const isInProgressServiceWeek = (
+  week: number | string | null | undefined,
+  year: number | string | null | undefined,
+  now: Date = new Date()
+): boolean => {
+  const recordWeek = Number(week)
+  const recordYear = Number(year)
+  if (!Number.isFinite(recordWeek) || !Number.isFinite(recordYear)) return false
+
+  // From Sunday onwards the week's submissions are due, so its bar is real
+  // data and must show — that is the point at which the week becomes visible.
+  if (now.getDay() === 0) return false
+
+  // `getWeekNumber` mutates the Date it is handed, hence the copy.
+  if (recordWeek !== getWeekNumber(new Date(now))) return false
+  return calendarYearsOfIsoWeek(now).includes(recordYear)
+}
+
 export const getServiceGraphData = (
   church:
     | {
@@ -227,8 +280,8 @@ export const getServiceGraphData = (
             ? t('services.graphs.weekShortYear', { week, yearSuffix })
             : t('services.graphs.weekShort', { week })
           : yearSuffix
-          ? `W${week}'${yearSuffix}`
-          : `W${week}`
+            ? `W${week}'${yearSuffix}`
+            : `W${week}`
         : null
       data.push({
         id: record?.id,
@@ -286,6 +339,12 @@ export const getServiceGraphData = (
 
   if (category === 'multiplicationAggregate') {
     pushIntoData(church.aggregateMultiplicationRecords)
+  }
+
+  if ((SUNDAY_CADENCE_CATEGORIES as readonly GraphTypes[]).includes(category)) {
+    data = data.filter(
+      (record) => !isInProgressServiceWeek(record?.week, record?.year)
+    )
   }
 
   if (!data.length) {
