@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
-import { average, getWeekNumber } from 'global-utils'
+import { average } from 'global-utils'
+import { getWeekNumber } from 'lib/date-utils'
 
 const numberOfWeeks = 4
 
@@ -214,8 +215,7 @@ export const isInProgressServiceWeek = (
   // data and must show — that is the point at which the week becomes visible.
   if (now.getDay() === 0) return false
 
-  // `getWeekNumber` mutates the Date it is handed, hence the copy.
-  if (recordWeek !== getWeekNumber(new Date(now))) return false
+  if (recordWeek !== getWeekNumber(now)) return false
   return calendarYearsOfIsoWeek(now).includes(recordYear)
 }
 
