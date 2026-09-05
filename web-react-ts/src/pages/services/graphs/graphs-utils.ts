@@ -166,18 +166,16 @@ export type GraphTypes =
   | 'multiplicationAggregate'
   | 'swellBussing'
 
-// The church week runs Monday→Sunday with Sunday as its LAST day
-// (kb/01-glossary.md, "Church week"), so a week's figures are only due once its
-// Sunday arrives. Charting the week we are still living through plots whatever
-// partial or mis-dated records happen to carry its date — SYN-214, where that
-// bar mirrored the previous week's figures.
+// SYN-214 originally gated `services` here too, which hid real midweek
+// Bacenta / Weekday Total bars — Bacentas meet Wed–Sat (kb/01-glossary.md),
+// so that data is complete the moment it's submitted and has nothing to wait
+// for. `services` was removed from this list for that reason.
 //
-// Scoped to the service categories named in that ticket. Rehearsals, ministry
-// meetings and on-stage attendance genuinely happen mid-week, so gating them
-// would hide data that really was submitted. Bussing is Sunday-only and has the
-// same exposure, but it is a separate tab and is left to a follow-up.
+// serviceAggregate / serviceAggregateWithDollar ARE genuinely Sunday-cadence:
+// the aggregate node for the in-progress week still mirrors the previous
+// week's figures until it's recomputed, so charting it early reproduces the
+// original SYN-214 duplicate-data bug. They stay gated.
 const SUNDAY_CADENCE_CATEGORIES = [
-  'services',
   'serviceAggregate',
   'serviceAggregateWithDollar',
 ] as const satisfies readonly GraphTypes[]

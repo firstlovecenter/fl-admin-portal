@@ -108,7 +108,8 @@ extend type Governorship {
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(aggregate:AggregateServiceRecord)
-      WHERE aggregate.year = date().year OR aggregate.year = date().year -1
+      WHERE (aggregate.year = date().year OR aggregate.year = date().year -1)
+        AND aggregate.id STARTS WITH (this.id + '-')
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
       RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
@@ -122,7 +123,8 @@ extend type Governorship {
     @cypher(
       statement: """
       MATCH (this)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_BUSSING_AGGREGATE]->(aggregate:AggregateBussingRecord)
-      WHERE aggregate.year = date().year OR aggregate.year = date().year -1
+      WHERE (aggregate.year = date().year OR aggregate.year = date().year -1)
+        AND aggregate.id STARTS WITH (this.id + '-')
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
       RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit

@@ -127,29 +127,6 @@ describe('getServiceGraphData — in-progress week suppression', () => {
     expect(result.map((r) => r.weekLabel)).toEqual(['W32', 'W33', 'W34'])
   })
 
-  it('drops the in-progress week from the Joint Service dataset', () => {
-    const church = {
-      services: [
-        {
-          id: 'a',
-          week: 35,
-          attendance: 214,
-          serviceDate: { date: '2026-08-26' },
-        },
-        {
-          id: 'b',
-          week: 34,
-          attendance: 228,
-          serviceDate: { date: '2026-08-23' },
-        },
-      ],
-    } as never
-
-    const result = getServiceGraphData(church, 'services', 24) ?? []
-
-    expect(result.map((r) => r.week)).toEqual([34])
-  })
-
   it('keeps the in-progress week out of the stat-card averages', () => {
     const church = churchWith([
       aggregate(35, 1000, 1000),
@@ -210,7 +187,37 @@ describe('getServiceGraphData — in-progress week suppression', () => {
   )
 })
 
-describe('getServiceGraphData — on Sunday the week becomes visible', () => {
+// SYN-214's original fix over-scoped the gate to `services` too — the raw
+// per-church weekday/midweek joint service, which Bacentas submit Wed–Sat and
+// is complete the moment it's submitted, unlike the aggregate node above.
+describe('getServiceGraphData — weekday `services` is not Sunday-gated', () => {
+  beforeEach(() => useClock(MID_WEEK_35))
+
+  it('keeps the in-progress week in the Joint Service dataset', () => {
+    const church = {
+      services: [
+        {
+          id: 'a',
+          week: 35,
+          attendance: 214,
+          serviceDate: { date: '2026-08-26' },
+        },
+        {
+          id: 'b',
+          week: 34,
+          attendance: 228,
+          serviceDate: { date: '2026-08-23' },
+        },
+      ],
+    } as never
+
+    const result = getServiceGraphData(church, 'services', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
+})
+
+describe('getServiceGraphData — on Sunday the week remains visible', () => {
   beforeEach(() => useClock(SUNDAY_WEEK_35))
 
   it('renders the current week once its Sunday has arrived', () => {
