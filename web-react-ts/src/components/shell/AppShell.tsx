@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
 import { BackButton } from './BackButton'
-import { LanguageSwitcher } from './LanguageSwitcher'
 import SearchPalette from './SearchPalette'
 
 interface AppShellProps {
@@ -71,9 +70,8 @@ export const AppShell = ({
         {/* PWA back button — only renders in standalone mode */}
         <BackButton className="absolute left-3 top-3 z-20 md:hidden" />
 
-        {/* Floating mobile chrome — language first (always reachable), then nav */}
+        {/* Floating mobile chrome — nav toggle only (language lives in MobileNav / Settings) */}
         <div className="absolute right-3 top-3 z-20 flex items-center gap-2 md:hidden">
-          <LanguageSwitcher align="end" side="bottom" />
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
