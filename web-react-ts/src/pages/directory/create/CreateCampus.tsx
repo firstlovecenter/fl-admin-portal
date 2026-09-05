@@ -25,7 +25,7 @@ const CreateCampus = () => {
     leaderEmail: '',
     incomeTracking: 'Yes',
     currency: 'GHS',
-    conversionRateToDollar: 0,
+    conversionRateToDollar: 1,
     oversight: oversightId,
   }
 
