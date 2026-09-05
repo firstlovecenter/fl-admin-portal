@@ -171,10 +171,10 @@ export type GraphTypes =
 // so that data is complete the moment it's submitted and has nothing to wait
 // for. `services` was removed from this list for that reason.
 //
-// serviceAggregate / serviceAggregateWithDollar ARE genuinely Sunday-cadence:
-// the aggregate node for the in-progress week still mirrors the previous
-// week's figures until it's recomputed, so charting it early reproduces the
-// original SYN-214 duplicate-data bug. They stay gated.
+// serviceAggregate / serviceAggregateWithDollar stay gated Mon–Thu: the
+// in-progress aggregate can still mirror the previous week early in the week
+// (SYN-214). From Friday 00:00 local the current week is shown at every
+// church level (Governorship+ All Services / Denomination).
 const SUNDAY_CADENCE_CATEGORIES = [
   'serviceAggregate',
   'serviceAggregateWithDollar',
@@ -198,7 +198,8 @@ const calendarYearsOfIsoWeek = (now: Date): number[] => {
 }
 
 /** True while `(week, year)` is the week we are currently living through and
- *  its Sunday has not arrived yet — i.e. nothing is due to have been submitted. */
+ *  local time is still Mon–Thu — i.e. before Friday 00:00 unlock for
+ *  aggregate charts. */
 export const isInProgressServiceWeek = (
   week: number | string | null | undefined,
   year: number | string | null | undefined,
@@ -208,9 +209,9 @@ export const isInProgressServiceWeek = (
   const recordYear = Number(year)
   if (!Number.isFinite(recordWeek) || !Number.isFinite(recordYear)) return false
 
-  // From Sunday onwards the week's submissions are due, so its bar is real
-  // data and must show — that is the point at which the week becomes visible.
-  if (now.getDay() === 0) return false
+  // Friday (5) 00:00 onward, Saturday, and Sunday — current week is visible.
+  const day = now.getDay()
+  if (day === 0 || day >= 5) return false
 
   // `getWeekNumber` mutates the Date it is handed, hence the copy.
   if (recordWeek !== getWeekNumber(new Date(now))) return false

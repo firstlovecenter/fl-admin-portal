@@ -1,8 +1,8 @@
 /**
- * SYN-214 — the trends graphs must not plot a week whose services are not yet
- * due. Before its Sunday, the in-progress week's `AggregateServiceRecord` holds
- * whatever stray records carry that week's date, which charted as a phantom bar
- * mirroring the previous week.
+ * SYN-214 — aggregate charts must not plot the in-progress week while it can
+ * still be a phantom mirror of the previous week. Mon–Thu stay suppressed;
+ * from Friday 00:00 local the current week is shown. Raw `services` (Bacenta /
+ * Joint) stay ungated.
  *
  * Weeks used below are ISO weeks of 2026:
  *   W34 = Mon 2026-08-17 … Sun 2026-08-23
@@ -18,6 +18,8 @@ import {
 } from './graphs-utils'
 
 const MID_WEEK_35 = new Date('2026-08-26T09:00:00') // Wednesday of W35
+const THURSDAY_WEEK_35 = new Date('2026-08-27T23:00:00') // last moment still gated
+const FRIDAY_WEEK_35 = new Date('2026-08-28T00:00:00') // Friday 00:00 unlock
 const SUNDAY_WEEK_35 = new Date('2026-08-30T09:00:00') // Sunday closing W35
 
 const aggregate = (week: number, attendance: number, income: number) => ({
@@ -43,7 +45,7 @@ afterEach(() => {
 })
 
 describe('isInProgressServiceWeek', () => {
-  it('flags the current week before its Sunday', () => {
+  it('flags the current week mid-week (before Friday)', () => {
     expect(isInProgressServiceWeek(35, 2026, MID_WEEK_35)).toBe(true)
   })
 
@@ -53,10 +55,18 @@ describe('isInProgressServiceWeek', () => {
     ).toBe(true)
   })
 
-  it('still flags the current week on Saturday, the last day before it is due', () => {
+  it('still flags the current week on Thursday', () => {
+    expect(isInProgressServiceWeek(35, 2026, THURSDAY_WEEK_35)).toBe(true)
+  })
+
+  it('clears the current week at Friday 00:00', () => {
+    expect(isInProgressServiceWeek(35, 2026, FRIDAY_WEEK_35)).toBe(false)
+  })
+
+  it('clears the current week on Saturday', () => {
     expect(
       isInProgressServiceWeek(35, 2026, new Date('2026-08-29T23:00:00'))
-    ).toBe(true)
+    ).toBe(false)
   })
 
   it('clears the current week once Sunday arrives', () => {
@@ -84,16 +94,27 @@ describe('isInProgressServiceWeek', () => {
 
   // ISO week 1 of 2026 runs Mon 2025-12-29 → Sun 2026-01-04, so the aggregator
   // keys it `-1-2025` while running in December and `-1-2026` from 1 January.
-  // Both are the same in-progress week and both must stay off the chart.
+  // Both are the same in-progress week before Friday unlock.
   describe('a week straddling New Year', () => {
     it.each([
       ['Tue 2025-12-30', '2025-12-30T09:00:00'],
       ['Thu 2026-01-01', '2026-01-01T09:00:00'],
-      ['Sat 2026-01-03', '2026-01-03T09:00:00'],
     ])('suppresses both calendar keys on %s', (_label, iso) => {
       const now = new Date(iso)
       expect(isInProgressServiceWeek(1, 2025, now)).toBe(true)
       expect(isInProgressServiceWeek(1, 2026, now)).toBe(true)
+    })
+
+    it('releases both keys on Friday 2026-01-02', () => {
+      const now = new Date('2026-01-02T00:00:00')
+      expect(isInProgressServiceWeek(1, 2025, now)).toBe(false)
+      expect(isInProgressServiceWeek(1, 2026, now)).toBe(false)
+    })
+
+    it('leaves Saturday unlocked after the Friday unlock', () => {
+      const now = new Date('2026-01-03T09:00:00')
+      expect(isInProgressServiceWeek(1, 2025, now)).toBe(false)
+      expect(isInProgressServiceWeek(1, 2026, now)).toBe(false)
     })
 
     it('releases both keys on Sunday 2026-01-04', () => {
@@ -113,9 +134,9 @@ describe('isInProgressServiceWeek', () => {
 describe('getServiceGraphData — in-progress week suppression', () => {
   beforeEach(() => useClock(MID_WEEK_35))
 
-  it('drops the in-progress week from the All Services dataset', () => {
+  it('drops the in-progress week from the All Services dataset mid-week', () => {
     const church = churchWith([
-      aggregate(35, 533, 11900), // phantom: mirrors W34, not due until Sunday
+      aggregate(35, 533, 11900), // phantom: mirrors W34 before Friday unlock
       aggregate(34, 533, 11900),
       aggregate(33, 581, 17600),
       aggregate(32, 908, 7800),
@@ -127,7 +148,7 @@ describe('getServiceGraphData — in-progress week suppression', () => {
     expect(result.map((r) => r.weekLabel)).toEqual(['W32', 'W33', 'W34'])
   })
 
-  it('keeps the in-progress week out of the stat-card averages', () => {
+  it('keeps the in-progress week out of the stat-card averages mid-week', () => {
     const church = churchWith([
       aggregate(35, 1000, 1000),
       aggregate(34, 200, 400),
@@ -158,7 +179,7 @@ describe('getServiceGraphData — in-progress week suppression', () => {
     ])
   })
 
-  it('drops the in-progress week from the USD All Services dataset', () => {
+  it('drops the in-progress week from the USD All Services dataset mid-week', () => {
     const church = {
       aggregateServiceRecords: [
         { id: 'w35', week: 35, year: 2026, attendance: 533, dollarIncome: 900 },
@@ -185,6 +206,35 @@ describe('getServiceGraphData — in-progress week suppression', () => {
       expect(result.map((r) => r.week)).toEqual([34, 35])
     }
   )
+})
+
+describe('getServiceGraphData — Friday 00:00 unlock for aggregates', () => {
+  beforeEach(() => useClock(FRIDAY_WEEK_35))
+
+  it('keeps the current week in the All Services dataset from Friday', () => {
+    const church = churchWith([
+      aggregate(35, 533, 11900),
+      aggregate(34, 581, 17600),
+    ])
+
+    const result = getServiceGraphData(church, 'serviceAggregate', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
+
+  it('keeps the current week in the USD All Services dataset from Friday', () => {
+    const church = {
+      aggregateServiceRecords: [
+        { id: 'w35', week: 35, year: 2026, attendance: 533, dollarIncome: 900 },
+        { id: 'w34', week: 34, year: 2026, attendance: 581, dollarIncome: 800 },
+      ],
+    } as never
+
+    const result =
+      getServiceGraphData(church, 'serviceAggregateWithDollar', 24) ?? []
+
+    expect(result.map((r) => r.week)).toEqual([34, 35])
+  })
 })
 
 // SYN-214's original fix over-scoped the gate to `services` too — the raw
