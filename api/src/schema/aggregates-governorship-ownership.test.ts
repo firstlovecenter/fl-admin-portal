@@ -38,3 +38,24 @@ describe('Governorship aggregate ownership filter', () => {
     }
   )
 })
+
+describe('AggregateServiceRecord Inf sanitization', () => {
+  it('Campus aggregateServiceRecords maps Inf dollarIncome/income to 0.0', () => {
+    const typeStart = sdl.indexOf('extend type Campus {')
+    expect(typeStart).toBeGreaterThanOrEqual(0)
+    const nextExtend = sdl.indexOf('extend type ', typeStart + 1)
+    const block = sdl.slice(
+      typeStart,
+      nextExtend === -1 ? sdl.length : nextExtend
+    )
+    const fieldIdx = block.indexOf('aggregateServiceRecords(')
+    const statementMatch = block
+      .slice(fieldIdx)
+      .match(/statement:\s*"""([\s\S]*?)"""/)
+    expect(statementMatch).not.toBeNull()
+    const cypher = statementMatch![1]
+    expect(cypher).toContain('aggregate.dollarIncome = Inf')
+    expect(cypher).toContain('THEN 0.0 ELSE toFloat(aggregate.dollarIncome)')
+    expect(cypher).toContain('aggregate.income = Inf')
+  })
+})
