@@ -110,12 +110,12 @@ describe('isInProgressServiceWeek', () => {
   })
 })
 
-describe('getServiceGraphData — in-progress week suppression', () => {
+describe('getServiceGraphData — weekday categories keep the current week', () => {
   beforeEach(() => useClock(MID_WEEK_35))
 
-  it('drops the in-progress week from the All Services dataset', () => {
+  it('keeps the in-progress week in the All Services dataset', () => {
     const church = churchWith([
-      aggregate(35, 533, 11900), // phantom: mirrors W34, not due until Sunday
+      aggregate(35, 533, 11900),
       aggregate(34, 533, 11900),
       aggregate(33, 581, 17600),
       aggregate(32, 908, 7800),
@@ -123,11 +123,16 @@ describe('getServiceGraphData — in-progress week suppression', () => {
 
     const result = getServiceGraphData(church, 'serviceAggregate', 24) ?? []
 
-    expect(result.map((r) => r.week)).toEqual([32, 33, 34])
-    expect(result.map((r) => r.weekLabel)).toEqual(['W32', 'W33', 'W34'])
+    expect(result.map((r) => r.week)).toEqual([32, 33, 34, 35])
+    expect(result.map((r) => r.weekLabel)).toEqual([
+      'W32',
+      'W33',
+      'W34',
+      'W35',
+    ])
   })
 
-  it('drops the in-progress week from the Joint Service dataset', () => {
+  it('keeps the in-progress week in the Joint Service dataset', () => {
     const church = {
       services: [
         {
@@ -147,10 +152,10 @@ describe('getServiceGraphData — in-progress week suppression', () => {
 
     const result = getServiceGraphData(church, 'services', 24) ?? []
 
-    expect(result.map((r) => r.week)).toEqual([34])
+    expect(result.map((r) => r.week)).toEqual([34, 35])
   })
 
-  it('keeps the in-progress week out of the stat-card averages', () => {
+  it('includes the in-progress week in the stat-card averages', () => {
     const church = churchWith([
       aggregate(35, 1000, 1000),
       aggregate(34, 200, 400),
@@ -159,29 +164,21 @@ describe('getServiceGraphData — in-progress week suppression', () => {
 
     const data = getServiceGraphData(church, 'serviceAggregate', 24) ?? []
 
-    // (100 + 200) / 2 — the phantom 1000 must not drag the average up.
-    expect(getMonthlyStatAverage(data as never, 'attendance')).toBe('150.00')
+    // Default window is 4; three weeks → (1000 + 200 + 100) / 3
+    expect(getMonthlyStatAverage(data as never, 'attendance')).toBe('433.33')
   })
 
-  it('falls back to the empty placeholder when the only week is in progress', () => {
+  it('renders the in-progress week when it is the only week present', () => {
     const result = getServiceGraphData(
       churchWith([aggregate(35, 533, 11900)]),
       'serviceAggregate',
       24
     )
 
-    expect(result).toEqual([
-      {
-        __typename: 'serviceAggregate',
-        date: '',
-        week: null,
-        attendance: null,
-        income: null,
-      },
-    ])
+    expect(result?.map((r) => r.week)).toEqual([35])
   })
 
-  it('drops the in-progress week from the USD All Services dataset', () => {
+  it('keeps the in-progress week in the USD All Services dataset', () => {
     const church = {
       aggregateServiceRecords: [
         { id: 'w35', week: 35, year: 2026, attendance: 533, dollarIncome: 900 },
@@ -192,7 +189,7 @@ describe('getServiceGraphData — in-progress week suppression', () => {
     const result =
       getServiceGraphData(church, 'serviceAggregateWithDollar', 24) ?? []
 
-    expect(result.map((r) => r.week)).toEqual([34])
+    expect(result.map((r) => r.week)).toEqual([34, 35])
   })
 
   it.each<GraphTypes>(['bussingAggregate', 'rehearsalAggregate'])(
@@ -210,7 +207,7 @@ describe('getServiceGraphData — in-progress week suppression', () => {
   )
 })
 
-describe('getServiceGraphData — on Sunday the week becomes visible', () => {
+describe('getServiceGraphData — on Sunday the week remains visible', () => {
   beforeEach(() => useClock(SUNDAY_WEEK_35))
 
   it('renders the current week once its Sunday has arrived', () => {

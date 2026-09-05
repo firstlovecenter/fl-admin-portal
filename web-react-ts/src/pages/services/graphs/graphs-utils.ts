@@ -166,21 +166,11 @@ export type GraphTypes =
   | 'multiplicationAggregate'
   | 'swellBussing'
 
-// The church week runs Monday→Sunday with Sunday as its LAST day
-// (kb/01-glossary.md, "Church week"), so a week's figures are only due once its
-// Sunday arrives. Charting the week we are still living through plots whatever
-// partial or mis-dated records happen to carry its date — SYN-214, where that
-// bar mirrored the previous week's figures.
-//
-// Scoped to the service categories named in that ticket. Rehearsals, ministry
-// meetings and on-stage attendance genuinely happen mid-week, so gating them
-// would hide data that really was submitted. Bussing is Sunday-only and has the
-// same exposure, but it is a separate tab and is left to a follow-up.
-const SUNDAY_CADENCE_CATEGORIES = [
-  'services',
-  'serviceAggregate',
-  'serviceAggregateWithDollar',
-] as const satisfies readonly GraphTypes[]
+// SYN-214 gated weekday service charts until Sunday, which also hid real
+// midweek Bacenta / Weekday Total bars. Weekday categories stay ungated —
+// Bacentas meet Wed–Sat (kb/01-glossary.md). Keep the empty list + filter so
+// a true Sunday-only series can opt in later without deleting the helper.
+const SUNDAY_CADENCE_CATEGORIES = [] as const satisfies readonly GraphTypes[]
 
 /** The calendar years the ISO week containing `now` falls in — usually one, but
  *  a week straddling New Year spans two. Aggregates are keyed on Neo4j's
