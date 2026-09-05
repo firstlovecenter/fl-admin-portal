@@ -206,7 +206,20 @@ extend type Campus {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
+      RETURN {
+        id: aggregate.id,
+        week: aggregate.week,
+        year: aggregate.year,
+        attendance: aggregate.attendance,
+        income: CASE
+          WHEN aggregate.income = Inf OR aggregate.income = -Inf OR aggregate.income IS NULL
+          THEN 0.0 ELSE toFloat(aggregate.income) END,
+        dollarIncome: CASE
+          WHEN aggregate.dollarIncome = Inf OR aggregate.dollarIncome = -Inf OR aggregate.dollarIncome IS NULL
+          THEN 0.0 ELSE toFloat(aggregate.dollarIncome) END,
+        currency: aggregate.currency,
+        numberOfServices: aggregate.numberOfServices
+      } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )

@@ -81,6 +81,22 @@ const CampusForm = ({
     leaderId: Yup.string().required(
       t('directory.campusForm.validation.leaderRequired')
     ),
+    conversionRateToDollar: Yup.number()
+      .typeError(
+        t('directory.campusForm.validation.conversionRateRequired', {
+          defaultValue: 'Conversion rate must be a number',
+        })
+      )
+      .positive(
+        t('directory.campusForm.validation.conversionRatePositive', {
+          defaultValue: 'Conversion rate must be greater than zero',
+        })
+      )
+      .required(
+        t('directory.campusForm.validation.conversionRateRequired', {
+          defaultValue: 'Conversion rate is required',
+        })
+      ),
   })
 
   return (
