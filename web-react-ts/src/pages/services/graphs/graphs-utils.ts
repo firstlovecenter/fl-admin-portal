@@ -166,11 +166,19 @@ export type GraphTypes =
   | 'multiplicationAggregate'
   | 'swellBussing'
 
-// SYN-214 gated weekday service charts until Sunday, which also hid real
-// midweek Bacenta / Weekday Total bars. Weekday categories stay ungated —
-// Bacentas meet Wed–Sat (kb/01-glossary.md). Keep the empty list + filter so
-// a true Sunday-only series can opt in later without deleting the helper.
-const SUNDAY_CADENCE_CATEGORIES = [] as const satisfies readonly GraphTypes[]
+// SYN-214 originally gated `services` here too, which hid real midweek
+// Bacenta / Weekday Total bars — Bacentas meet Wed–Sat (kb/01-glossary.md),
+// so that data is complete the moment it's submitted and has nothing to wait
+// for. `services` was removed from this list for that reason.
+//
+// serviceAggregate / serviceAggregateWithDollar ARE genuinely Sunday-cadence:
+// the aggregate node for the in-progress week still mirrors the previous
+// week's figures until it's recomputed, so charting it early reproduces the
+// original SYN-214 duplicate-data bug. They stay gated.
+const SUNDAY_CADENCE_CATEGORIES = [
+  'serviceAggregate',
+  'serviceAggregateWithDollar',
+] as const satisfies readonly GraphTypes[]
 
 /** The calendar years the ISO week containing `now` falls in — usually one, but
  *  a week straddling New Year spans two. Aggregates are keyed on Neo4j's
