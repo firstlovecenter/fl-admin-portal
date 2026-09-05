@@ -174,6 +174,16 @@ const serviceMutation = {
         throw new Error(errorMessage.vacation_cannot_fill_service)
       }
 
+      // Division by zero stores Inf in Neo4j and GraphQL Float serialization
+      // then fails ("Float cannot represent non numeric value: Infinity") on
+      // campus trends / admin dashboard queries that select dollarIncome.
+      const conversionRate = Number(currencyCheck.conversionRateToDollar)
+      if (!(conversionRate > 0) || !Number.isFinite(conversionRate)) {
+        throw new Error(
+          'Campus conversion rate to dollar must be a positive number before recording income'
+        )
+      }
+
       // All four writes (record + absorb + leaf-recompute + parent-recompute)
       // run in a single transaction so a failure mid-flow rolls everything
       // back. ADR-005 idempotency for money-bearing flows.
@@ -181,7 +191,7 @@ const serviceMutation = {
         .executeWrite(async (tx) => {
           const createRes = await tx.run(recordService, {
             ...args,
-            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            conversionRateToDollar: conversionRate,
             jwt: context.jwt,
           })
 
@@ -196,7 +206,7 @@ const serviceMutation = {
 
           await tx.run(absorbAllTransactions, {
             ...args,
-            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            conversionRateToDollar: conversionRate,
             serviceRecordId,
           })
 
@@ -262,11 +272,18 @@ const serviceMutation = {
         throw new Error(errorMessage.vacation_cannot_fill_service)
       }
 
+      const conversionRate = Number(currencyCheck.conversionRateToDollar)
+      if (!(conversionRate > 0) || !Number.isFinite(conversionRate)) {
+        throw new Error(
+          'Campus conversion rate to dollar must be a positive number before recording income'
+        )
+      }
+
       const cypherResponse = await session
         .executeWrite(async (tx) => {
           const createRes = await tx.run(recordSpecialService, {
             ...args,
-            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            conversionRateToDollar: conversionRate,
             jwt: context.jwt,
           })
 
@@ -281,7 +298,7 @@ const serviceMutation = {
 
           await tx.run(absorbAllTransactions, {
             ...args,
-            conversionRateToDollar: currencyCheck.conversionRateToDollar,
+            conversionRateToDollar: conversionRate,
             serviceRecordId,
           })
 
