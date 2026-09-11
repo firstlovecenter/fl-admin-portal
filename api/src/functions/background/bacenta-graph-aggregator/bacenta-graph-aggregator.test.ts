@@ -203,6 +203,65 @@ describe('Cypher invariants — CURRENT_HISTORY traversal', () => {
 })
 
 // ---------------------------------------------------------------------------
+// 5b. SYN-215: no phantom current-week aggregate
+// ---------------------------------------------------------------------------
+
+describe('Cypher invariants — SYN-215 no phantom current-week aggregate', () => {
+  test.each(ROLLUP_QUERIES)(
+    '$name: MATCHes the BussingRecords before MERGEing the aggregate node',
+    ({ query }) => {
+      // Regression guard. When the MERGE ran first, a run on a day with no
+      // bussing records (Mon-Sat — bussing happens on Sunday) still created the
+      // current-week aggregate before the record MATCH eliminated the row. That
+      // left an empty node which the zero-out pass filled with zeros, feeding
+      // graphs, reports and downloads a bogus zeroed current-week row.
+      const recordMatch = query.indexOf('(record:BussingRecord)')
+      const aggregateMerge = query.search(
+        /MERGE\s*\(\s*aggregate\s*:\s*AggregateBussingRecord/
+      )
+
+      expect(recordMatch).toBeGreaterThan(-1)
+      expect(aggregateMerge).toBeGreaterThan(-1)
+      expect(recordMatch).toBeLessThan(aggregateMerge)
+    }
+  )
+
+  test.each(ROLLUP_QUERIES)(
+    '$name: puts the row-eliminating aggregation upstream of BOTH writes',
+    ({ query }) => {
+      // Both writes — the ServiceLog MATCH that anchors the relationship and
+      // the aggregate MERGE itself — must sit after the collect/SUM stage, so
+      // that a church with no records this week produces no row and therefore
+      // no node at all.
+      const collectStage = query.indexOf('collect(record.id)')
+      const logMatch = query.search(
+        /MATCH\s*\(\w+\)\s*-\s*\[:\s*CURRENT_HISTORY\s*\]\s*->\s*\(\s*log\s*:\s*ServiceLog\s*\)/
+      )
+      const aggregateMerge = query.search(
+        /MERGE\s*\(\s*aggregate\s*:\s*AggregateBussingRecord/
+      )
+
+      expect(collectStage).toBeGreaterThan(-1)
+      expect(logMatch).toBeGreaterThan(collectStage)
+      expect(aggregateMerge).toBeGreaterThan(collectStage)
+    }
+  )
+
+  test.each(ROLLUP_QUERIES)(
+    '$name: filters source records by the current ISO week, not a single day',
+    ({ query }) => {
+      // The aggregate is keyed <church.id>-<week>-<year>, so its source window
+      // must be the whole week. A `TimeGraph {date: date()}` day filter let a
+      // later day in the same week overwrite an earlier one.
+      expect(query).not.toMatch(/TimeGraph\s*\{\s*date\s*:\s*date\s*\(\s*\)\s*\}/)
+      expect(query).toMatch(
+        /serviceDate\.date\.week\s*=\s*date\s*\(\s*\)\.week\s+AND\s+serviceDate\.date\.year\s*=\s*date\s*\(\s*\)\.year/
+      )
+    }
+  )
+})
+
+// ---------------------------------------------------------------------------
 // 6. Driver contract — session lifecycle
 // ---------------------------------------------------------------------------
 
