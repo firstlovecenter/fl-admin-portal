@@ -8,6 +8,7 @@ import {
 } from 'global-types'
 import { GraphTypes } from 'pages/services/graphs/graphs-utils'
 import { currentIntlLocale } from 'lib/intl-locale'
+import { getWeekNumber, getISOWeekYear } from 'lib/date-utils'
 
 //Global Constants
 export const PHONE_NUM_REGEX = /^[+][(]{0,1}[1-9]{1,4}[)]{0,1}[-\s/0-9]*$/
@@ -235,30 +236,10 @@ export const convertNeoWeekdayToJSWeekday = (neoWeekday: number): number => {
   return neoWeekday === 7 ? 0 : neoWeekday
 }
 
-export const getWeekNumber = (date?: Date | string): number => {
-  const target = typeof date === 'string' ? new Date(date) : date || new Date()
-  target.setHours(0, 0, 0, 0)
-  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
-  const firstThursday = new Date(target.getFullYear(), 0, 4)
-  return (
-    1 +
-    Math.ceil(
-      ((target.getTime() - firstThursday.getTime()) / 86400000 -
-        3 +
-        ((firstThursday.getDay() + 6) % 7)) /
-        7
-    )
-  )
-}
-
-// Returns the ISO 8601 week-year, which can differ from the calendar year
-// for dates in late December (when ISO week 1 has already started) or early January.
-export const getISOWeekYear = (date?: Date | string): number => {
-  const target = typeof date === 'string' ? new Date(date) : date ? new Date(date) : new Date()
-  target.setHours(0, 0, 0, 0)
-  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
-  return target.getFullYear()
-}
+// Both live in `lib/date-utils` now — a single ISO 8601 implementation that
+// copies the Date it is given. Re-exported here so the existing
+// `from 'global-utils'` callers keep working (SYN-218).
+export { getWeekNumber, getISOWeekYear }
 
 export const last3Weeks = (): number[] => {
   const oneWeekAgo = new Date(Date.now() - 604800000).toString()

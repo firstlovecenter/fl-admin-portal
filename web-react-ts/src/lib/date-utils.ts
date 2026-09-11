@@ -144,24 +144,51 @@ export const getMemberDob = (
   return null
 }
 
-export const getWeekNumber = (date?: string): number => {
-  const currentdate = date ? new Date(date) : new Date()
-  const oneJan = new Date(currentdate.getFullYear(), 0, 1)
-  let adjustedForMonday = 8 - oneJan.getDay()
-  if (adjustedForMonday <= 0) adjustedForMonday += 7
-  if (adjustedForMonday >= 8) adjustedForMonday -= 7
-  oneJan.setDate(oneJan.getDate() + adjustedForMonday)
-  const numberOfDays = Math.floor(
-    (currentdate.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000)
-  )
-  return Math.ceil(numberOfDays / 7)
+/**
+ * Thursday of the ISO 8601 week containing `date`, as a fresh Date.
+ *
+ * Always copies: the caller's Date is never touched. Both `getWeekNumber` and
+ * `getISOWeekYear` are built on this, so they agree by construction — an
+ * earlier pair of hand-rolled copies did not, and `getWeekNumber` mutated its
+ * argument out from under the caller (SYN-218).
+ */
+const isoWeekThursday = (date?: Date | string): Date => {
+  const target = date ? new Date(date) : new Date()
+  target.setHours(0, 0, 0, 0)
+  // Shift to this ISO week's Thursday. Idempotent: a Thursday shifts by 0.
+  target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7))
+  return target
 }
 
-export const last3Weeks = (): number[] => {
-  const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toString()
-  const last2Weeks = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toString()
-  return [getWeekNumber(), getWeekNumber(lastWeek), getWeekNumber(last2Weeks)]
+/**
+ * ISO 8601 week number (1–53), the convention the backend keys weekly
+ * aggregates on — see `api/src/resolvers/utils/iso-week.ts` and the weekly
+ * Lambdas. Verified to agree with that implementation on every day from 2022
+ * through 2027.
+ *
+ * Intentional drift from upstream: `jd-date-utils@1.0.9` counted weeks from
+ * the first Monday on or after 1 January, which is not ISO 8601 — it ran a
+ * full week behind the backend on most days (and returned 0 in early
+ * January), so week-scoped queries fetched the previous week's aggregates.
+ */
+export const getWeekNumber = (date?: Date | string): number => {
+  const target = isoWeekThursday(date)
+  const firstThursday = new Date(target.getFullYear(), 0, 4)
+  return (
+    1 +
+    Math.ceil(
+      ((target.getTime() - firstThursday.getTime()) / 86400000 -
+        3 +
+        ((firstThursday.getDay() + 6) % 7)) /
+        7
+    )
+  )
 }
+
+// Returns the ISO 8601 week-year, which can differ from the calendar year
+// for dates in late December (when ISO week 1 has already started) or early January.
+export const getISOWeekYear = (date?: Date | string): number =>
+  isoWeekThursday(date).getFullYear()
 
 // Compares calendar days directly rather than string-matching `parseDate`'s
 // output against the literal 'Today'. That comparison was correct while

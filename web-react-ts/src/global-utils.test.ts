@@ -10,6 +10,8 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import i18n from 'lib/i18n'
 import { getHumanReadableDate, getHumanReadableDateTime } from './global-utils'
+import * as globalUtils from './global-utils'
+import * as dateUtils from 'lib/date-utils'
 
 afterEach(async () => {
   await i18n.changeLanguage('en')
@@ -54,5 +56,27 @@ describe('getHumanReadableDateTime', () => {
 
   it('returns undefined for an empty date', () => {
     expect(getHumanReadableDateTime('')).toBeUndefined()
+  })
+})
+
+/**
+ * SYN-218. `global-utils` used to carry its own `getWeekNumber` /
+ * `getISOWeekYear` alongside a second, divergent `getWeekNumber` in
+ * `lib/date-utils`. They now resolve to one implementation; these guard
+ * against a copy being reintroduced here.
+ */
+describe('week helpers are re-exported, not re-implemented (SYN-218)', () => {
+  it('exports the very same function objects as lib/date-utils', () => {
+    expect(globalUtils.getWeekNumber).toBe(dateUtils.getWeekNumber)
+    expect(globalUtils.getISOWeekYear).toBe(dateUtils.getISOWeekYear)
+  })
+
+  it('does not mutate the Date handed to it', () => {
+    const input = new Date(2026, 7, 31, 12, 30, 15, 250)
+    const snapshot = input.getTime()
+
+    expect(globalUtils.getWeekNumber(input)).toBe(36)
+    expect(globalUtils.getISOWeekYear(input)).toBe(2026)
+    expect(input.getTime()).toBe(snapshot)
   })
 })

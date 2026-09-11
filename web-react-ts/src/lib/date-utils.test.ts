@@ -27,6 +27,8 @@ import {
   getTodayTime,
   addHours,
   addMinutes,
+  getWeekNumber,
+  getISOWeekYear,
 } from './date-utils'
 
 const daysAgo = (n: number) => {
@@ -200,5 +202,120 @@ describe('pure date maths (inlined from jd-date-utils)', () => {
     expect(addHours(iso, 3).toISOString()).toBe('2026-07-26T12:00:00.000Z')
     expect(addMinutes(iso, 45).toISOString()).toBe('2026-07-26T09:45:00.000Z')
     expect(iso).toBe('2026-07-26T09:00:00.000Z')
+  })
+})
+
+/**
+ * SYN-218. Two things were wrong before this suite existed:
+ *
+ *  1. `global-utils.getWeekNumber` MUTATED the Date it was handed — it shifted
+ *     the caller's object to that ISO week's Thursday and zeroed the time.
+ *     Callers had to defend with `getWeekNumber(new Date(now))`.
+ *  2. A second, divergent `getWeekNumber` lived here, counting weeks from the
+ *     first Monday on or after 1 January rather than by ISO 8601. It ran a
+ *     full week behind on most days, so the "This Week" defaulter pages and
+ *     `useChurchLevel`'s default week queried the wrong week's aggregates.
+ *
+ * There is now one ISO 8601 implementation, it copies, and `global-utils`
+ * re-exports it.
+ */
+describe('getWeekNumber / getISOWeekYear (SYN-218)', () => {
+  it('does not mutate the Date it is given', () => {
+    const input = new Date(2026, 7, 31, 12, 30, 15, 250)
+    const snapshot = input.getTime()
+
+    getWeekNumber(input)
+    getISOWeekYear(input)
+
+    // Before the fix this had shifted to Thu 3 Sep 2026 at 00:00:00.000.
+    expect(input.getTime()).toBe(snapshot)
+  })
+
+  it('is safe to call twice on the same Date, and to interleave the two', () => {
+    // `shepherding-control-utils.shiftAnchor` calls both on one Date; the
+    // graph "in-progress week" check reads `now` again afterwards.
+    const anchor = new Date(2026, 7, 31)
+    expect(getWeekNumber(anchor)).toBe(36)
+    expect(getISOWeekYear(anchor)).toBe(2026)
+    expect(getWeekNumber(anchor)).toBe(36)
+    expect(anchor.getDay()).toBe(1) // still the Monday it started as
+  })
+
+  it('returns the ISO 8601 week number, not the legacy first-Monday count', () => {
+    // Regression: the old implementation here returned 34 for this date.
+    expect(getWeekNumber(new Date(2026, 7, 31))).toBe(36)
+    // ...and 0 for early January, which is not a valid week number at all.
+    expect(getWeekNumber(new Date(2026, 0, 4))).toBe(1)
+  })
+
+  it('handles the year boundary, where week and week-year disagree', () => {
+    // Mon 29 Dec 2025 already belongs to ISO week 1 of 2026.
+    const boundary = new Date(2025, 11, 29)
+    expect(getWeekNumber(boundary)).toBe(1)
+    expect(getISOWeekYear(boundary)).toBe(2026)
+
+    // Fri 1 Jan 2021 is still ISO week 53 of 2020.
+    const backwards = new Date(2021, 0, 1)
+    expect(getWeekNumber(backwards)).toBe(53)
+    expect(getISOWeekYear(backwards)).toBe(2020)
+  })
+
+  it('accepts a Date, an ISO string, or nothing at all', () => {
+    expect(getWeekNumber(new Date(2026, 7, 31))).toBe(36)
+    expect(getWeekNumber('2026-08-31T00:00:00')).toBe(36)
+    expect(getISOWeekYear('2026-08-31T00:00:00')).toBe(2026)
+
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 7, 31, 9, 0, 0))
+    expect(getWeekNumber()).toBe(36)
+    expect(getISOWeekYear()).toBe(2026)
+    vi.useRealTimers()
+  })
+
+  it('treats an empty string as "now" rather than producing NaN', () => {
+    // The removed `global-utils` copy branched on `typeof date === 'string'`,
+    // so `''` reached `new Date('')` and returned NaN. Both live callers
+    // (`UserDashboard`) short-circuit on a falsy date, so nothing depended on
+    // that; pinning the coercion here because it is otherwise silent.
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 7, 31, 9, 0, 0))
+    expect(getWeekNumber('')).toBe(36)
+    expect(getISOWeekYear('')).toBe(2026)
+    vi.useRealTimers()
+  })
+
+  it('agrees with the backend ISO week on every day across a 6-year sweep', () => {
+    // Mirrors `api/src/resolvers/utils/iso-week.ts`. The backend keys weekly
+    // aggregates on this, so any drift means the FE asks for a week the data
+    // is not filed under.
+    const backendIsoWeek = (date: Date): number => {
+      const target = new Date(date.getTime())
+      target.setHours(0, 0, 0, 0)
+      const dayNum = target.getDay() || 7
+      target.setDate(target.getDate() + 4 - dayNum)
+      const yearStart = new Date(target.getFullYear(), 0, 1)
+      return Math.ceil(
+        ((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+      )
+    }
+
+    // Driven by an explicit end date, not a day count: the interesting cases
+    // are the ISO year boundaries, and an off-by-a-leap-day count would stop
+    // just short of the last one.
+    const mismatches: string[] = []
+    const day = new Date(2022, 0, 1)
+    const end = new Date(2028, 0, 7)
+    while (day <= end) {
+      const ours = getWeekNumber(day)
+      const theirs = backendIsoWeek(day)
+      if (ours !== theirs) {
+        mismatches.push(`${day.toDateString()}: fe=${ours} be=${theirs}`)
+      }
+      day.setDate(day.getDate() + 1)
+    }
+
+    expect(mismatches).toEqual([])
+    // Guard against the loop silently not running.
+    expect(day.getFullYear()).toBe(2028)
   })
 })
