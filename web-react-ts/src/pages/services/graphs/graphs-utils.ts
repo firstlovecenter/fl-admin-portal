@@ -176,9 +176,18 @@ export type GraphTypes =
 // in-progress aggregate can still mirror the previous week early in the week
 // (SYN-214). From Friday 00:00 local the current week is shown at every
 // church level (Governorship+ All Services / Denomination).
+//
+// Bussing runs on that same cadence and carries the same exposure: Sunday's
+// bussing belongs to the week that ends on it (kb/01-glossary.md), so the
+// in-progress week is not yet due at any church level — SYN-216.
+//
+// Categories left out are the ones whose records genuinely land mid-week;
+// gating those would hide data that really was submitted.
 const SUNDAY_CADENCE_CATEGORIES = [
   'serviceAggregate',
   'serviceAggregateWithDollar',
+  'bussing',
+  'bussingAggregate',
 ] as const satisfies readonly GraphTypes[]
 
 /** The calendar years the ISO week containing `now` falls in — usually one, but
