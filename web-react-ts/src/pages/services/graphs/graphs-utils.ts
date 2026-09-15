@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
-import { average, getWeekNumber } from 'global-utils'
+import { average } from 'global-utils'
+import { getWeekNumber } from 'lib/date-utils'
 
 const numberOfWeeks = 4
 
@@ -166,11 +167,15 @@ export type GraphTypes =
   | 'multiplicationAggregate'
   | 'swellBussing'
 
-// The church week runs Monday→Sunday with Sunday as its LAST day
-// (kb/01-glossary.md, "Church week"), so a week's figures are only due once its
-// Sunday arrives. Charting the week we are still living through plots whatever
-// partial or mis-dated records happen to carry its date — SYN-214, where that
-// bar mirrored the previous week's figures.
+// SYN-214 originally gated `services` here too, which hid real midweek
+// Bacenta / Weekday Total bars — Bacentas meet Wed–Sat (kb/01-glossary.md),
+// so that data is complete the moment it's submitted and has nothing to wait
+// for. `services` was removed from this list for that reason.
+//
+// serviceAggregate / serviceAggregateWithDollar stay gated Mon–Thu: the
+// in-progress aggregate can still mirror the previous week early in the week
+// (SYN-214). From Friday 00:00 local the current week is shown at every
+// church level (Governorship+ All Services / Denomination).
 //
 // Bussing runs on that same cadence and carries the same exposure: Sunday's
 // bussing belongs to the week that ends on it (kb/01-glossary.md), so the
@@ -179,7 +184,6 @@ export type GraphTypes =
 // Categories left out are the ones whose records genuinely land mid-week;
 // gating those would hide data that really was submitted.
 const SUNDAY_CADENCE_CATEGORIES = [
-  'services',
   'serviceAggregate',
   'serviceAggregateWithDollar',
   'bussing',
@@ -204,7 +208,8 @@ const calendarYearsOfIsoWeek = (now: Date): number[] => {
 }
 
 /** True while `(week, year)` is the week we are currently living through and
- *  its Sunday has not arrived yet — i.e. nothing is due to have been submitted. */
+ *  local time is still Mon–Thu — i.e. before Friday 00:00 unlock for
+ *  aggregate charts. */
 export const isInProgressServiceWeek = (
   week: number | string | null | undefined,
   year: number | string | null | undefined,
@@ -214,12 +219,11 @@ export const isInProgressServiceWeek = (
   const recordYear = Number(year)
   if (!Number.isFinite(recordWeek) || !Number.isFinite(recordYear)) return false
 
-  // From Sunday onwards the week's submissions are due, so its bar is real
-  // data and must show — that is the point at which the week becomes visible.
-  if (now.getDay() === 0) return false
+  // Friday (5) 00:00 onward, Saturday, and Sunday — current week is visible.
+  const day = now.getDay()
+  if (day === 0 || day >= 5) return false
 
-  // `getWeekNumber` mutates the Date it is handed, hence the copy.
-  if (recordWeek !== getWeekNumber(new Date(now))) return false
+  if (recordWeek !== getWeekNumber(now)) return false
   return calendarYearsOfIsoWeek(now).includes(recordYear)
 }
 
