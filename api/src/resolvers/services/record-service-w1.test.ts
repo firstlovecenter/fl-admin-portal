@@ -284,7 +284,7 @@ describe('W1 — RecordService: cedi + foreign currency math', () => {
     // is the one returned by `getCurrency`, NOT a hard-coded constant — a
     // recurring source of bugs when refactoring this resolver.
     expect(firstCall.cypher).toMatch(
-      /serviceRecord\.dollarIncome = round\(toFloat\(\$income \/ \$conversionRateToDollar\), 2\)/
+      /WHEN \$conversionRateToDollar > 0[\s\S]*?\$income \/ \$conversionRateToDollar/
     )
   })
 
@@ -295,8 +295,9 @@ describe('W1 — RecordService: cedi + foreign currency math', () => {
     // in online giving (`$income + $onlineGiving`).
     expect(recordService).toMatch(/serviceRecord\.income = round\(toFloat\(\$income\), 2\)/)
     expect(recordService).toMatch(/serviceRecord\.cash = round\(toFloat\(\$income\), 2\)/)
+    expect(recordService).toMatch(/WHEN \$conversionRateToDollar > 0/)
     expect(recordService).toMatch(
-      /serviceRecord\.dollarIncome = round\(toFloat\(\$income \/ \$conversionRateToDollar\), 2\)/
+      /\$income \/ \$conversionRateToDollar/
     )
   })
 
@@ -311,8 +312,9 @@ describe('W1 — RecordService: cedi + foreign currency math', () => {
     expect(absorbAllTransactions).toMatch(
       /serviceRecord\.income = round\(toFloat\(amount \+ serviceRecord\.income\), 2\)/
     )
+    expect(absorbAllTransactions).toMatch(/WHEN \$conversionRateToDollar > 0/)
     expect(absorbAllTransactions).toMatch(
-      /serviceRecord\.dollarIncome = round\(toFloat\(serviceRecord\.income \/ \$conversionRateToDollar\), 2\)/
+      /serviceRecord\.income \/ \$conversionRateToDollar/
     )
   })
 
@@ -502,6 +504,16 @@ describe('W1 — RecordService: validation', () => {
     ).rejects.toThrow('income must be a finite number.')
 
     expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('W1: conversionRateToDollar of 0 is rejected before the income write (no Inf dollarIncome)', async () => {
+    primeHappyPathReads({ conversionRateToDollar: 0 })
+
+    await expect(
+      serviceMutation.RecordService(null, baseArgs, context)
+    ).rejects.toThrow(/conversion rate to dollar must be a positive number/i)
+
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 

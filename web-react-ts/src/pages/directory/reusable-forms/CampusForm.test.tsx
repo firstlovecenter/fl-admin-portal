@@ -85,6 +85,36 @@ function renderForm() {
   )
 }
 
+describe('CampusForm conversion rate validation', () => {
+  it('rejects conversion rate of 0 on submit', async () => {
+    const onSubmit = vi.fn()
+    render(
+      <MemoryRouter initialEntries={['/campus/create']}>
+        <MockedProvider mocks={[]}>
+          <ChurchContext.Provider value={churchContextValue}>
+            <MemberContext.Provider value={memberContextValue}>
+              <CampusForm
+                initialValues={{ ...initialValues, conversionRateToDollar: 0 }}
+                onSubmit={onSubmit}
+                title="Create Campus Form"
+                newCampus
+              />
+            </MemberContext.Provider>
+          </ChurchContext.Provider>
+        </MockedProvider>
+      </MemoryRouter>
+    )
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /submit|save|create/i }))
+
+    expect(
+      await screen.findByText('Conversion rate must be greater than zero')
+    ).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+})
+
 describe('CampusForm i18n', () => {
   it('renders the default English heading, labels, Select labels, and trigger buttons', () => {
     renderForm()

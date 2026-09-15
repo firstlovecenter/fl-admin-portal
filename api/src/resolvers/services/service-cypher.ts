@@ -43,7 +43,11 @@ WITH serviceRecord, log, SUM(transaction.amount) AS amount
      SET serviceRecord.onlineGiving = amount,
      serviceRecord.cash = round(toFloat(serviceRecord.income), 2),
      serviceRecord.income = round(toFloat(amount + serviceRecord.income), 2),
-     serviceRecord.dollarIncome = round(toFloat(serviceRecord.income / $conversionRateToDollar), 2)
+     serviceRecord.dollarIncome = CASE
+       WHEN $conversionRateToDollar > 0
+       THEN round(toFloat(serviceRecord.income / $conversionRateToDollar), 2)
+       ELSE 0.0
+     END
 
 RETURN serviceRecord
 `
@@ -56,7 +60,11 @@ export const recordService = `
         serviceRecord.attendance = $attendance,
         serviceRecord.income = round(toFloat($income), 2),
         serviceRecord.cash = round(toFloat($income), 2),
-        serviceRecord.dollarIncome = round(toFloat($income / $conversionRateToDollar), 2),
+        serviceRecord.dollarIncome = CASE
+          WHEN $conversionRateToDollar > 0
+          THEN round(toFloat($income / $conversionRateToDollar), 2)
+          ELSE 0.0
+        END,
         serviceRecord.foreignCurrency = $foreignCurrency,
         serviceRecord.numberOfTithers = $numberOfTithers,
         serviceRecord.treasurerSelfie = $treasurerSelfie,
@@ -90,7 +98,11 @@ export const recordSpecialService = `
         serviceRecord.attendance = $attendance,
         serviceRecord.income = round(toFloat($income), 2),
         serviceRecord.cash = round(toFloat($income), 2),
-        serviceRecord.dollarIncome = round(toFloat($income / $conversionRateToDollar), 2),
+        serviceRecord.dollarIncome = CASE
+          WHEN $conversionRateToDollar > 0
+          THEN round(toFloat($income / $conversionRateToDollar), 2)
+          ELSE 0.0
+        END,
         serviceRecord.foreignCurrency = $foreignCurrency,
         serviceRecord.numberOfTithers = $numberOfTithers,
         serviceRecord.treasurerSelfie = $treasurerSelfie,
