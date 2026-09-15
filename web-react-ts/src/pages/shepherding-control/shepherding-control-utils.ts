@@ -1,6 +1,7 @@
 import { DocumentNode } from 'graphql'
 import { CurrentUser } from 'global-types'
 import { getISOWeekYear, getWeekNumber } from 'global-utils'
+import { isInProgressServiceWeek } from 'pages/services/graphs/graphs-utils'
 import {
   SHEPHERDING_BACENTA,
   SHEPHERDING_CAMPUS,
@@ -165,24 +166,26 @@ export const METRIC_COLOR: Record<MetricKey, string> = {
 // Window sizes are tied to the 4/6/8 toggle in the spec.
 export const WINDOW_SIZES: WindowWeeks[] = [4, 6, 8]
 
-export const currentAnchorWeekYear = (): AnchorWeekYear => ({
-  week: getWeekNumber(),
-  year: getISOWeekYear(),
-})
-
 // Returns the N records ending at the anchor week, ordered ascending by
 // (year, week) for charting. Records past the anchor are dropped; older
 // records than the window start are dropped too.
 export const sliceWindowedRecords = (
   records: AggregateRecord[],
   anchor: AnchorWeekYear,
-  windowWeeks: WindowWeeks
+  windowWeeks: WindowWeeks,
+  now: Date = new Date()
 ): AggregateRecord[] => {
   if (!records?.length) return []
 
   const anchorKey = anchor.year * 100 + anchor.week
   const filtered = records.filter((r) => {
     if (r.week == null || r.year == null) return false
+    // Every metric charted here (service + bussing aggregates) is Sunday-
+    // cadence, so a week whose Sunday has not arrived has nothing due yet and
+    // must stay off the chart — the same gate `getServiceGraphData` applies to
+    // the rest of the portal (SYN-214). Enforced per record rather than only
+    // via the anchor so paging the anchor forward cannot resurrect it.
+    if (isInProgressServiceWeek(r.week, r.year, now)) return false
     const key = Number(r.year) * 100 + Number(r.week)
     return key <= anchorKey
   })
@@ -213,5 +216,32 @@ export const shiftAnchor = (
   return {
     week: getWeekNumber(shifted),
     year: getISOWeekYear(shifted),
+  }
+}
+
+// The presentation opens on the most recent week that is actually due. Before
+// its Sunday the current week has nothing submitted against it, so anchoring on
+// it made the newest column — and the "Week N, YYYY" header and the PDF export
+// default that read off the same anchor — a partial week. SYN-217.
+export const currentAnchorWeekYear = (
+  now: Date = new Date()
+): AnchorWeekYear => {
+  // `getWeekNumber` mutates the Date it is handed, hence the copy;
+  // `getISOWeekYear` copies internally.
+  const week = getWeekNumber(new Date(now))
+  const year = getISOWeekYear(now)
+
+  if (!isInProgressServiceWeek(week, year, now)) return { week, year }
+
+  // Step back seven days on the same Date rather than going through
+  // `shiftAnchor`: that helper rebuilds its date in UTC while `getWeekNumber` /
+  // `getISOWeekYear` read local time, so the two disagree by a day — and
+  // therefore sometimes by a whole week — for anyone not on UTC.
+  const lastWeek = new Date(now)
+  lastWeek.setDate(lastWeek.getDate() - 7)
+
+  return {
+    week: getWeekNumber(new Date(lastWeek)),
+    year: getISOWeekYear(lastWeek),
   }
 }
