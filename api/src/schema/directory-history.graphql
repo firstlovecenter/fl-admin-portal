@@ -457,7 +457,29 @@ extend type Mutation {
         WITH log
         WITH log WHERE $newLeaderId IS NOT NULL
         MATCH (newLeader:Active:Member {id: $newLeaderId})
-        SET log:ServiceLog
+        // SYN-220: this used to `SET log:ServiceLog`, and that one line is how a governorship
+        // move leaked its services to the wrong parent.
+        //
+        // A HistoryLog records that something happened. A ServiceLog is a live path that
+        // `services`/`aggregates` WALK: the aggregators resolve a church's log with
+        // `MATCH (church)-[:CURRENT_HISTORY]->(log:ServiceLog)`, and remediation walks
+        // `(c)-[:HAS_HISTORY]->(:ServiceLog)-[:HAS_SERVICE_AGGREGATE]->(agg)`. Labelling the move
+        // log made it both at once — and because the same mutation also does
+        // `MERGE (council)-[:HAS_HISTORY]->(log)` for $newCouncilId below, the destination council
+        // landed on a services path it does not own.
+        //
+        // It also unlocked the worse step: `connectServiceLog` matches `(log:ServiceLog {id:$logId})`,
+        // so once this label existed a SECOND church could be given `CURRENT_HISTORY` to the very
+        // same log. That is exactly what happened on 2026-02-17 — move log
+        // 0664b3b6 ended up the CURRENT_HISTORY of both Holy Hill (Governorship) and JESUS NIGHT
+        // (Council), so JN's weekly services reported as Holy Hill's and polluted Obuasi's rollups
+        // for seven months before anyone noticed.
+        //
+        // This was the ONLY `SET log:ServiceLog` in this file; no sibling Log*History mutation does
+        // it, and the deliberate way a log becomes a ServiceLog is `makeHistoryServiceLog` in
+        // api/src/resolvers/directory/servant-cypher.ts, which also sets priority and creates the
+        // Target. What this branch produced was a half-formed ServiceLog with neither — traversable
+        // by every reader, owned by nobody.
         CREATE (newLeader)-[:HAS_HISTORY]->(log)
         RETURN COUNT(log) AS logCount
       }
