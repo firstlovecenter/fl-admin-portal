@@ -2539,6 +2539,7 @@
     "dualAxis": "Dual axis",
     "noLeaderAssigned": "No leader assigned",
     "loadingSlide": "Loading slide…",
+    "slideLoadError": "This slide could not be loaded.",
     "bacentas": "Bacentas",
     "members": "Members",
     "noLeaderScopeTitle": "No leader scope detected",

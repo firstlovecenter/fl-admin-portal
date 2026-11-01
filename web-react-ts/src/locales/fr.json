@@ -2539,6 +2539,7 @@
     "dualAxis": "Double axe",
     "noLeaderAssigned": "Aucun leader assigné",
     "loadingSlide": "Chargement de la diapositive…",
+    "slideLoadError": "Impossible de charger cette diapositive.",
     "bacentas": "Bacentas",
     "members": "Membres",
     "noLeaderScopeTitle": "Aucun périmètre de leader détecté",
