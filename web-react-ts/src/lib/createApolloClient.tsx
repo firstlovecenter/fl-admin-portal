@@ -149,7 +149,7 @@ export function createApolloClient({
     // the technical detail only reaches the dev console (compiled out of the
     // production bundle via import.meta.env.DEV).
     if (graphQLErrors) {
-      graphQLErrors.forEach(({ message, locations, path }) => {
+      graphQLErrors.forEach(({ message, locations, path, extensions }) => {
         if (message.includes('Unauthenticated')) return
 
         if (import.meta.env.DEV) {
@@ -162,9 +162,14 @@ export function createApolloClient({
 
         if (callerHandlesErrors) return
 
+        // errorRef carries no internals: it is an opaque key into the server
+        // log, where the real message lives.
+        const errorRef = extensions?.errorRef
         toast.error('Something went wrong', {
           id: `gql:${message}:${path?.join('.') ?? ''}`,
-          description: 'Please try again. If this keeps happening, contact support.',
+          description: errorRef
+            ? `Please try again. If this keeps happening, contact support and quote reference ${errorRef}.`
+            : 'Please try again. If this keeps happening, contact support.',
           duration: 8000,
         })
       })

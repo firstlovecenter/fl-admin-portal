@@ -290,6 +290,7 @@ const ShepherdingControlSession = () => {
         <ShepherdingSlide
           slide={currentSlide.slide}
           loading={currentSlide.loading}
+          failed={Boolean(currentSlide.error)}
           metricA={metricA}
           metricB={metricB}
           anchor={anchor}

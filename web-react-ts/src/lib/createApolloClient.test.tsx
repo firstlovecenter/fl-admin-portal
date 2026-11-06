@@ -302,6 +302,31 @@ describe('createApolloClient — error link', () => {
     )
   })
 
+  it('quotes the server error reference in the toast, never the raw message', async () => {
+    respondWithErrors([
+      {
+        message: 'Float cannot represent non numeric value: Infinity',
+        path: ['ping'],
+        extensions: { errorRef: 'AB12CD34' },
+      },
+    ])
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    await client
+      .query({ query: PING_QUERY, fetchPolicy: 'no-cache' })
+      .catch(() => undefined)
+
+    const [title, options] = vi.mocked(toast.error).mock.calls[0]
+    expect(title).toBe('Something went wrong')
+    expect(options?.description).toBe(
+      'Please try again. If this keeps happening, contact support and quote reference AB12CD34.'
+    )
+    expect(options?.description).not.toContain('Infinity')
+  })
+
   it('skips the toast for "Unauthenticated" errors (handled by the auth gate)', async () => {
     server.use(
       http.post(GRAPHQL_URL, async () =>
