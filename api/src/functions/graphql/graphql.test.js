@@ -79,6 +79,11 @@ jest.mock(
   { virtual: true }
 )
 jest.mock(
+  './resolvers/utils/error-reference',
+  () => ({ errorReferencePlugin: {} }),
+  { virtual: true }
+)
+jest.mock(
   './resolvers/downloads/downloads-lambda',
   () => ({ isDownloadEvent: jest.fn(() => false), handleDownloadLambdaEvent: jest.fn() }),
   { virtual: true }
@@ -166,6 +171,15 @@ describe('graphql handler — CORS preflight, DEVELOPMENT branch (SECRETS warm)'
       makeContext()
     )
     expect(warm.statusCode).toBe(500)
+  })
+
+  it('registers the error reference plugin on the Lambda server', () => {
+    const { ApolloServer } = require('@apollo/server')
+    const { errorReferencePlugin } = require('./resolvers/utils/error-reference')
+
+    const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
+
+    expect(config.plugins).toContain(errorReferencePlugin)
   })
 
   it.each([

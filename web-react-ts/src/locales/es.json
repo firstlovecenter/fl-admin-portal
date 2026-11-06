@@ -2539,6 +2539,7 @@
     "dualAxis": "Eje dual",
     "noLeaderAssigned": "Sin líder asignado",
     "loadingSlide": "Cargando diapositiva…",
+    "slideLoadError": "No se pudo cargar esta diapositiva.",
     "bacentas": "Bacentas",
     "members": "Miembros",
     "noLeaderScopeTitle": "No se detectó alcance de líder",

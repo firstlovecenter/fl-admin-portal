@@ -2539,6 +2539,7 @@
     "dualAxis": "Doppelachse",
     "noLeaderAssigned": "Kein Leiter zugewiesen",
     "loadingSlide": "Folie wird geladen…",
+    "slideLoadError": "Diese Folie konnte nicht geladen werden.",
     "bacentas": "Bacentas",
     "members": "Mitglieder",
     "noLeaderScopeTitle": "Kein Leiterbereich erkannt",
