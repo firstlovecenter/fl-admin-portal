@@ -29,6 +29,7 @@ const ShepherdingControlProjector = () => {
         <ShepherdingSlide
           slide={slideData.slide}
           loading={slideData.loading}
+          failed={Boolean(slideData.error)}
           metricA={state.metricA}
           metricB={state.metricB}
           anchor={state.anchor}

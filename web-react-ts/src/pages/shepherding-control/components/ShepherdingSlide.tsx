@@ -20,6 +20,7 @@ import ProjectionChart from './ProjectionChart'
 type Props = {
   slide: SlideData | null
   loading: boolean
+  failed?: boolean
   metricA: MetricKey
   metricB: MetricKey | null
   anchor: AnchorWeekYear
@@ -30,6 +31,7 @@ type Props = {
 const ShepherdingSlide = ({
   slide,
   loading,
+  failed = false,
   metricA,
   metricB,
   anchor,
@@ -39,6 +41,13 @@ const ShepherdingSlide = ({
   const { t } = useTranslation()
 
   if (!slide) {
+    if (failed) {
+      return (
+        <p role="alert" className="p-8 text-center text-muted-foreground">
+          {t('shepherding.slideLoadError')}
+        </p>
+      )
+    }
     return <LoadingScreen text={t('shepherding.loadingSlide')} />
   }
 

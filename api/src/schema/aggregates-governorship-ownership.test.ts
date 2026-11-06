@@ -54,8 +54,7 @@ describe('AggregateServiceRecord Inf sanitization', () => {
       .match(/statement:\s*"""([\s\S]*?)"""/)
     expect(statementMatch).not.toBeNull()
     const cypher = statementMatch![1]
-    expect(cypher).toContain('aggregate.dollarIncome = Inf')
-    expect(cypher).toContain('THEN 0.0 ELSE toFloat(aggregate.dollarIncome)')
-    expect(cypher).toContain('aggregate.income = Inf')
+    expect(cypher).toContain('abs(toFloat(aggregate.dollarIncome)) < 1.0e308')
+    expect(cypher).toContain('abs(toFloat(aggregate.income)) < 1.0e308')
   })
 })

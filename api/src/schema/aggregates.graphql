@@ -3,6 +3,10 @@
 # is idempotent (MERGE … SET, keyed on church-week-year). Suppress the
 # auto-gen create/update/delete mutations so a logged-in user cannot
 # fabricate or overwrite aggregate income/attendance figures.
+# Reads below map income / dollarIncome through a finite check: one stored
+# Inf or NaN otherwise fails Float serialization, and because the fields are
+# non-null the error nulls the whole church on Denomination and Oversight.
+# Historical weeks are snapshots (ADR-014), so a bad value never self-heals.
 type AggregateServiceRecord implements HadService
   @node
   @mutation(operations: []) {
@@ -63,7 +67,11 @@ extend type Bacenta {
         dollarIncome: dollarIncome,
         numberOfServices: numberOfServices
       } AS aggregate
-      RETURN aggregate ORDER BY (aggregate.year * 100 + aggregate.week) DESC SKIP $skip LIMIT $limit
+      RETURN aggregate {
+        .*,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END
+      } AS aggregate ORDER BY (aggregate.year * 100 + aggregate.week) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -112,7 +120,11 @@ extend type Governorship {
         AND aggregate.id STARTS WITH (this.id + '-')
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
+      RETURN aggregate {
+        .*,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END
+      } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -144,7 +156,11 @@ extend type Council {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
+      RETURN aggregate {
+        .*,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END
+      } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -175,7 +191,11 @@ extend type Stream {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
+      RETURN aggregate {
+        .*,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END
+      } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -211,12 +231,8 @@ extend type Campus {
         week: aggregate.week,
         year: aggregate.year,
         attendance: aggregate.attendance,
-        income: CASE
-          WHEN aggregate.income = Inf OR aggregate.income = -Inf OR aggregate.income IS NULL
-          THEN 0.0 ELSE toFloat(aggregate.income) END,
-        dollarIncome: CASE
-          WHEN aggregate.dollarIncome = Inf OR aggregate.dollarIncome = -Inf OR aggregate.dollarIncome IS NULL
-          THEN 0.0 ELSE toFloat(aggregate.dollarIncome) END,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END,
         currency: aggregate.currency,
         numberOfServices: aggregate.numberOfServices
       } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
@@ -250,7 +266,11 @@ extend type Oversight {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
+      RETURN aggregate {
+        .*,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END
+      } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )
@@ -281,7 +301,11 @@ extend type Denomination {
       WHERE aggregate.year = date().year OR aggregate.year = date().year -1
       WITH this, aggregate ORDER BY coalesce(aggregate.recomputedAt, datetime({epochSeconds: 0})) DESC, coalesce(aggregate.attendance, 0) DESC, (aggregate.id STARTS WITH this.id) DESC
       WITH aggregate.week AS w, aggregate.year AS y, head(collect(aggregate)) AS aggregate
-      RETURN aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
+      RETURN aggregate {
+        .*,
+        income: CASE WHEN abs(toFloat(aggregate.income)) < 1.0e308 THEN toFloat(aggregate.income) ELSE 0.0 END,
+        dollarIncome: CASE WHEN abs(toFloat(aggregate.dollarIncome)) < 1.0e308 THEN toFloat(aggregate.dollarIncome) ELSE 0.0 END
+      } AS aggregate ORDER BY (y * 100 + w) DESC SKIP $skip LIMIT $limit
       """
       columnName: "aggregate"
     )

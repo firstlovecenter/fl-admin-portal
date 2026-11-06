@@ -14,6 +14,7 @@ import { verifyJwt } from './resolvers/utils/verify-jwt'
 import { computeUserAuthority } from './resolvers/utils/allowed-church-ids'
 import { requireAuthForMutationsPlugin } from './resolvers/utils/require-auth-for-mutations'
 import { depthLimit } from './resolvers/utils/depth-limit'
+import { errorReferencePlugin } from './resolvers/utils/error-reference'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 // Logs every GraphQL request's lifecycle so operations show up in the server
@@ -149,6 +150,7 @@ const startServer = async () => {
       ApolloServerPluginDrainHttpServer({ httpServer }),
       requireAuthForMutationsPlugin,
       requestLoggingPlugin,
+      errorReferencePlugin,
     ],
   })
 

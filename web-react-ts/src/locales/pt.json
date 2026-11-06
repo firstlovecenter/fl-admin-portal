@@ -2539,6 +2539,7 @@
     "dualAxis": "Eixo duplo",
     "noLeaderAssigned": "Nenhum líder atribuído",
     "loadingSlide": "A carregar diapositivo…",
+    "slideLoadError": "Não foi possível carregar este diapositivo.",
     "bacentas": "Bacentas",
     "members": "Membros",
     "noLeaderScopeTitle": "Nenhum âmbito de líder detetado",

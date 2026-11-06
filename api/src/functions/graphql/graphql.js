@@ -11,6 +11,7 @@ const {
   requireAuthForMutationsPlugin,
 } = require('./resolvers/utils/require-auth-for-mutations')
 const { depthLimit } = require('./resolvers/utils/depth-limit')
+const { errorReferencePlugin } = require('./resolvers/utils/error-reference')
 const {
   isDownloadEvent,
   handleDownloadLambdaEvent,
@@ -117,7 +118,7 @@ const initializeServer = async () => {
       // SYN-177 — depth guard on the auto-generated schema; blocks pathological
       // deep-traversal queries before execution in every environment.
       validationRules: [depthLimit()],
-      plugins: [requireAuthForMutationsPlugin],
+      plugins: [requireAuthForMutationsPlugin, errorReferencePlugin],
       formatResponse: (response) => {
         console.log('[Response] Formatting GraphQL response')
         return {
