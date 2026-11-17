@@ -4,6 +4,7 @@ import { Member } from '../utils/types'
 import {
   badRequest,
   isAuth,
+  isClassifiedError,
   memberContactCollisionError,
   rearrangeCypherObject,
   throwToSentry,
@@ -353,9 +354,14 @@ const directoryMutation = {
       const bacentaCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
-      if (bacentaCheck.memberCount > 0) {
-        throw new Error(
-          `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
+      // SYN-234 — user-fixable refusals: badRequest, not a plain Error, so the
+      // catch rethrows them instead of logging them via throwToSentry.
+      const memberCount = Number(bacentaCheck.memberCount ?? 0)
+      if (memberCount > 0) {
+        throw badRequest(
+          `${bacentaCheck?.name} Bacenta has ${memberCount} ${
+            memberCount === 1 ? 'member' : 'members'
+          }. Please transfer all members and try again.`
         )
       }
 
@@ -370,7 +376,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this bacenta`
@@ -400,6 +406,7 @@ const directoryMutation = {
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
       return bacentaResponse.governorship
     } catch (error: any) {
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down bacenta', error)
       throw error
     } finally {

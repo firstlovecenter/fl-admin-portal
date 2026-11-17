@@ -18,8 +18,14 @@
  *
  * All test names begin with "SYN-207:" for grep-ability:
  *   npm test -- directory-resolvers --testNamePattern="SYN-207:"
+ *
+ * SYN-234 — CloseDownBacenta's pre-close guards (members still attached,
+ * unbanked offering) are user-fixable refusals. They must reach the client as
+ * BAD_USER_INPUT with the bare message and must NOT go through throwToSentry,
+ * whose console.error put every refusal in the Lambda log as a server fault.
  */
 
+import { int } from 'neo4j-driver'
 import directoryMutation from './directory-resolvers'
 import {
   updateMemberDetails,
@@ -31,6 +37,8 @@ import type { Member } from '../utils/types'
 import { isAuth } from '../utils/utils'
 import { assertScopeViaMember } from '../utils/scope-utils'
 import { permitLeaderAdmin } from '../permissions'
+import { checkBacentaHasNoMembers } from '../cypher/close-church-cypher'
+import { RemoveServant } from './make-remove-servants'
 
 jest.mock('../utils/scope-utils', () => ({
   assertChurchScope: jest.fn().mockResolvedValue(undefined),
@@ -40,6 +48,15 @@ jest.mock('../utils/scope-utils', () => ({
 jest.mock('../utils/utils', () => ({
   ...jest.requireActual('../utils/utils'),
   isAuth: jest.fn(),
+}))
+
+jest.mock('../utils/assert-can', () => ({
+  assertCan: jest.fn(),
+}))
+
+jest.mock('./make-remove-servants', () => ({
+  ...jest.requireActual('./make-remove-servants'),
+  RemoveServant: jest.fn().mockResolvedValue(undefined),
 }))
 
 const mockQueryResult = (data: Record<string, unknown>) => ({
@@ -274,5 +291,119 @@ describe('SYN-210 — MakeMemberInactive: assertScopeViaMember gating', () => {
       removeDuplicateMember,
       expect.objectContaining({ id: 'member_target_1' })
     )
+  })
+})
+
+describe('SYN-234 — CloseDownBacenta: pre-close guards are user errors, not server faults', () => {
+  const closeArgs = { bacentaId: 'bacenta_1', leaderId: 'leader_1' }
+  const adminJwt = { ...mockJwt, roles: ['adminGovernorship'] as const }
+
+  // Both pre-close reads go through executeRead; route each by the Cypher it
+  // runs so the member-count and last-service results can vary independently.
+  const stubReads = (
+    memberCount: number,
+    lastService: Record<string, unknown> | null
+  ) => {
+    mockSession.executeRead = jest.fn().mockImplementation(async (work) =>
+      work({
+        run: jest.fn().mockImplementation(async (query: string) =>
+          query === checkBacentaHasNoMembers
+            ? mockQueryResult({ name: 'Test', memberCount })
+            : mockQueryResult({
+                lastService: lastService ? { properties: lastService } : null,
+              })
+        ),
+      })
+    )
+  }
+
+  let errorSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    context = {
+      jwt: adminJwt,
+      executionContext: { session: jest.fn().mockReturnValue(mockSession) },
+    } as unknown as Context
+    mockSession.executeWrite = jest
+      .fn()
+      .mockResolvedValue(
+        mockQueryResult({ governorship: { id: 'gov_1', name: 'Gov' } })
+      )
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    errorSpy.mockRestore()
+  })
+
+  const closeDown = () =>
+    directoryMutation.CloseDownBacenta(null, closeArgs, context)
+
+  it('SYN-234: a bacenta that still has members is refused as BAD_USER_INPUT without logging', async () => {
+    stubReads(3, { bankingSlip: 'slip.png' })
+
+    const error = await closeDown().catch((e) => e)
+
+    expect(error.extensions?.code).toBe('BAD_USER_INPUT')
+    expect(error.message).toBe(
+      'Test Bacenta has 3 members. Please transfer all members and try again.'
+    )
+    expect(errorSpy).not.toHaveBeenCalled()
+    expect(RemoveServant).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalledTimes(2)
+  })
+
+  it('SYN-234: a single remaining member reads "1 member", not "1 members"', async () => {
+    stubReads(1, { bankingSlip: 'slip.png' })
+
+    await expect(closeDown()).rejects.toThrow(
+      'Test Bacenta has 1 member. Please transfer all members and try again.'
+    )
+  })
+
+  it('SYN-234: a neo4j Integer count (what COUNT() really returns) is read as a number', async () => {
+    stubReads(int(1) as unknown as number, { bankingSlip: 'slip.png' })
+
+    await expect(closeDown()).rejects.toThrow(
+      'Test Bacenta has 1 member. Please transfer all members and try again.'
+    )
+  })
+
+  it('SYN-234: an unbanked last service is refused as BAD_USER_INPUT without logging', async () => {
+    stubReads(0, { createdAt: '2026-11-15T10:00:00Z' })
+
+    const error = await closeDown().catch((e) => e)
+
+    expect(error.extensions?.code).toBe('BAD_USER_INPUT')
+    expect(error.message).toMatch(
+      /^Please bank outstanding offering .* before attempting to close down this bacenta$/
+    )
+    expect(errorSpy).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-234: an unexpected failure still goes through throwToSentry', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockRejectedValue(new Error('Neo4j unavailable'))
+
+    await expect(closeDown()).rejects.toThrow(
+      'Error closing down bacenta: Neo4j unavailable'
+    )
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Error closing down bacenta: Neo4j unavailable'
+    )
+  })
+
+  it('SYN-234: an empty, banked bacenta still closes down', async () => {
+    stubReads(0, { bankingSlip: 'slip.png' })
+
+    const result = await closeDown()
+
+    expect(result).toEqual({ id: 'gov_1', name: 'Gov' })
+    expect(RemoveServant).toHaveBeenCalledTimes(1)
+    expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
+    expect(errorSpy).not.toHaveBeenCalled()
   })
 })
