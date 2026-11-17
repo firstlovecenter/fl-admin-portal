@@ -1382,7 +1382,12 @@
       "button": "Encerrar",
       "title": "Encerrar bacenta",
       "confirm": "Encerrar {{name}}",
-      "cancel": "Não, voltar atrás"
+      "cancel": "Não, voltar atrás",
+      "description": "Tem certeza de que deseja encerrar {{name}}? A bacenta será marcada como inativa.",
+      "yes": "Sim, tenho certeza",
+      "hasMembers_one": "{{name}} ainda tem {{count}} membro. Transfira-o para outra bacenta antes de encerrá-la.",
+      "hasMembers_other": "{{name}} ainda tem {{count}} membros. Transfira todos para outra bacenta antes de encerrá-la.",
+      "viewMembers": "Ver membros"
     },
     "memberTable": {
       "loadError": "Não foi possível carregar os membros. Tente novamente.",

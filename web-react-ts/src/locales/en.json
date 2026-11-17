@@ -1382,7 +1382,12 @@
       "button": "Close Down",
       "title": "Close Down Bacenta",
       "confirm": "Close Down {{name}}",
-      "cancel": "No, take me back"
+      "cancel": "No, take me back",
+      "description": "Are you sure you want to close down {{name}}? This will mark the bacenta inactive.",
+      "yes": "Yes, I'm sure",
+      "hasMembers_one": "{{name}} still has {{count}} member. Transfer them to another bacenta before closing it down.",
+      "hasMembers_other": "{{name}} still has {{count}} members. Transfer all of them to another bacenta before closing it down.",
+      "viewMembers": "View members"
     },
     "memberTable": {
       "loadError": "Could not load members. Please try again.",
