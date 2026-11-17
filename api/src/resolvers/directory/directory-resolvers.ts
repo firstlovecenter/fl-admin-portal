@@ -110,17 +110,14 @@ const directoryMutation = {
       if (duplicateMember.email === email) {
         const errorMsg = `There is a member with this email "${duplicateMember.email}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
 
-        const error = new Error(errorMsg)
-        error.name = 'DuplicateEmail'
-
-        throw error
+        // SYN-253: refusals are BAD_USER_INPUT so they log at WARN. The old
+        // error.name ('DuplicateEmail') never reached the client.
+        throw badRequest(errorMsg)
       }
 
       if (duplicateMember.whatsappNumber === args.whatsappNumber) {
         const errorMsg = `There is a member with this whatsapp number "${duplicateMember.whatsappNumber}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
-        const error = new Error(errorMsg)
-        error.name = 'DuplicateWhatsappNumber'
-        throw error
+        throw badRequest(errorMsg)
       }
     }
 
@@ -317,7 +314,7 @@ const directoryMutation = {
       )
 
       if (memberCheck.relationshipCount.low > 0) {
-        throw new Error(
+        throw badRequest(
           'This member has active roles in church. Please remove all active roles and try again'
         )
       }
@@ -480,7 +477,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (governorshipCheck.bacentaCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
         )
       }
@@ -496,7 +493,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this governorship`
@@ -570,7 +567,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (councilCheck.governorshipCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
         )
       }
@@ -586,7 +583,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this council`
@@ -658,13 +655,13 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (streamCheck.councilCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${streamCheck?.name} Stream has ${streamCheck?.councilCount} active councils. Please close down all councils and try again.`
         )
       }
 
       if (streamCheck.ministryCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
         )
       }
@@ -680,7 +677,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this stream`
@@ -752,7 +749,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (campusCheck.streamCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
         )
       }
@@ -768,7 +765,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this campus`
@@ -840,7 +837,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (oversightCheck.campusCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${oversightCheck?.name} Oversight has ${oversightCheck?.campusCount} active campuses. Please close down all campuses and try again.`
         )
       }
@@ -856,7 +853,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this oversight`
