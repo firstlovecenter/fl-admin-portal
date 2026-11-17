@@ -4,6 +4,7 @@ import { Member } from '../utils/types'
 import {
   badRequest,
   isAuth,
+  isClassifiedError,
   memberContactCollisionError,
   rearrangeCypherObject,
   throwToSentry,
@@ -354,7 +355,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (bacentaCheck.memberCount > 0) {
-        throw new Error(
+        throw badRequest(
           `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
         )
       }
@@ -370,7 +371,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this bacenta`
@@ -400,6 +401,11 @@ const directoryMutation = {
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
       return bacentaResponse.governorship
     } catch (error: any) {
+      // SYN-232 — guard refusals (members/sub-churches still attached, unbanked
+      // offering) and scope FORBIDDENs are expected user outcomes, not faults:
+      // rethrow them as-is so they reach the user unprefixed and don't land in
+      // CloudWatch as ERROR lines. Only unexpected failures are logged.
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down bacenta', error)
       throw error
     } finally {
@@ -430,7 +436,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (governorshipCheck.bacentaCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${governorshipCheck?.name} Governorship has ${governorshipCheck?.bacentaCount} active bacentas. Please close down all bacentas and try again.`
         )
       }
@@ -446,7 +452,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this governorship`
@@ -489,6 +495,8 @@ const directoryMutation = {
       )
       return governorshipResponse.council
     } catch (error: any) {
+      // SYN-232 — expected refusals are not faults; see CloseDownBacenta.
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down governorship', error)
       throw error
     } finally {
@@ -520,7 +528,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (councilCheck.governorshipCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${councilCheck?.name} Council has ${councilCheck?.governorshipCount} active governorships. Please close down all governorships and try again.`
         )
       }
@@ -536,7 +544,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this council`
@@ -577,6 +585,8 @@ const directoryMutation = {
       const councilResponse = rearrangeCypherObject(closeCouncilResponse)
       return councilResponse.stream
     } catch (error: any) {
+      // SYN-232 — expected refusals are not faults; see CloseDownBacenta.
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down council', error)
       throw error
     } finally {
@@ -608,13 +618,13 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (streamCheck.councilCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${streamCheck?.name} Stream has ${streamCheck?.councilCount} active councils. Please close down all councils and try again.`
         )
       }
 
       if (streamCheck.ministryCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${streamCheck?.name} Stream has ${streamCheck?.ministryCount} active ministries. Please close down all ministries and try again.`
         )
       }
@@ -630,7 +640,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this stream`
@@ -671,6 +681,8 @@ const directoryMutation = {
       const streamResponse = rearrangeCypherObject(closeStreamResponse)
       return streamResponse.campus
     } catch (error: any) {
+      // SYN-232 — expected refusals are not faults; see CloseDownBacenta.
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down stream', error)
       throw error
     } finally {
@@ -702,7 +714,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (campusCheck.streamCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${campusCheck?.name} Campus has ${campusCheck?.streamCount} active streams. Please close down all streams and try again.`
         )
       }
@@ -718,7 +730,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this campus`
@@ -759,6 +771,8 @@ const directoryMutation = {
       const campusResponse = rearrangeCypherObject(closeCampusResponse)
       return campusResponse.oversight
     } catch (error: any) {
+      // SYN-232 — expected refusals are not faults; see CloseDownBacenta.
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down campus', error)
       throw error
     } finally {
@@ -790,7 +804,7 @@ const directoryMutation = {
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
       if (oversightCheck.campusCount.toNumber()) {
-        throw new Error(
+        throw badRequest(
           `${oversightCheck?.name} Oversight has ${oversightCheck?.campusCount} active campuses. Please close down all campuses and try again.`
         )
       }
@@ -806,7 +820,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this oversight`
@@ -847,6 +861,8 @@ const directoryMutation = {
       const oversightResponse = rearrangeCypherObject(closeOversightResponse)
       return oversightResponse.denomination
     } catch (error: any) {
+      // SYN-232 — expected refusals are not faults; see CloseDownBacenta.
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down oversight', error)
       throw error
     } finally {

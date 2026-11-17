@@ -48,8 +48,18 @@ export const errorReferencePlugin: ApolloServerPlugin<BaseContext> = {
           if (index < MAX_LOGGED_ERRORS) {
             const code = error.extensions?.code ?? 'UNKNOWN'
             const path = error.path?.join('.') ?? '<none>'
-            // eslint-disable-next-line no-console
-            console.error(
+            // SYN-232 — a refusal our own code raised (BAD_USER_INPUT marked
+            // severity USER_ERROR, e.g. "transfer all members first") is not a
+            // server fault, so it is logged at WARN: the ref stays searchable,
+            // but CloudWatch error intake no longer files it as an incident.
+            // Matching the code alone would also hide Apollo's own variable
+            // coercion errors (BAD_USER_INPUT, no severity), which mean a FE/BE
+            // contract break. FORBIDDEN and everything else stay at ERROR.
+            const isUserRefusal =
+              code === 'BAD_USER_INPUT' &&
+              error.extensions?.severity === 'USER_ERROR'
+            const log = isUserRefusal ? console.warn : console.error
+            log(
               `[GraphQL] ✖ ref=${errorRef} op=${opName} user=${userId} code=${code} path=${sanitiseForLog(path)} — ${sanitiseForLog(error.message)}`
             )
           }
