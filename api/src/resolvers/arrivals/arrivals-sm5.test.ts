@@ -276,6 +276,36 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
     expect(setCall?.[1]).toMatchObject({ vehicleTopUp: 30 })
   })
 
+  it('SYN-253: a failed bussing payment SMS is logged once at the fire-and-forget catch and does not fail the confirm', async () => {
+    mockSession.run
+      .mockResolvedValueOnce(checkResult())
+      .mockResolvedValueOnce(confirmCypherResult())
+      .mockResolvedValueOnce(supportData())
+      .mockResolvedValueOnce(recordResult())
+      .mockResolvedValueOnce(aggregateResult())
+    ;(sendBulkSMS as jest.Mock).mockRejectedValueOnce(
+      new Error('Error sending notification via Lambda: status 402')
+    )
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(
+      arrivalsMutation.ConfirmVehicleByAdmin(
+        null as never,
+        confirmArgs,
+        counterContext()
+      )
+    ).resolves.toMatchObject({ id: 'vr_1' })
+    // Let the detached .catch run.
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(sendBulkSMS).toHaveBeenCalled()
+    expect(errorSpy).toHaveBeenCalledTimes(1)
+    expect(errorSpy).toHaveBeenCalledWith(
+      'There was an error sending the bussing payment SMS: Error sending notification via Lambda: status 402'
+    )
+    errorSpy.mockRestore()
+  })
+
   it('SM5: re-confirming an already-counted vehicle heals the top-up instead of throwing (SYN-165)', async () => {
     // A record orphaned by a dropped first response (counted server-side, but
     // the top-up never set) used to be stuck behind "already counted". Now a
