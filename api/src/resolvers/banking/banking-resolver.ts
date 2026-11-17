@@ -15,7 +15,7 @@ import {
   MOMO_NUM_REGEX,
   Network,
 } from '../utils/financial-utils'
-import { isAuth, rearrangeCypherObject } from '../utils/utils'
+import { badRequest, isAuth, rearrangeCypherObject } from '../utils/utils'
 import { assertScopeViaServiceRecord } from '../utils/scope-utils'
 import {
   checkTransactionReference,
@@ -116,7 +116,10 @@ export const checkIfLastServiceBanked = async (
       'tellerConfirmationTime' in lastService
     )
   ) {
-    throw new Error(
+    // SYN-229: a business-rule refusal, not a server fault — badRequest keeps
+    // it BAD_USER_INPUT so the leader sees which service is outstanding
+    // instead of a generic INTERNAL_SERVER_ERROR.
+    throw badRequest(
       `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
         date.date
       )} before attempting to bank this week's offering`
@@ -788,14 +791,8 @@ const bankingMutation = {
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
-    await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
-      (error: any) => {
-        throwClean(
-          'We could not check your previous service banking. Please try again.',
-          error
-        )
-      }
-    )
+    // SYN-229: unwrapped — an outer catch masked the outstanding-offering refusal.
+    await checkIfLastServiceBanked(args.serviceRecordId, context)
 
     const submissionResponse = rearrangeCypherObject(
       await session
@@ -849,14 +846,8 @@ const bankingMutation = {
       )
     }
 
-    await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
-      (error: any) => {
-        throwClean(
-          'We could not check the previous service banking. Please try again.',
-          error
-        )
-      }
-    )
+    // SYN-229: unwrapped — an outer catch masked the outstanding-offering refusal.
+    await checkIfLastServiceBanked(args.serviceRecordId, context)
 
     const submissionResponse = rearrangeCypherObject(
       await session

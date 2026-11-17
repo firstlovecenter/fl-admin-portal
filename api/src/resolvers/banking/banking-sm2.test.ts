@@ -370,6 +370,69 @@ describe('SM2 — SubmitBankingSlip: auth', () => {
 })
 
 // ---------------------------------------------------------------------------
+// SYN-229 — outstanding-offering refusal must reach the leader unmasked
+// ---------------------------------------------------------------------------
+describe('SM2 — SYN-229: previous-service check errors are not masked', () => {
+  const slipArgs = {
+    serviceRecordId: 'sr_test',
+    bankingSlip: 'https://res.cloudinary.com/slip.jpg',
+  }
+  const confirmArgs = { serviceRecordId: 'sr_test', bankingSlip: '' }
+  const unbankedPrior = () => makeLastServiceResult({ transactionStatus: null })
+
+  it('SM2: checkIfLastServiceBanked refuses with a BAD_USER_INPUT error, not an internal one', async () => {
+    mockSession.run.mockResolvedValueOnce(unbankedPrior())
+    await expect(
+      checkIfLastServiceBanked('sr_test', context)
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('Please bank outstanding offering'),
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+  })
+
+  it('SM2: SubmitBankingSlip surfaces the outstanding-offering refusal and does not upload the slip', async () => {
+    mockSession.run.mockResolvedValueOnce(unbankedPrior())
+    await expect(
+      bankingMutation.SubmitBankingSlip(null, slipArgs, context)
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('Please bank outstanding offering'),
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  it('SM2: SubmitBankingSlip still returns a clean retry message when the lookup Cypher itself fails', async () => {
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    mockSession.run.mockRejectedValueOnce(new Error('Neo4j driver blew up'))
+    await expect(
+      bankingMutation.SubmitBankingSlip(null, slipArgs, context)
+    ).rejects.toThrow(
+      'We could not check your previous service banking. Please try again.'
+    )
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+    expect(errSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[banking]'),
+      expect.objectContaining({ message: 'Neo4j driver blew up' })
+    )
+    errSpy.mockRestore()
+  })
+
+  it('SM2: ManuallyConfirmOfferingPayment surfaces the outstanding-offering refusal unmasked', async () => {
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue(['Stream']) }],
+    })
+    mockSession.run.mockResolvedValueOnce(unbankedPrior())
+    await expect(
+      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('Please bank outstanding offering'),
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // submitBankingSlip Cypher — WHERE guard (SM2 terminal state protection)
 // ---------------------------------------------------------------------------
 describe("SM2 — submitBankingSlip Cypher: blocks 'pending' and 'success' states", () => {
