@@ -4,6 +4,7 @@ import { Member } from '../utils/types'
 import {
   badRequest,
   isAuth,
+  isClassifiedError,
   memberContactCollisionError,
   rearrangeCypherObject,
   throwToSentry,
@@ -353,8 +354,10 @@ const directoryMutation = {
       const bacentaCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
+      // SYN-236: user-actionable refusals — classified so the catch rethrows
+      // them as-is instead of logging them to CloudWatch via throwToSentry.
       if (bacentaCheck.memberCount > 0) {
-        throw new Error(
+        throw badRequest(
           `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
         )
       }
@@ -370,7 +373,7 @@ const directoryMutation = {
           'tellerConfirmationTime' in record
         )
       ) {
-        throw new Error(
+        throw badRequest(
           `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
             record.createdAt
           )} before attempting to close down this bacenta`
@@ -400,6 +403,7 @@ const directoryMutation = {
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
       return bacentaResponse.governorship
     } catch (error: any) {
+      if (isClassifiedError(error)) throw error
       throwToSentry('Error closing down bacenta', error)
       throw error
     } finally {

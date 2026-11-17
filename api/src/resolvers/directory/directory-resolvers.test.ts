@@ -30,11 +30,18 @@ import type { Context } from '../utils/neo4j-types'
 import type { Member } from '../utils/types'
 import { isAuth } from '../utils/utils'
 import { assertScopeViaMember } from '../utils/scope-utils'
+import { assertCan } from '../utils/assert-can'
 import { permitLeaderAdmin } from '../permissions'
 
 jest.mock('../utils/scope-utils', () => ({
   assertChurchScope: jest.fn().mockResolvedValue(undefined),
   assertScopeViaMember: jest.fn().mockResolvedValue(undefined),
+}))
+
+// CloseDownBacenta's per-instance gate; the SYN-236 tests below exercise the
+// pre-checks behind it, not the gate itself.
+jest.mock('../utils/assert-can', () => ({
+  assertCan: jest.fn(),
 }))
 
 jest.mock('../utils/utils', () => ({
@@ -274,5 +281,110 @@ describe('SYN-210 — MakeMemberInactive: assertScopeViaMember gating', () => {
       removeDuplicateMember,
       expect.objectContaining({ id: 'member_target_1' })
     )
+  })
+})
+
+/**
+ * SYN-236 — CloseDownBacenta's pre-checks are user errors, not Lambda ERRORs.
+ *
+ * "Bacenta still has members" and "offering not yet banked" are expected
+ * refusals the admin resolves themselves. They used to be plain Errors that
+ * the catch routed through throwToSentry, which console.error'd every attempt
+ * into CloudWatch (and the error-intake bot filed it as a bug). They are now
+ * classified BAD_USER_INPUT and rethrown untouched; genuinely unexpected
+ * failures still go through throwToSentry.
+ */
+describe('SYN-236 — CloseDownBacenta: pre-check refusals are classified user errors', () => {
+  const closeArgs = { bacentaId: 'bacenta_1', leaderId: '' }
+  let consoleErrorSpy: jest.SpyInstance
+
+  const mockReads = (
+    memberCount: number,
+    lastService: Record<string, unknown> | null
+  ) => {
+    // Promise.all fires checkBacentaHasNoMembers first, getLastServiceRecord
+    // second, so the Once-queue order matches the resolver's call order.
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({ name: 'Test', memberCount, governorship: {} })
+      )
+      .mockResolvedValueOnce(
+        lastService
+          ? mockQueryResult({ lastService: { properties: lastService } })
+          : { records: [] }
+      )
+  }
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    mockSession.executeWrite = jest
+      .fn()
+      .mockResolvedValue(mockQueryResult({ governorship: { id: 'gov_1' } }))
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('SYN-236: refuses a bacenta with members as BAD_USER_INPUT without logging an error', async () => {
+    mockReads(2, null)
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({
+      message:
+        'Test Bacenta has 2 members. Please transfer all members and try again.',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(assertCan).toHaveBeenCalledWith(
+      context,
+      expect.any(Array),
+      'bacenta_1'
+    )
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalled()
+  })
+
+  it('SYN-236: refuses an unbanked last service as BAD_USER_INPUT without logging an error', async () => {
+    mockReads(0, { createdAt: '2026-11-15T10:00:00.000Z' })
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({
+      message: expect.stringContaining('Please bank outstanding offering'),
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-236: unexpected failures still go through throwToSentry', async () => {
+    mockReads(0, null)
+    mockSession.executeWrite = jest
+      .fn()
+      .mockRejectedValue(new Error('Neo4j unavailable'))
+
+    await expect(
+      directoryMutation.CloseDownBacenta(null, closeArgs, context)
+    ).rejects.toThrow('Error closing down bacenta: Neo4j unavailable')
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error closing down bacenta: Neo4j unavailable'
+    )
+  })
+
+  it('SYN-236: an empty, banked bacenta still closes down', async () => {
+    mockReads(0, { bankingSlip: 'slip.png' })
+
+    await expect(
+      directoryMutation.CloseDownBacenta(null, closeArgs, context)
+    ).resolves.toEqual({ id: 'gov_1' })
+    expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
 })

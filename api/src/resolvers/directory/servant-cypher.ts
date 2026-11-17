@@ -186,7 +186,7 @@ const servantCypher = {
    // CURRENT_HISTORY is what the aggregators follow to decide where a week's numbers belong, so a
    // church holding two of them resolves services through both and double-reports. This MERGE only
    // ever ADDED an edge; nothing retired the previous one, which is why the invariant could drift.
-   // `disconnectChurchLeader` above already deletes CURRENT_HISTORY on the way out — this is the
+   // disconnectChurchLeader (above) already deletes CURRENT_HISTORY on the way out — this is the
    // same rule applied on the way in. Scoped by id so it never deletes the edge being created.
    WITH church, leader, log
    OPTIONAL MATCH (church)-[staleChurch:CURRENT_HISTORY]->(other:ServiceLog)
