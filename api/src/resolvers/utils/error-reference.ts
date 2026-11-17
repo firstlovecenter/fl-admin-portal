@@ -22,6 +22,15 @@ export const sanitiseForLog = (value: string): string =>
     .replace(/\b(called|belongs to) .*/i, '$1 [redacted]')
     .slice(0, MAX_MESSAGE_LENGTH)
 
+// SYN-253 — refusals the user can act on (validation, permission, sign-in)
+// are expected traffic, not server failures. Logging them at ERROR filed a
+// ticket per refusal and drowned the real failures, so they go to WARN;
+// every other code (INTERNAL_SERVER_ERROR, UNKNOWN, ...) stays at ERROR.
+const WARN_CODES = new Set(['BAD_USER_INPUT', 'FORBIDDEN', 'UNAUTHENTICATED'])
+
+export const logLevelForCode = (code: unknown): 'warn' | 'error' =>
+  typeof code === 'string' && WARN_CODES.has(code) ? 'warn' : 'error'
+
 // The UI never shows raw GraphQL errors (SYN-178), so a user report would
 // otherwise carry nothing to search for. Each error gets a short reference
 // that is logged here beside the real message and returned in
@@ -49,7 +58,7 @@ export const errorReferencePlugin: ApolloServerPlugin<BaseContext> = {
             const code = error.extensions?.code ?? 'UNKNOWN'
             const path = error.path?.join('.') ?? '<none>'
             // eslint-disable-next-line no-console
-            console.error(
+            console[logLevelForCode(code)](
               `[GraphQL] ✖ ref=${errorRef} op=${opName} user=${userId} code=${code} path=${sanitiseForLog(path)} — ${sanitiseForLog(error.message)}`
             )
           }

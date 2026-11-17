@@ -138,7 +138,8 @@ const runAssert = async (
       tx.run(cypher, { ...params, userId })
     )
     if (result.records.length === 0) {
-      console.error('❌ Church-scope check failed', {
+      // SYN-253: a refused request, not a server failure — WARN, not ERROR.
+      console.warn('❌ Church-scope check failed', {
         ...failureLog,
         userId,
       })

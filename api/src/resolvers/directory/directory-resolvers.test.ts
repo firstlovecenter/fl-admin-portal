@@ -106,7 +106,10 @@ describe('SYN-207 — UpdateMemberDetails: assertScopeViaMember gating', () => {
   it('SYN-207: calls assertScopeViaMember with args.id before writing', async () => {
     await directoryMutation.UpdateMemberDetails(null, updateArgs, context)
 
-    expect(assertScopeViaMember).toHaveBeenCalledWith(context, 'member_target_1')
+    expect(assertScopeViaMember).toHaveBeenCalledWith(
+      context,
+      'member_target_1'
+    )
     expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
   })
 
@@ -198,7 +201,10 @@ describe('SYN-210 — MakeMemberInactive: assertScopeViaMember gating', () => {
   it('SYN-210: calls assertScopeViaMember with args.id before writing', async () => {
     await directoryMutation.MakeMemberInactive(null, inactiveArgs, context)
 
-    expect(assertScopeViaMember).toHaveBeenCalledWith(context, 'member_target_1')
+    expect(assertScopeViaMember).toHaveBeenCalledWith(
+      context,
+      'member_target_1'
+    )
     expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
   })
 
@@ -364,18 +370,25 @@ describe('SYN-236 — CloseDownBacenta: pre-check refusals are classified user e
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
+  // SYN-253 supersedes the old "throwToSentry logs it" expectation: the
+  // resolver only rethrows (cause attached) and the GraphQL error logger
+  // writes the single ERROR line for it.
   it('SYN-236: unexpected failures still go through throwToSentry', async () => {
     mockReads(0, null)
-    mockSession.executeWrite = jest
-      .fn()
-      .mockRejectedValue(new Error('Neo4j unavailable'))
+    const dbError = new Error('Neo4j unavailable')
+    mockSession.executeWrite = jest.fn().mockRejectedValue(dbError)
 
-    await expect(
-      directoryMutation.CloseDownBacenta(null, closeArgs, context)
-    ).rejects.toThrow('Error closing down bacenta: Neo4j unavailable')
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toBe(
       'Error closing down bacenta: Neo4j unavailable'
     )
+    expect((error as { extensions?: unknown }).extensions).toBeUndefined()
+    expect((error as Error & { cause?: unknown }).cause).toBe(dbError)
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
 
   it('SYN-236: an empty, banked bacenta still closes down', async () => {
@@ -387,4 +400,272 @@ describe('SYN-236 — CloseDownBacenta: pre-check refusals are classified user e
     expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
     expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
+})
+
+/**
+ * SYN-253 — the remaining user-facing refusals in this file are classified
+ * BAD_USER_INPUT (so the GraphQL logger records them at WARN) with the exact
+ * message users saw before, and nothing is logged by the resolver itself.
+ */
+describe('SYN-253 — directory refusals are BAD_USER_INPUT with unchanged messages', () => {
+  let consoleErrorSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
+
+  const expectRefusal = async (promise: Promise<unknown>, message: string) => {
+    const error = await promise.catch((e: unknown) => e)
+    expect(error).toMatchObject({
+      message,
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  }
+
+  it('SYN-253: MakeMemberInactive refuses a member with active roles', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValue(mockQueryResult({ relationshipCount: { low: 2 } }))
+
+    await expectRefusal(
+      directoryMutation.MakeMemberInactive(
+        null,
+        { id: 'member_target_1', reason: 'moved' },
+        context
+      ),
+      'This member has active roles in church. Please remove all active roles and try again'
+    )
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-253: CreateMember refuses a duplicate email', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce({ records: [] })
+      .mockResolvedValueOnce(
+        mockQueryResult({
+          predicate: true,
+          member: {
+            properties: {
+              email: 'dup@example.test',
+              firstName: 'First',
+              lastName: 'Last',
+            },
+          },
+        })
+      )
+
+    await expectRefusal(
+      directoryMutation.CreateMember(
+        null,
+        {
+          email: 'dup@example.test',
+          bacenta: 'bacenta_1',
+        } as unknown as Member,
+        context
+      ),
+      'There is a member with this email "dup@example.test" called First Last'
+    )
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-253: CreateMember refuses a duplicate whatsapp number', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce({ records: [] })
+      .mockResolvedValueOnce(
+        mockQueryResult({
+          predicate: true,
+          member: {
+            properties: {
+              email: 'other@example.test',
+              whatsappNumber: '0200000000',
+              firstName: 'First',
+              lastName: 'Last',
+            },
+          },
+        })
+      )
+
+    await expectRefusal(
+      directoryMutation.CreateMember(
+        null,
+        {
+          email: 'new@example.test',
+          whatsappNumber: '0200000000',
+          bacenta: 'bacenta_1',
+        } as unknown as Member,
+        context
+      ),
+      'There is a member with this whatsapp number "0200000000" called First Last'
+    )
+  })
+
+  // Close-downs above Bacenta still wrap their refusals in throwToSentry, so
+  // the user keeps seeing the "Error closing down <level>: " prefix — only
+  // the code changes.
+  it('SYN-253: CloseDownGovernorship keeps its prefixed message but is BAD_USER_INPUT', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({
+          name: 'Test',
+          // Neo4j Integer: numeric check via toNumber, message via toString.
+          bacentaCount: { toNumber: () => 3, toString: () => '3' },
+        })
+      )
+      .mockResolvedValueOnce({ records: [] })
+
+    await expectRefusal(
+      directoryMutation.CloseDownGovernorship(
+        null,
+        { governorshipId: 'gov_1' },
+        context
+      ),
+      'Error closing down governorship: Test Governorship has 3 active bacentas. Please close down all bacentas and try again.'
+    )
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-253: CloseDownGovernorship refuses an unbanked last service', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({ name: 'Test', bacentaCount: { toNumber: () => 0 } })
+      )
+      .mockResolvedValueOnce(
+        mockQueryResult({
+          lastService: { properties: { createdAt: '2026-11-01T10:00:00Z' } },
+        })
+      )
+
+    const error = await directoryMutation
+      .CloseDownGovernorship(null, { governorshipId: 'gov_1' }, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({ extensions: { code: 'BAD_USER_INPUT' } })
+    expect((error as Error).message).toMatch(
+      /^Error closing down governorship: Please bank outstanding offering for your service filled on .+ before attempting to close down this governorship$/
+    )
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  const n = (value: number) => ({
+    toNumber: () => value,
+    toString: () => String(value),
+  })
+  const levels = [
+    {
+      resolver: 'CloseDownGovernorship',
+      args: { governorshipId: 'c_1' },
+      noun: 'governorship',
+      counts: { bacentaCount: n(0) },
+    },
+    {
+      resolver: 'CloseDownCouncil',
+      args: { councilId: 'c_1' },
+      noun: 'council',
+      counts: { governorshipCount: n(0) },
+    },
+    {
+      resolver: 'CloseDownStream',
+      args: { streamId: 'c_1' },
+      noun: 'stream',
+      counts: { councilCount: n(0), ministryCount: n(0) },
+    },
+    {
+      resolver: 'CloseDownCampus',
+      args: { campusId: 'c_1' },
+      noun: 'campus',
+      counts: { streamCount: n(0) },
+    },
+    {
+      resolver: 'CloseDownOversight',
+      args: { oversightId: 'c_1' },
+      noun: 'oversight',
+      counts: { campusCount: n(0) },
+    },
+  ] as const
+
+  const closeDown = (resolver: string, args: Record<string, string>) =>
+    (
+      directoryMutation as unknown as Record<
+        string,
+        (o: null, a: unknown, c: Context) => Promise<unknown>
+      >
+    )[resolver](null, args, context)
+
+  it.each([
+    [
+      'CloseDownCouncil',
+      { councilId: 'c_1' },
+      { governorshipCount: n(2) },
+      'Error closing down council: Test Council has 2 active governorships. Please close down all governorships and try again.',
+    ],
+    [
+      'CloseDownStream',
+      { streamId: 'c_1' },
+      { councilCount: n(2), ministryCount: n(0) },
+      'Error closing down stream: Test Stream has 2 active councils. Please close down all councils and try again.',
+    ],
+    [
+      'CloseDownStream',
+      { streamId: 'c_1' },
+      { councilCount: n(0), ministryCount: n(2) },
+      'Error closing down stream: Test Stream has 2 active ministries. Please close down all ministries and try again.',
+    ],
+    [
+      'CloseDownCampus',
+      { campusId: 'c_1' },
+      { streamCount: n(2) },
+      'Error closing down campus: Test Campus has 2 active streams. Please close down all streams and try again.',
+    ],
+    [
+      'CloseDownOversight',
+      { oversightId: 'c_1' },
+      { campusCount: n(2) },
+      'Error closing down oversight: Test Oversight has 2 active campuses. Please close down all campuses and try again.',
+    ],
+  ])(
+    'SYN-253: %s refuses a church with active children as BAD_USER_INPUT, same message',
+    async (resolver, args, counts, message) => {
+      mockSession.executeRead = jest
+        .fn()
+        .mockResolvedValueOnce(mockQueryResult({ name: 'Test', ...counts }))
+        .mockResolvedValueOnce({ records: [] })
+
+      await expectRefusal(closeDown(resolver, args), message)
+      expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    }
+  )
+
+  it.each(levels)(
+    'SYN-253: $resolver refuses an unbanked last service as BAD_USER_INPUT',
+    async ({ resolver, args, noun, counts }) => {
+      mockSession.executeRead = jest
+        .fn()
+        .mockResolvedValueOnce(mockQueryResult({ name: 'Test', ...counts }))
+        .mockResolvedValueOnce(
+          mockQueryResult({
+            lastService: { properties: { createdAt: '2026-11-01T10:00:00Z' } },
+          })
+        )
+
+      const error = await closeDown(resolver, args).catch((e: unknown) => e)
+
+      expect(error).toMatchObject({ extensions: { code: 'BAD_USER_INPUT' } })
+      expect((error as Error).message).toMatch(
+        new RegExp(
+          `^Error closing down ${noun}: Please bank outstanding offering for your service filled on .+ before attempting to close down this ${noun}$`
+        )
+      )
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
+      expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    }
+  )
 })

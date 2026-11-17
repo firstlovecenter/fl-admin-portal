@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql'
-import { isAuth, throwToSentry } from './utils'
-import type { Role } from './types'
+import { badRequest, errorHandling, isAuth, throwToSentry } from './utils'
+import type { Member, Role } from './types'
 
 // Mirrors the shape index.js produces: jwt ? { ...jwt, allowedChurchIds } : {}
 const makeJwt = (roles: Role[] | undefined): { roles?: Role[] } => ({ roles })
@@ -146,15 +146,65 @@ describe('throwToSentry', () => {
     ).toThrow('Something failed: db timeout')
   })
 
-  it('logs the formatted string to console.error', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  // SYN-253 — throwToSentry only rethrows. The GraphQL error logger writes
+  // the single log line; logging here too duplicated every failure.
+  it('SYN-253: does not log — the caller that handles the error logs it', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(() => throwToSentry('Oops', new Error('boom'))).toThrow('Oops: boom')
+    expect(errorSpy).not.toHaveBeenCalled()
+    expect(warnSpy).not.toHaveBeenCalled()
+    errorSpy.mockRestore()
+    warnSpy.mockRestore()
+  })
+
+  it('SYN-253: attaches the original error as cause', () => {
+    const original = new Error('boom')
+    let thrown: unknown
     try {
-      throwToSentry('Oops', new Error('boom'))
-    } catch {
-      // expected
+      throwToSentry('Oops', original)
+    } catch (e) {
+      thrown = e
     }
-    expect(spy).toHaveBeenCalledWith('Oops: boom')
-    spy.mockRestore()
+    expect(thrown).not.toBeInstanceOf(GraphQLError)
+    expect((thrown as Error & { cause?: unknown }).cause).toBe(original)
+  })
+
+  it.each(['BAD_USER_INPUT', 'FORBIDDEN'])(
+    'SYN-253: keeps a %s refusal classified, with the same prefixed message',
+    (code) => {
+      const refusal = new GraphQLError('Please transfer all members', {
+        extensions: { code, severity: 'USER_ERROR' },
+      })
+      let thrown: unknown
+      try {
+        throwToSentry('Error closing down council', refusal)
+      } catch (e) {
+        thrown = e
+      }
+      expect(thrown).toBeInstanceOf(GraphQLError)
+      expect((thrown as GraphQLError).message).toBe(
+        'Error closing down council: Please transfer all members'
+      )
+      expect((thrown as GraphQLError).extensions).toEqual({
+        code,
+        severity: 'USER_ERROR',
+      })
+      expect((thrown as GraphQLError).originalError).toBe(refusal)
+    }
+  )
+
+  it('SYN-253: does not treat other GraphQLError codes as refusals', () => {
+    let thrown: unknown
+    try {
+      throwToSentry(
+        'Ctx',
+        new GraphQLError('x', { extensions: { code: 'INTERNAL_SERVER_ERROR' } })
+      )
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown).not.toBeInstanceOf(GraphQLError)
   })
 
   it('handles a plain string error', () => {
@@ -196,5 +246,34 @@ describe('throwToSentry', () => {
     expect(() => throwToSentry('Empty', null)).toThrow('Empty: ')
     expect(() => throwToSentry('Empty', undefined)).toThrow('Empty: ')
     spy.mockRestore()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// errorHandling (SYN-253)
+// ---------------------------------------------------------------------------
+describe('errorHandling', () => {
+  it('SYN-253: refuses a servant without email as BAD_USER_INPUT, same message', () => {
+    let thrown: unknown
+    try {
+      errorHandling({ firstName: 'First', lastName: 'Last' } as Member)
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown).toBeInstanceOf(GraphQLError)
+    expect((thrown as GraphQLError).extensions?.code).toBe('BAD_USER_INPUT')
+    expect((thrown as GraphQLError).message).toBe(
+      'First Last does not have a valid email address. Please add an email address and then try again'
+    )
+  })
+
+  it('passes a servant with an email', () => {
+    expect(() =>
+      errorHandling({ email: 'x@example.test' } as Member)
+    ).not.toThrow()
+  })
+
+  it('badRequest builds a BAD_USER_INPUT GraphQLError', () => {
+    expect(badRequest('m').extensions?.code).toBe('BAD_USER_INPUT')
   })
 })
