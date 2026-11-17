@@ -96,7 +96,7 @@ export const checkIfLastServiceBanked = async (
     })
     .catch((error: any) =>
       throwClean(
-        'We could not check your previous service banking. Please try again.',
+        'We could not check the previous service banking. Please try again.',
         error
       )
     )
@@ -788,14 +788,9 @@ const bankingMutation = {
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
-    await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
-      (error: any) => {
-        throwClean(
-          'We could not check your previous service banking. Please try again.',
-          error
-        )
-      }
-    )
+    // SYN-228: don't wrap — the helper already throwClean()s DB failures, and
+    // the outstanding-offering rule must reach the user verbatim.
+    await checkIfLastServiceBanked(args.serviceRecordId, context)
 
     const submissionResponse = rearrangeCypherObject(
       await session
@@ -849,14 +844,8 @@ const bankingMutation = {
       )
     }
 
-    await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
-      (error: any) => {
-        throwClean(
-          'We could not check the previous service banking. Please try again.',
-          error
-        )
-      }
-    )
+    // SYN-228: don't wrap — the outstanding-offering rule must reach the user verbatim.
+    await checkIfLastServiceBanked(args.serviceRecordId, context)
 
     const submissionResponse = rearrangeCypherObject(
       await session
