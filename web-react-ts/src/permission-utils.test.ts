@@ -33,6 +33,8 @@ import {
   permitLeaderAdminArrivals,
   permitAdminArrivals,
   permitShepherdingControl,
+  permitSelfService,
+  hasSelfServiceRole,
 } from 'permission-utils'
 import {
   ALL_CHURCH_LEVELS,
@@ -441,5 +443,49 @@ describe('permitShepherdingControl (FE)', () => {
     expect(result).not.toContain('arrivalsPayerCouncil')
     expect(result).not.toContain('tellerStream')
     expect(result).not.toContain('arrivalsAdminCampus')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 12. permitSelfService / hasSelfServiceRole — SYN-230
+// ---------------------------------------------------------------------------
+describe('permitSelfService (FE)', () => {
+  it('is a superset of permitMe(Bacenta) — no previously allowed role is lost', () => {
+    const result = permitSelfService()
+    permitMe('Bacenta').forEach((role) => expect(result).toContain(role))
+  })
+
+  it('adds the sign-in roles permitMe(Bacenta) left out (the SYN-230 FORBIDDENs)', () => {
+    const before = permitMe('Bacenta')
+    const result = permitSelfService()
+    ;(
+      ['arrivalsCounterStream', 'arrivalsPayerCouncil', 'fishers'] as const
+    ).forEach((role) => {
+      expect(before).not.toContain(role)
+      expect(result).toContain(role)
+    })
+  })
+
+  it('never includes the route-only `all` wildcard', () => {
+    expect(permitSelfService()).not.toContain('all')
+  })
+})
+
+describe('hasSelfServiceRole (FE)', () => {
+  it('is true for each specialist role on its own', () => {
+    expect(hasSelfServiceRole(['arrivalsCounterStream'])).toBe(true)
+    expect(hasSelfServiceRole(['arrivalsPayerCouncil'])).toBe(true)
+    expect(hasSelfServiceRole(['fishers'])).toBe(true)
+    expect(hasSelfServiceRole(['tellerStream'])).toBe(true)
+  })
+
+  it('is true for a regular leader', () => {
+    expect(hasSelfServiceRole(['leaderBacenta'])).toBe(true)
+  })
+
+  it('is false for a roleless member (empty, null or undefined)', () => {
+    expect(hasSelfServiceRole([])).toBe(false)
+    expect(hasSelfServiceRole(null)).toBe(false)
+    expect(hasSelfServiceRole(undefined)).toBe(false)
   })
 })

@@ -19,6 +19,8 @@ import {
   SET_NOTIFICATION_PREFERENCE,
 } from './notification-prefs-cypher'
 import type { Context } from '../utils/neo4j-types'
+import { isAuth } from '../utils/utils'
+import { permitSelfService } from '../permissions'
 
 jest.mock('../utils/utils', () => ({
   ...jest.requireActual('../utils/utils'),
@@ -134,5 +136,29 @@ describe('SetNotificationPreference', () => {
     ).rejects.toThrow()
 
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+})
+
+// SYN-230 — both operations share the push-token gate, so arrivals
+// counters/payers and fishers-only members can manage their own preferences.
+describe('notification-preference gate', () => {
+  it('both operations gate on permitSelfService() against the JWT roles', async () => {
+    mockRun.mockResolvedValue(makeResult(null))
+    jest.mocked(isAuth).mockClear()
+
+    await myNotificationPreferences(null, {}, context)
+    await SetNotificationPreference(
+      null,
+      { category: 'SERVICES', enabled: false },
+      context
+    )
+
+    expect(isAuth).toHaveBeenCalledTimes(2)
+    expect(isAuth).toHaveBeenNthCalledWith(1, permitSelfService(), [
+      'leaderCouncil',
+    ])
+    expect(isAuth).toHaveBeenNthCalledWith(2, permitSelfService(), [
+      'leaderCouncil',
+    ])
   })
 })

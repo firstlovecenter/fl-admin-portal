@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useMutation } from '@apollo/client'
 import { useAuth } from 'contexts/AuthContext'
+import { hasSelfServiceRole } from 'permission-utils'
 import { registerPushIfGranted } from 'services/firebaseMessaging'
 import { readPushEnabled, writePushToken } from 'lib/push-preference-storage'
 import { REGISTER_PUSH_TOKEN } from './pushNotificationsGQL'
@@ -13,9 +14,13 @@ import { REGISTER_PUSH_TOKEN } from './pushNotificationsGQL'
  *
  * Also refreshes the persisted device token server-side, since FCM tokens can
  * rotate between sessions. Fires once per session (guarded).
+ *
+ * SYN-230: skipped for members holding no sign-in role — the server gate
+ * (`permitSelfService`) would reject them with FORBIDDEN on every load.
  */
 export const usePushNotifications = (): void => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const canRegister = hasSelfServiceRole(user?.roles)
   const initialized = useRef(false)
   const [registerPushToken] = useMutation(REGISTER_PUSH_TOKEN)
 
@@ -26,16 +31,18 @@ export const usePushNotifications = (): void => {
       initialized.current = false
       return
     }
-    if (!initialized.current && readPushEnabled()) {
+    if (!initialized.current && canRegister && readPushEnabled()) {
       initialized.current = true
       void registerPushIfGranted().then((token) => {
         if (token) {
           writePushToken(token)
-          void registerPushToken({ variables: { token } }).catch(() => undefined)
+          void registerPushToken({ variables: { token } }).catch(
+            () => undefined
+          )
         }
       })
     }
-  }, [isAuthenticated, registerPushToken])
+  }, [isAuthenticated, canRegister, registerPushToken])
 }
 
 export default usePushNotifications
