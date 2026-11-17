@@ -38,6 +38,20 @@ const cypher = require('../cypher/resolver-cypher')
 const closeChurchCypher = require('../cypher/close-church-cypher')
 const texts = require('../texts.json')
 
+// SYN-252: the user error for a close-down target that is already a
+// ClosedBacenta, or null when the id is not a ClosedBacenta either.
+const alreadyClosedError = async (session: any, bacentaId: string) => {
+  const closedCheck = rearrangeCypherObject(
+    await session.executeRead((tx: any) =>
+      tx.run(closeChurchCypher.checkBacentaAlreadyClosed, { bacentaId })
+    )
+  )
+
+  return closedCheck.name !== undefined
+    ? badRequest(`${closedCheck.name} Bacenta has already been closed down.`)
+    : null
+}
+
 const directoryMutation = {
   CreateMember: async (object: any, args: Member, context: Context) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
@@ -351,11 +365,30 @@ const directoryMutation = {
       const bacentaCheck = rearrangeCypherObject(res[0])
       const lastServiceRecord = rearrangeCypherObject(res[1])
 
+      // SYN-252: an id that is no longer :Bacenta (a repeated close, or a
+      // RetryLink replay of a close whose response was lost) used to pass every
+      // pre-check and return null from a zero-row write. Refuse it before
+      // RemoveServant runs — replaying success would touch the leader slot again.
+      if (!res[0].records.length) {
+        throw (
+          (await alreadyClosedError(session, args.bacentaId)) ??
+          badRequest('This bacenta could not be found.')
+        )
+      }
+
       // SYN-236: user-actionable refusals — classified so the catch rethrows
       // them as-is instead of logging them to CloudWatch via throwToSentry.
       if (bacentaCheck.memberCount > 0) {
         throw badRequest(
           `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
+        )
+      }
+
+      // SYN-252: checked here, not after the write, so RemoveServant cannot
+      // detach the leader of a bacenta the close-down would then skip.
+      if (!bacentaCheck.hasGovernorship) {
+        throw badRequest(
+          `${bacentaCheck?.name} Bacenta is not under a Governorship and cannot be closed down here.`
         )
       }
 
@@ -398,6 +431,19 @@ const directoryMutation = {
       )
 
       const bacentaResponse = rearrangeCypherObject(closeBacentaResponse)
+
+      // SYN-252: never return null for the non-nullable mutation. A concurrent
+      // duplicate that lost the race gets the same user error as a replay;
+      // anything else (e.g. no Member node for the admin) is a real failure.
+      if (!bacentaResponse.governorship) {
+        throw (
+          (await alreadyClosedError(session, args.bacentaId)) ??
+          new Error(
+            'Close-down matched no active bacenta, governorship or admin member'
+          )
+        )
+      }
+
       return bacentaResponse.governorship
     } catch (error: any) {
       if (isClassifiedError(error)) throw error

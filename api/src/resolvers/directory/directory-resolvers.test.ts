@@ -31,6 +31,7 @@ import type { Member } from '../utils/types'
 import { isAuth } from '../utils/utils'
 import { assertScopeViaMember } from '../utils/scope-utils'
 import { assertCan } from '../utils/assert-can'
+import { RemoveServant } from './make-remove-servants'
 import { permitLeaderAdmin } from '../permissions'
 
 jest.mock('../utils/scope-utils', () => ({
@@ -42,6 +43,12 @@ jest.mock('../utils/scope-utils', () => ({
 // pre-checks behind it, not the gate itself.
 jest.mock('../utils/assert-can', () => ({
   assertCan: jest.fn(),
+}))
+
+// SYN-252: lets the close-down tests assert the leader is never detached when
+// the bacenta is refused.
+jest.mock('./make-remove-servants', () => ({
+  RemoveServant: jest.fn().mockResolvedValue(undefined),
 }))
 
 jest.mock('../utils/utils', () => ({
@@ -313,7 +320,7 @@ describe('SYN-236 — CloseDownBacenta: pre-check refusals are classified user e
     mockSession.executeRead = jest
       .fn()
       .mockResolvedValueOnce(
-        mockQueryResult({ name: 'Test', memberCount, governorship: {} })
+        mockQueryResult({ name: 'Test', memberCount, hasGovernorship: true })
       )
       .mockResolvedValueOnce(
         lastService
@@ -399,6 +406,155 @@ describe('SYN-236 — CloseDownBacenta: pre-check refusals are classified user e
     ).resolves.toEqual({ id: 'gov_1' })
     expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
     expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * SYN-252 — CloseDownBacenta must never resolve to null.
+ *
+ * The close-down Cypher only matches an active :Bacenta under a Governorship,
+ * so closing an id that is already a ClosedBacenta (a repeated close, or a
+ * RetryLink replay after a lost response) or an orphaned bacenta produced zero
+ * rows, and the resolver returned null for the non-nullable
+ * Mutation.CloseDownBacenta. Refusals must land before RemoveServant commits.
+ */
+describe('SYN-252 — CloseDownBacenta: no null result for the non-nullable mutation', () => {
+  const closeArgs = { bacentaId: 'bacenta_1', leaderId: 'leader_1' }
+  let consoleErrorSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('SYN-252: refuses an already-closed bacenta as BAD_USER_INPUT before RemoveServant or any write', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce({ records: [] }) // checkBacentaHasNoMembers: not :Bacenta
+      .mockResolvedValueOnce({ records: [] }) // getLastServiceRecord
+      .mockResolvedValueOnce(mockQueryResult({ name: 'Test' })) // checkBacentaAlreadyClosed
+    mockSession.executeWrite = jest.fn()
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({
+      message: 'Test Bacenta has already been closed down.',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(mockSession.executeRead).toHaveBeenCalledTimes(3)
+    expect(RemoveServant).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  it('SYN-252: refuses an unknown bacenta id as BAD_USER_INPUT before RemoveServant or any write', async () => {
+    mockSession.executeRead = jest.fn().mockResolvedValue({ records: [] })
+    mockSession.executeWrite = jest.fn()
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({
+      message: 'This bacenta could not be found.',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(RemoveServant).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-252: refuses a bacenta with no parent Governorship before RemoveServant detaches its leader', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({ name: 'Test', memberCount: 0, hasGovernorship: false })
+      )
+      .mockResolvedValueOnce({ records: [] })
+    mockSession.executeWrite = jest.fn()
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({
+      message: expect.stringContaining('is not under a Governorship'),
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(RemoveServant).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  it('SYN-252: a concurrent duplicate whose write matches nothing gets the already-closed user error', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({ name: 'Test', memberCount: 0, hasGovernorship: true })
+      )
+      .mockResolvedValueOnce({ records: [] })
+      .mockResolvedValueOnce(mockQueryResult({ name: 'Test' })) // closed by the winner
+    mockSession.executeWrite = jest.fn().mockResolvedValue({ records: [] })
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toMatchObject({
+      message: 'Test Bacenta has already been closed down.',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  // SYN-253 supersedes the old "the resolver logs it" expectation: the error
+  // carries no code, so it surfaces as INTERNAL_SERVER_ERROR and the GraphQL
+  // error logger writes the single ERROR line for it.
+  it('SYN-252: any other zero-row close-down write throws a logged error instead of returning null', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({ name: 'Test', memberCount: 0, hasGovernorship: true })
+      )
+      .mockResolvedValueOnce({ records: [] })
+      .mockResolvedValueOnce({ records: [] }) // not closed either
+    mockSession.executeWrite = jest.fn().mockResolvedValue({ records: [] })
+
+    const error = await directoryMutation
+      .CloseDownBacenta(null, closeArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error).message).toBe(
+      'Error closing down bacenta: Close-down matched no active bacenta, governorship or admin member'
+    )
+    expect((error as { extensions?: unknown }).extensions).toBeUndefined()
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalled()
+  })
+
+  it('SYN-252: a healthy close-down detaches the leader, writes once and returns the governorship', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockQueryResult({ name: 'Test', memberCount: 0, hasGovernorship: true })
+      )
+      .mockResolvedValueOnce({ records: [] })
+    mockSession.executeWrite = jest
+      .fn()
+      .mockResolvedValue(
+        mockQueryResult({ governorship: { id: 'gov_1', bacentas: [] } })
+      )
+
+    await expect(
+      directoryMutation.CloseDownBacenta(null, closeArgs, context)
+    ).resolves.toEqual({ id: 'gov_1', bacentas: [] })
+    expect(RemoveServant).toHaveBeenCalledTimes(1)
+    expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
   })
 })
 
