@@ -301,8 +301,11 @@ const directoryMutation = {
         )
       )
 
+      // SYN-227 — a user-correctable rule (remove the roles first), not a
+      // server fault: badRequest tags it BAD_USER_INPUT. A plain Error was
+      // coded INTERNAL_SERVER_ERROR and paged as a Lambda failure.
       if (memberCheck.relationshipCount.low > 0) {
-        throw new Error(
+        throw badRequest(
           'This member has active roles in church. Please remove all active roles and try again'
         )
       }

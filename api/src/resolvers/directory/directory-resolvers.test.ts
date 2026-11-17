@@ -20,6 +20,7 @@
  *   npm test -- directory-resolvers --testNamePattern="SYN-207:"
  */
 
+import { GraphQLError } from 'graphql'
 import directoryMutation from './directory-resolvers'
 import {
   updateMemberDetails,
@@ -257,6 +258,35 @@ describe('SYN-210 — MakeMemberInactive: assertScopeViaMember gating', () => {
       makeMemberInactive,
       expect.objectContaining({ id: 'member_target_1' })
     )
+  })
+
+  // SYN-227 — a member who still holds a servant edge is a user-correctable
+  // rejection. It used to throw a plain Error, which Apollo surfaced (and the
+  // error-reference plugin logged) as INTERNAL_SERVER_ERROR.
+  it('SYN-227: rejects a member with active roles as BAD_USER_INPUT, not an internal error', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValue(mockQueryResult({ relationshipCount: { low: 2 } }))
+
+    const error = await directoryMutation
+      .MakeMemberInactive(null, inactiveArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect(error).toMatchObject({
+      message:
+        'This member has active roles in church. Please remove all active roles and try again',
+      extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+    })
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalled()
+  })
+
+  it('SYN-227: a member with no active roles passes the guard and is written', async () => {
+    await expect(
+      directoryMutation.MakeMemberInactive(null, inactiveArgs, context)
+    ).resolves.toEqual({ id: 'member_target_1' })
+    expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
   })
 
   it('SYN-210: in-scope caller with a "duplicate" reason still routes to removeDuplicateMember', async () => {

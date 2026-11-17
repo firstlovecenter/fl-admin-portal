@@ -25,7 +25,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from 'components/ui/dialog'
+import { CALLER_HANDLES_ERRORS_CONTEXT } from 'lib/createApolloClient'
+import { displayError } from 'utils/errorHandler'
 import { MAKE_MEMBER_INACTIVE } from '../update/UpdateMutations'
+
+const USER_FACING_CODES = ['BAD_USER_INPUT', 'FORBIDDEN']
 
 type DeleteMemberValues = {
   reason: string
@@ -61,7 +65,11 @@ const MemberDeleteDialog = ({
   const { memberId } = useContext(MemberContext)
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
-  const [MakeMemberInactive] = useMutation(MAKE_MEMBER_INACTIVE)
+  const [MakeMemberInactive] = useMutation(MAKE_MEMBER_INACTIVE, {
+    // SYN-208 — onDelete surfaces every GraphQL error from this mutation
+    // itself, so the global "Something went wrong" toast would be a duplicate.
+    context: CALLER_HANDLES_ERRORS_CONTEXT,
+  })
 
   const onDelete = async (
     values: DeleteMemberValues,
@@ -69,12 +77,37 @@ const MemberDeleteDialog = ({
   ) => {
     helpers.setSubmitting(true)
     try {
-      await MakeMemberInactive({
+      const result = await MakeMemberInactive({
         variables: {
           memberId,
           reason: `${memberFirstName} ${memberLastName} was deleted: ${values.reasonCategory} - ${values.reason}`,
         },
       })
+
+      // SYN-227 — errorPolicy: 'all' (SYN-178) resolves a rejected mutation
+      // with `.errors` instead of throwing, so the server's refusal (e.g. the
+      // member still holds church roles) used to fall through to the success
+      // toast and navigate away with the member untouched. Keep the dialog
+      // open and show the server's reason instead.
+      if (result.errors?.length) {
+        const [error] = result.errors
+        // Only user-facing codes carry copy meant for the user; anything else
+        // stays generic with the errorRef, as the global toast would (SYN-178).
+        if (USER_FACING_CODES.includes(String(error.extensions?.code))) {
+          displayError('Cannot delete member', error)
+        } else {
+          const errorRef = error.extensions?.errorRef
+          displayError(
+            'Cannot delete member',
+            new Error(
+              errorRef
+                ? `Something went wrong. Please try again, or contact support and quote reference ${errorRef}.`
+                : 'Something went wrong. Please try again.'
+            )
+          )
+        }
+        return
+      }
 
       onClose()
       alertSuccess('Member has been deleted successfully')
