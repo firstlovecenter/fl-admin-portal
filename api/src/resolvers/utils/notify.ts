@@ -393,9 +393,28 @@ export const sendBulkEmail = async (): Promise<void> => {
 }
 
 /**
+ * Normalise a phone number to the `233XXXXXXXXX` form the notify service's
+ * `/send-sms` route expects (the form every scheduled SMS job already sends).
+ * SYN-242: local `0XXXXXXXXX` momo numbers were accepted by mNotify before
+ * SYN-181 but fail with a 502 through the notify service. Stored numbers stay
+ * local — the momo payout path needs that form. Anything not recognisably
+ * local keeps its digits as-is (it already carries a country code).
+ */
+export const toSmsRecipient = (phoneNumber: string | null | undefined) => {
+  const digits = (phoneNumber ?? '').replace(/\D/g, '')
+
+  if (/^0\d{9}$/.test(digits)) return `233${digits.slice(1)}`
+  if (/^[1-9]\d{8}$/.test(digits)) return `233${digits}`
+
+  return digits
+}
+
+/**
  * Send a transactional SMS via the FLC notification service `/send-sms` route.
  * Routes through the env-aware notification Lambda (same boundary as email and
  * the scheduled SMS jobs) rather than hitting an external provider directly.
+ * Recipients are normalised with toSmsRecipient; blank ones are dropped, and
+ * if none remain this throws instead of sending an empty list.
  * Throws (via throwToSentry) if the service reports failure.
  */
 export const sendBulkSMS = async (
@@ -407,10 +426,17 @@ export const sendBulkSMS = async (
   // Dev-only guard: when TEST_PHONE_NUMBER is set in the development
   // environment, redirect SMS to that single test number so local/dev testing
   // never messages real church leaders. Never applies in production.
-  const recipients =
+  const recipients = (
     SECRETS.ENVIRONMENT === 'development' && SECRETS.TEST_PHONE_NUMBER
       ? [SECRETS.TEST_PHONE_NUMBER]
       : recipient
+  )
+    .map(toSmsRecipient)
+    .filter(Boolean)
+
+  if (!recipients.length) {
+    throw new Error('No valid SMS recipient phone number')
+  }
 
   const payload: SmsPayload = {
     recipient: recipients,
