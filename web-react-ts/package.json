@@ -111,8 +111,8 @@
     ]
   },
   "overrides": {
-    "@assistant-ui/store": "^0.2.19",
-    "@assistant-ui/tap": "^0.9.3",
+    "@assistant-ui/store": "^0.3.21",
+    "@assistant-ui/tap": "^0.9.23",
     "autoprefixer": "10.4.5",
     "form-data": "^4.0.4",
     "fast-xml-parser": "^5.7.3",
