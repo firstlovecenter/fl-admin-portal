@@ -182,6 +182,45 @@ describe('graphql handler — CORS preflight, DEVELOPMENT branch (SECRETS warm)'
     expect(config.plugins).toContain(errorReferencePlugin)
   })
 
+  it('does not pass the v5-deprecated status400ForVariableCoercionErrors option (SYN-223)', () => {
+    // Apollo Server v5 warns on cold start whenever this key is present in the
+    // config — even set to `true`, which is now the default.
+    const { ApolloServer } = require('@apollo/server')
+
+    const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
+
+    expect(config).not.toHaveProperty('status400ForVariableCoercionErrors')
+  })
+
+  it('the real Apollo Server v5 logs no WARN for the Lambda server config (SYN-223)', () => {
+    const { ApolloServer } = require('@apollo/server')
+    const RealApolloServer = jest.requireActual('@apollo/server').ApolloServer
+    const { buildSchema } = jest.requireActual('graphql')
+
+    const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
+    const logger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    }
+
+    // Real constructor, the handler's own config (the mocked schema/plugins
+    // are swapped for real stand-ins). Option validation and its deprecation
+    // warnings run synchronously in the constructor. Covers top-level config
+    // options only, not the stubbed rules/plugins.
+    // eslint-disable-next-line no-new
+    new RealApolloServer({
+      ...config,
+      schema: buildSchema('type Query { _empty: String }'),
+      validationRules: [],
+      plugins: [],
+      logger,
+    })
+
+    expect(logger.warn).not.toHaveBeenCalled()
+  })
+
   it.each([
     ['http://127.0.0.1:5173'],
     ['http://localhost:5173'],

@@ -110,7 +110,9 @@ const initializeServer = async () => {
     server = new ApolloServer({
       schema,
       introspection: isDevelopment,
-      status400ForVariableCoercionErrors: true,
+      // SYN-223 — no `status400ForVariableCoercionErrors` here. Apollo Server
+      // v5 returns 400 for variable-coercion errors by default; passing `true`
+      // has no effect and logs a deprecation WARN on every cold start.
       // SYN-177 — fail closed on the same ENVIRONMENT signal as introspection
       // (not process.env.NODE_ENV, which may be unset in the Lambda) so raw
       // stack traces / Neo4j error text never reach clients in production.
