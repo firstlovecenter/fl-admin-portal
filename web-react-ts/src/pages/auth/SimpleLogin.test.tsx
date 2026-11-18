@@ -108,4 +108,21 @@ describe('SimpleLogin', () => {
       'Failed to login. Please try again.'
     )
   })
+
+  // SYN-224: mobile keyboards capitalised the first letter of the email, and
+  // the auth service's case-sensitive lookup rejected the correct password.
+  it('turns off auto-capitalisation and autocorrect on both email inputs', async () => {
+    const user = userEvent.setup()
+    render(<SimpleLogin />)
+
+    const assertNoAutoCaps = (input: HTMLElement) => {
+      expect(input).toHaveAttribute('autocapitalize', 'none')
+      expect(input).toHaveAttribute('autocorrect', 'off')
+      expect(input).toHaveAttribute('spellcheck', 'false')
+    }
+
+    assertNoAutoCaps(screen.getByLabelText('Email address'))
+    await user.click(screen.getByText('Forgot password?'))
+    assertNoAutoCaps(screen.getByLabelText('Email address'))
+  })
 })

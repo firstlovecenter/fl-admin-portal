@@ -301,13 +301,22 @@ export function sameRoles(a: string[] = [], b: string[] = []): boolean {
 }
 
 /**
+ * SYN-224: the auth service's email lookup is case-sensitive and Member emails
+ * are stored trimmed + lowercased, so mobile auto-capitalisation ("John@…")
+ * failed login with a correct password. Normalise here, not per form.
+ */
+export function normaliseEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+/**
  * Sign up a new user
  */
 export async function signup(data: SignupData): Promise<AuthTokens> {
   const response = await fetch(`${AUTH_API_URL}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, email: normaliseEmail(data.email) }),
   })
 
   const result = await response.json()
@@ -335,7 +344,7 @@ export async function login(data: LoginData): Promise<AuthTokens> {
     // Include credentials so the browser stores the httpOnly refresh cookie the
     // auth service sets on success (SYN-173).
     credentials: 'include',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, email: normaliseEmail(data.email) }),
   })
 
   const result = await response.json()
@@ -477,7 +486,8 @@ export async function resetPassword(
   const response = await fetch(`${AUTH_API_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    // SYN-224: same case-sensitive lookup as login — see normaliseEmail.
+    body: JSON.stringify({ ...data, email: normaliseEmail(data.email) }),
   })
 
   const result = await response.json()
@@ -506,7 +516,8 @@ export async function requestPasswordReset(
   const response = await fetch(`${AUTH_API_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    // SYN-224: same case-sensitive lookup as login — see normaliseEmail.
+    body: JSON.stringify({ email: normaliseEmail(email) }),
   })
 
   const result = await response.json()
