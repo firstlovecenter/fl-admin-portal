@@ -201,6 +201,8 @@ const applyVehicleSupport = async (
   )
 }
 
+const GHANA_LOCAL_MOBILE_REGEX = /^0[2-9]\d{8}$/
+
 export const arrivalsMutation = {
   MakeGovernorshipArrivalsAdmin: async (
     object: any,
@@ -914,6 +916,16 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     isAuth(['leaderBacenta'], context.jwt?.roles)
+
+    // SYN-242: reject a malformed number as a user error instead of letting
+    // the notify service 502. Local Ghana form only — the shared
+    // MOMO_NUM_REGEX also admits 10 digits with no leading 0, which would
+    // reach /send-sms un-prefixed and be read as a foreign number.
+    if (!GHANA_LOCAL_MOBILE_REGEX.test(args.phoneNumber ?? '')) {
+      throw badRequest(
+        'Enter a valid mobile money number (10 digits, e.g. 02XXXXXXXX).'
+      )
+    }
 
     const response = await sendBulkSMS(
       [args.phoneNumber],
