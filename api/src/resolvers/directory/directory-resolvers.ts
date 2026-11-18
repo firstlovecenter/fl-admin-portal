@@ -304,9 +304,13 @@ const directoryMutation = {
       // SYN-227 — a user-correctable rule (remove the roles first), not a
       // server fault: badRequest tags it BAD_USER_INPUT. A plain Error was
       // coded INTERNAL_SERVER_ERROR and paged as a Lambda failure.
+      // `activeRoles` names each blocking role so the delete dialog can list
+      // them. They go in extensions, not the message, so the error-reference
+      // log line stays one fixed sentence with no church names in it.
       if (memberCheck.relationshipCount.low > 0) {
         throw badRequest(
-          'This member has active roles in church. Please remove all active roles and try again'
+          'This member has active roles in church. Please remove all active roles and try again',
+          { activeRoles: memberCheck.activeRoles ?? [] }
         )
       }
 

@@ -24,6 +24,7 @@ import { GraphQLError } from 'graphql'
 import directoryMutation from './directory-resolvers'
 import {
   updateMemberDetails,
+  checkMemberHasNoActiveRelationships,
   makeMemberInactive,
   removeDuplicateMember,
 } from '../cypher/resolver-cypher'
@@ -262,11 +263,19 @@ describe('SYN-210 — MakeMemberInactive: assertScopeViaMember gating', () => {
 
   // SYN-227 — a member who still holds a servant edge is a user-correctable
   // rejection. It used to throw a plain Error, which Apollo surfaced (and the
-  // error-reference plugin logged) as INTERNAL_SERVER_ERROR.
+  // error-reference plugin logged) as INTERNAL_SERVER_ERROR. The refusal also
+  // names each blocking role in extensions.activeRoles for the delete dialog.
+  const activeRoles = [
+    { servantType: 'Leader', churchType: 'Bacenta', churchName: 'Adenta' },
+    { servantType: 'Admin', churchType: 'Governorship', churchName: 'Madina' },
+  ]
+
   it('SYN-227: rejects a member with active roles as BAD_USER_INPUT, not an internal error', async () => {
     mockSession.executeRead = jest
       .fn()
-      .mockResolvedValue(mockQueryResult({ relationshipCount: { low: 2 } }))
+      .mockResolvedValue(
+        mockQueryResult({ relationshipCount: { low: 2 }, activeRoles })
+      )
 
     const error = await directoryMutation
       .MakeMemberInactive(null, inactiveArgs, context)
@@ -280,6 +289,54 @@ describe('SYN-210 — MakeMemberInactive: assertScopeViaMember gating', () => {
     })
     expect(mockSession.executeWrite).not.toHaveBeenCalled()
     expect(mockSession.close).toHaveBeenCalled()
+  })
+
+  it('SYN-227: the refusal lists every blocking role in extensions.activeRoles', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValue(
+        mockQueryResult({ relationshipCount: { low: 2 }, activeRoles })
+      )
+
+    const error = (await directoryMutation
+      .MakeMemberInactive(null, inactiveArgs, context)
+      .catch((e: unknown) => e)) as GraphQLError
+
+    expect(error.extensions.activeRoles).toEqual(activeRoles)
+    // The roles ride in extensions only: the message (logged by the
+    // error-reference plugin) must not carry church names.
+    expect(error.message).not.toContain('Adenta')
+    expect(error.message).not.toContain('Madina')
+  })
+
+  it('SYN-227: still refuses, with an empty list, when the read returns no activeRoles column', async () => {
+    mockSession.executeRead = jest
+      .fn()
+      .mockResolvedValue(mockQueryResult({ relationshipCount: { low: 1 } }))
+
+    const error = (await directoryMutation
+      .MakeMemberInactive(null, inactiveArgs, context)
+      .catch((e: unknown) => e)) as GraphQLError
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect(error.extensions).toMatchObject({
+      code: 'BAD_USER_INPUT',
+      activeRoles: [],
+    })
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-227: reads the roles through checkMemberHasNoActiveRelationships, keyed on args.id', async () => {
+    await directoryMutation.MakeMemberInactive(null, inactiveArgs, context)
+
+    const executeReadCallback = mockSession.executeRead.mock.calls[0][0]
+    const fakeTx = { run: jest.fn().mockResolvedValue({ records: [] }) }
+    await executeReadCallback(fakeTx)
+
+    expect(fakeTx.run).toHaveBeenCalledWith(
+      checkMemberHasNoActiveRelationships,
+      expect.objectContaining({ id: 'member_target_1' })
+    )
   })
 
   it('SYN-227: a member with no active roles passes the guard and is written', async () => {

@@ -244,17 +244,36 @@ RETURN member {
 }
 `
 
-// Closed-Hub-tree labels (ClosedHub, ClosedHubCouncil, ClosedCreativeArts) are
-// still excluded even though those tiers were removed from the active SDL —
-// dev/prod still hold historical LEADS edges to those closed nodes, and
-// without the excludes a member with old leadership history would be falsely
-// blocked from deactivation.
+// SYN-227 — only servant edges to the seven live church levels block a
+// deactivation. The Fellowship and Creative Arts tiers (Ministry, Hub,
+// HubCouncil, CreativeArts) were removed with their servant mutations
+// (a849f2fa1, 8c62fff15), but edges to their nodes remain in the data. Matching
+// any label let those block forever — nothing can remove them, yet the delete
+// dialog would tell the admin to. Closing a church swaps its level label for
+// its Closed one; the prefix guard keeps any Closed label from counting.
+// Not counted here (follow-up): DEPUTY_LEADS and IS_ARRIVALS_PAYER_FOR.
+//
+// `activeRoles` names each blocking role for the dialog to list. DISTINCT
+// makes a duplicated edge one role. No church id is returned: the list can
+// name churches outside the caller's scope, and the dialog needs only names.
 export const checkMemberHasNoActiveRelationships = `
-MATCH p=(member:Member {id:$id})-[:LEADS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|COUNTS_ARRIVALS_FOR|IS_TELLER_FOR]->(church)
-WHERE NOT church:ClosedBacenta AND NOT church:ClosedGovernorship AND NOT church:ClosedCouncil AND NOT church:ClosedStream AND NOT church:ClosedCampus AND NOT church:ClosedOversight AND NOT church:ClosedDenomination
-AND NOT church:ClosedMinistry
-AND NOT church:ClosedHub AND NOT church:ClosedHubCouncil AND NOT church:ClosedCreativeArts
-RETURN COUNT(p) as relationshipCount
+MATCH (member:Member {id:$id})-[servant:LEADS|DOES_ARRIVALS_FOR|IS_ADMIN_FOR|COUNTS_ARRIVALS_FOR|IS_TELLER_FOR]->(church:Bacenta|Governorship|Council|Stream|Campus|Oversight|Denomination)
+WHERE none(label IN labels(church) WHERE label STARTS WITH 'Closed')
+WITH DISTINCT church, type(servant) AS edgeType
+ORDER BY church.name, church.id, edgeType
+RETURN COUNT(*) AS relationshipCount,
+COLLECT({
+  servantType: CASE edgeType
+    WHEN 'LEADS' THEN 'Leader'
+    WHEN 'IS_ADMIN_FOR' THEN 'Admin'
+    WHEN 'DOES_ARRIVALS_FOR' THEN 'ArrivalsAdmin'
+    WHEN 'COUNTS_ARRIVALS_FOR' THEN 'ArrivalsCounter'
+    WHEN 'IS_TELLER_FOR' THEN 'Teller'
+    ELSE edgeType
+  END,
+  churchType: head([level IN ['Denomination', 'Oversight', 'Campus', 'Stream', 'Council', 'Governorship', 'Bacenta'] WHERE level IN labels(church)]),
+  churchName: coalesce(church.name, '')
+}) AS activeRoles
 `
 
 export const makeMemberInactive = `

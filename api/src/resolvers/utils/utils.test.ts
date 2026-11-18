@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql'
-import { isAuth, throwToSentry } from './utils'
+import { badRequest, isAuth, throwToSentry } from './utils'
 import type { Role } from './types'
 
 // Mirrors the shape index.js produces: jwt ? { ...jwt, allowedChurchIds } : {}
@@ -196,5 +196,42 @@ describe('throwToSentry', () => {
     expect(() => throwToSentry('Empty', null)).toThrow('Empty: ')
     expect(() => throwToSentry('Empty', undefined)).toThrow('Empty: ')
     spy.mockRestore()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// badRequest
+// ---------------------------------------------------------------------------
+describe('badRequest', () => {
+  it('returns a GraphQLError coded BAD_USER_INPUT / USER_ERROR', () => {
+    const error = badRequest('Fix the form')
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect(error.message).toBe('Fix the form')
+    expect(error.extensions).toEqual({
+      code: 'BAD_USER_INPUT',
+      severity: 'USER_ERROR',
+    })
+  })
+
+  // SYN-227 — MakeMemberInactive hands the FE the roles that block it.
+  it('SYN-227: carries details in extensions next to the code', () => {
+    const activeRoles = [{ servantType: 'Leader', churchName: 'Adenta' }]
+
+    expect(badRequest('Remove the roles', { activeRoles }).extensions).toEqual({
+      activeRoles,
+      code: 'BAD_USER_INPUT',
+      severity: 'USER_ERROR',
+    })
+  })
+
+  it('SYN-227: details cannot override the code or severity', () => {
+    const error = badRequest('Still a refusal', {
+      code: 'INTERNAL_SERVER_ERROR',
+      severity: 'FATAL',
+    })
+
+    expect(error.extensions.code).toBe('BAD_USER_INPUT')
+    expect(error.extensions.severity).toBe('USER_ERROR')
   })
 })

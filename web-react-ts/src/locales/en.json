@@ -1360,7 +1360,10 @@
       "title": "Delete this member?",
       "notePlaceholder": "Add any context that helps explain this decision",
       "reasonRequired": "Please pick a reason category",
-      "reasonTextRequired": "Please provide the reason you're deleting this member"
+      "reasonTextRequired": "Please provide the reason you're deleting this member",
+      "activeRolesTitle": "{{name}} still holds church roles",
+      "activeRolesDescription": "Remove each role below, or hand it over to someone else, then try deleting again.",
+      "activeRoleLabel": "{{level}} {{role}}"
     },
     "memberTitle": {
       "title": "Pastoral Titles",

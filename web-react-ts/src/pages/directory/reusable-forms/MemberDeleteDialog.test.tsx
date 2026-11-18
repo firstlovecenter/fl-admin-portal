@@ -8,15 +8,29 @@
  * stayed active. These cases pin both branches of the `.errors` check, plus
  * the CALLER_HANDLES_ERRORS_CONTEXT opt-out that stops the generic global
  * toast from doubling up on the dialog's own message.
+ *
+ * The refusal also names each role in the way (`extensions.activeRoles`); the
+ * dialog lists them inline so the admin can see exactly what to hand over.
+ * A refusal without that list still falls back to the toast.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { MemberContext } from 'contexts/MemberContext'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { CALLER_HANDLES_ERRORS_CONTEXT } from 'lib/createApolloClient'
-import MemberDeleteDialog from './MemberDeleteDialog'
+import i18n from 'lib/i18n'
+import MemberDeleteDialog, {
+  BlockingRole,
+  describeBlockingRole,
+} from './MemberDeleteDialog'
 
 const {
   mutate,
@@ -91,8 +105,9 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-afterEach(() => {
+afterEach(async () => {
   cleanup()
+  await i18n.changeLanguage('en')
 })
 
 describe('MemberDeleteDialog — SYN-227', () => {
@@ -105,7 +120,7 @@ describe('MemberDeleteDialog — SYN-227', () => {
     )
   })
 
-  it('SYN-227: a rejected delete shows the server reason and stays put', async () => {
+  it('SYN-227: a refusal that names no roles shows the server reason and stays put', async () => {
     mutate.mockResolvedValue({
       data: { MakeMemberInactive: null },
       errors: [
@@ -184,5 +199,297 @@ describe('MemberDeleteDialog — SYN-227', () => {
     await waitFor(() => expect(throwToSentry).toHaveBeenCalled())
     expect(alertSuccess).not.toHaveBeenCalled()
     expect(navigate).not.toHaveBeenCalled()
+  })
+})
+
+const activeRolesRefusal = (activeRoles: unknown[]) => ({
+  data: { MakeMemberInactive: null },
+  errors: [
+    {
+      message: ACTIVE_ROLES_MESSAGE,
+      extensions: { code: 'BAD_USER_INPUT', activeRoles },
+    },
+  ],
+})
+
+// RTL's findBy* default is 1s; a loaded CI box can need longer after a submit.
+const AFTER_SUBMIT = { timeout: 3000 }
+
+const BACENTA_LEADER: BlockingRole = {
+  servantType: 'Leader',
+  churchType: 'Bacenta',
+  churchName: 'Adenta',
+}
+const GOVERNORSHIP_ADMIN: BlockingRole = {
+  servantType: 'Admin',
+  churchType: 'Governorship',
+  churchName: 'Madina',
+}
+const STREAM_TELLER: BlockingRole = {
+  servantType: 'Teller',
+  churchType: 'Stream',
+  churchName: 'Gospel Encounter',
+}
+
+describe('MemberDeleteDialog — SYN-227 blocking roles', () => {
+  it('SYN-227: lists each role the refusal names, inside the dialog', async () => {
+    mutate.mockResolvedValue(
+      activeRolesRefusal([BACENTA_LEADER, GOVERNORSHIP_ADMIN, STREAM_TELLER])
+    )
+    renderDialog()
+
+    await fillAndSubmit()
+
+    const alert = await screen.findByRole('alert', {}, AFTER_SUBMIT)
+    expect(
+      within(alert).getByText('Test Member still holds church roles')
+    ).toBeInTheDocument()
+    expect(
+      within(alert).getByText(
+        'Remove each role below, or hand it over to someone else, then try deleting again.'
+      )
+    ).toBeInTheDocument()
+
+    const items = within(alert).getAllByRole('listitem')
+    expect(items.map((item) => item.textContent)).toEqual([
+      'Bacenta LeaderAdenta',
+      'Governorship AdminMadina',
+      'Stream TellerGospel Encounter',
+    ])
+  })
+
+  it('SYN-227: the list replaces the toast and the delete does not go through', async () => {
+    mutate.mockResolvedValue(activeRolesRefusal([BACENTA_LEADER]))
+    renderDialog()
+
+    await fillAndSubmit()
+
+    await screen.findByText('Adenta', {}, AFTER_SUBMIT)
+    expect(displayError).not.toHaveBeenCalled()
+    expect(alertSuccess).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
+    expect(clickCard).not.toHaveBeenCalled()
+    expect(throwToSentry).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Delete Member' })).toBeEnabled()
+  })
+
+  it('SYN-227: two roles on the same church are both listed', async () => {
+    // A Stream Admin is also that stream's Teller; both must be handed over.
+    mutate.mockResolvedValue(
+      activeRolesRefusal([
+        { ...STREAM_TELLER, servantType: 'Admin' },
+        STREAM_TELLER,
+      ])
+    )
+    renderDialog()
+
+    await fillAndSubmit()
+
+    await screen.findByText('Stream Admin', {}, AFTER_SUBMIT)
+    expect(
+      screen.getAllByRole('listitem').map((item) => item.textContent)
+    ).toEqual(['Stream AdminGospel Encounter', 'Stream TellerGospel Encounter'])
+  })
+
+  it('SYN-227: a church with no name still lists its role', async () => {
+    mutate.mockResolvedValue(
+      activeRolesRefusal([{ ...BACENTA_LEADER, churchName: '' }])
+    )
+    renderDialog()
+
+    await fillAndSubmit()
+
+    const [item] = await screen.findAllByRole('listitem', {}, AFTER_SUBMIT)
+    expect(item.textContent).toBe('Bacenta Leader')
+  })
+
+  it.each([
+    ['an empty list', []],
+    [
+      'a malformed list',
+      [null, { churchType: 'Bacenta', churchName: 'Adenta' }],
+    ],
+  ])('SYN-227: %s falls back to the toast', async (_case, activeRoles) => {
+    mutate.mockResolvedValue(activeRolesRefusal(activeRoles))
+    renderDialog()
+
+    await fillAndSubmit()
+
+    await waitFor(() =>
+      expect(displayError).toHaveBeenCalledWith(
+        'Cannot delete member',
+        expect.objectContaining({ message: ACTIVE_ROLES_MESSAGE })
+      )
+    )
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
+  })
+
+  it('SYN-227: two churches with the same name are both listed', async () => {
+    mutate.mockResolvedValue(
+      activeRolesRefusal([BACENTA_LEADER, { ...BACENTA_LEADER }])
+    )
+    renderDialog()
+
+    await fillAndSubmit()
+
+    await screen.findAllByText('Adenta', {}, AFTER_SUBMIT)
+    expect(screen.getAllByRole('listitem')).toHaveLength(2)
+  })
+
+  it('SYN-227: scrolls the list into view on a phone-sized dialog', async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView')
+    mutate.mockResolvedValue(activeRolesRefusal([BACENTA_LEADER]))
+    renderDialog()
+
+    await fillAndSubmit()
+    await screen.findByText('Adenta', {}, AFTER_SUBMIT)
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' })
+    scrollIntoView.mockRestore()
+  })
+
+  it('SYN-227: the dialog cannot be dismissed while the delete is in flight', async () => {
+    let settle: (value: unknown) => void = () => undefined
+    mutate.mockReturnValue(
+      new Promise((resolve) => {
+        settle = resolve
+      })
+    )
+    renderDialog()
+    const user = userEvent.setup()
+
+    await fillAndSubmit()
+    await waitFor(() => expect(mutate).toHaveBeenCalled())
+
+    // Escape and the corner X would otherwise close the dialog and let the
+    // late refusal below land on a closed one.
+    await user.keyboard('{Escape}')
+    expect(onClose).not.toHaveBeenCalled()
+    expect(
+      screen.queryByRole('button', { name: 'Close' })
+    ).not.toBeInTheDocument()
+
+    settle(activeRolesRefusal([BACENTA_LEADER]))
+
+    expect(
+      await screen.findByText('Adenta', {}, AFTER_SUBMIT)
+    ).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+  })
+
+  it('SYN-227: Escape after a refusal closes the dialog and clears the list', async () => {
+    mutate.mockResolvedValue(activeRolesRefusal([BACENTA_LEADER]))
+    renderDialog()
+
+    await fillAndSubmit()
+    await screen.findByText('Adenta', {}, AFTER_SUBMIT)
+
+    await userEvent.setup().keyboard('{Escape}')
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText('Adenta')).not.toBeInTheDocument()
+  })
+
+  it('SYN-227: Cancel clears the list so the next opening starts clean', async () => {
+    mutate.mockResolvedValue(activeRolesRefusal([BACENTA_LEADER]))
+    renderDialog()
+
+    await fillAndSubmit()
+    await screen.findByText('Adenta', {}, AFTER_SUBMIT)
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    // onClose is a spy, so the dialog is still open: the list must be gone
+    // because the dialog reset it, not because the dialog unmounted.
+    expect(screen.queryByText('Adenta')).not.toBeInTheDocument()
+  })
+
+  it('SYN-227: a second attempt drops the earlier list before showing its own result', async () => {
+    mutate
+      .mockResolvedValueOnce(activeRolesRefusal([BACENTA_LEADER]))
+      .mockResolvedValueOnce({
+        data: { MakeMemberInactive: null },
+        errors: [
+          {
+            message: 'You do not have permission to do this',
+            extensions: { code: 'FORBIDDEN' },
+          },
+        ],
+      })
+    renderDialog()
+
+    await fillAndSubmit()
+    await screen.findByText('Adenta', {}, AFTER_SUBMIT)
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Delete Member' }))
+
+    await waitFor(() => expect(displayError).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText('Adenta')).not.toBeInTheDocument()
+  })
+
+  it('SYN-227: lists the roles in the selected language', async () => {
+    await i18n.changeLanguage('fr')
+    mutate.mockResolvedValue(
+      activeRolesRefusal([BACENTA_LEADER, STREAM_TELLER])
+    )
+    renderDialog()
+
+    await fillAndSubmit()
+
+    expect(
+      await screen.findByText(
+        "Test Member occupe encore des rôles dans l'église",
+        {},
+        AFTER_SUBMIT
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByText('Responsable de Bacenta')).toBeInTheDocument()
+    expect(screen.getByText('Caissier de Filière')).toBeInTheDocument()
+  })
+})
+
+describe('describeBlockingRole — SYN-227', () => {
+  const t = i18n.getFixedT('en')
+
+  it.each([
+    ['Leader', 'Bacenta', 'Bacenta Leader'],
+    ['Admin', 'Council', 'Council Admin'],
+    ['ArrivalsAdmin', 'Campus', 'Campus Arrivals Admin'],
+    ['ArrivalsCounter', 'Stream', 'Stream Arrivals Counter'],
+    ['Teller', 'Stream', 'Stream Teller'],
+  ] as const)(
+    'SYN-227: names a %s of a %s as "%s"',
+    (servantType, churchType, expected) => {
+      expect(
+        describeBlockingRole(
+          { ...BACENTA_LEADER, servantType, churchType },
+          t
+        )
+      ).toBe(expected)
+    }
+  )
+
+  it('SYN-227: falls back to the raw servant type the API sends for an unmapped edge', () => {
+    expect(
+      describeBlockingRole(
+        {
+          ...BACENTA_LEADER,
+          servantType: 'IS_ARRIVALS_PAYER_FOR' as BlockingRole['servantType'],
+          churchType: 'Council',
+        },
+        t
+      )
+    ).toBe('Council IS_ARRIVALS_PAYER_FOR')
+  })
+
+  it('SYN-227: shows the role alone when the church has no level label', () => {
+    expect(
+      describeBlockingRole({ ...BACENTA_LEADER, churchType: null }, t)
+    ).toBe('Leader')
   })
 })

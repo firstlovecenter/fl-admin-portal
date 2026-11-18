@@ -8,9 +8,14 @@ import { ChurchLevel, Member, neonumber, Role } from './types'
 // `GraphQLError` (not a plain Error with `error.extensions` set) is required so
 // Apollo Server 4's default formatError preserves `extensions.code` once
 // NODE_ENV=production — without this the FE always sees INTERNAL_SERVER_ERROR.
-export const badRequest = (message: string): GraphQLError =>
+// `details` rides along in `extensions` for a refusal the client renders itself
+// (SYN-227). It is spread first so it can never override the code or severity.
+export const badRequest = (
+  message: string,
+  details: Record<string, unknown> = {}
+): GraphQLError =>
   new GraphQLError(message, {
-    extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+    extensions: { ...details, code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
   })
 
 // Structured collision error for the member-edit path: instead of a flat
