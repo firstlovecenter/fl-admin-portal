@@ -1360,7 +1360,10 @@
       "title": "Dieses Mitglied löschen?",
       "notePlaceholder": "Fügen Sie Kontext hinzu, der diese Entscheidung erklärt",
       "reasonRequired": "Bitte wählen Sie eine Begründungskategorie",
-      "reasonTextRequired": "Bitte geben Sie den Grund für das Löschen dieses Mitglieds an"
+      "reasonTextRequired": "Bitte geben Sie den Grund für das Löschen dieses Mitglieds an",
+      "activeRolesTitle": "{{name}} hat noch Funktionen in der Gemeinde",
+      "activeRolesDescription": "Entfernen Sie jede unten aufgeführte Funktion oder übergeben Sie sie an eine andere Person und versuchen Sie dann erneut, das Mitglied zu löschen.",
+      "activeRoleLabel": "{{level}}-{{role}}"
     },
     "memberTitle": {
       "title": "Pastorale Titel",

@@ -1360,7 +1360,10 @@
       "title": "Eliminar este membro?",
       "notePlaceholder": "Acrescente o contexto que explica esta decisão",
       "reasonRequired": "Escolha uma categoria de motivo",
-      "reasonTextRequired": "Indique o motivo pelo qual está a eliminar este membro"
+      "reasonTextRequired": "Indique o motivo pelo qual está a eliminar este membro",
+      "activeRolesTitle": "{{name}} ainda tem funções na igreja",
+      "activeRolesDescription": "Retire cada função abaixo ou passe-a a outra pessoa e tente eliminar este membro novamente.",
+      "activeRoleLabel": "{{role}} de {{level}}"
     },
     "memberTitle": {
       "title": "Títulos pastorais",
