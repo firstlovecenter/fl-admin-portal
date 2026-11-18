@@ -25,6 +25,8 @@ import {
   setAccessToken,
   serverLogout,
   getStoredUser,
+  isLegacyStoredSession,
+  purgeLegacyTokens,
   getRolesFromToken,
   sameRoles,
   getTokenExpiryMs,
@@ -143,6 +145,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true)
 
       const storedUser = getStoredUser()
+
+      // SYN-231: a pre-SYN-173 session never got the httpOnly refresh cookie,
+      // so bootstrapping it would only send a cookie-less refresh that the auth
+      // service logs as an error. Sign out locally and skip the round trip.
+      if (storedUser && isLegacyStoredSession()) {
+        clearAuth()
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+      // A post-migration session can still carry old token keys nobody
+      // deleted; it bootstraps from the cookie as normal, minus the leftovers.
+      purgeLegacyTokens()
 
       // SYN-173: the access token lives in memory only, so a reload always
       // starts with none. If a previous session left a stored user, bootstrap

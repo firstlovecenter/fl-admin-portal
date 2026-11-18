@@ -82,10 +82,6 @@ const invokeNotificationLambda = async (
     const secretKey = await getNotificationSecretKey()
 
     console.log('[Notification] Lambda name:', lambdaName)
-    console.log(
-      '[Notification] Secret key (first 10 chars):',
-      `${secretKey.substring(0, 10)}...`
-    )
 
     // Construct the notification event
     const event: NotificationEvent = {
@@ -125,10 +121,8 @@ const invokeNotificationLambda = async (
         console.log('[Notification] Notification sent successfully')
         return true
       }
-      console.error(
-        '[Notification] Notification sending failed with status code:',
-        result.statusCode
-      )
+      // SYN-253: rethrow only — the GraphQL error logger (or the caller that
+      // swallows the error) logs the failure once, at the point it is handled.
       throwToSentry(
         'Notification sending failed',
         `status ${result.statusCode}`
@@ -139,7 +133,6 @@ const invokeNotificationLambda = async (
     console.warn('[Notification] No payload in response')
     return false
   } catch (error) {
-    console.error('[Notification] Error sending notification:', error)
     throwToSentry('Error sending notification via Lambda', error)
     return false
   }

@@ -15,7 +15,7 @@ import {
   MOMO_NUM_REGEX,
   Network,
 } from '../utils/financial-utils'
-import { isAuth, rearrangeCypherObject } from '../utils/utils'
+import { badRequest, isAuth, rearrangeCypherObject } from '../utils/utils'
 import { assertScopeViaServiceRecord } from '../utils/scope-utils'
 import {
   checkTransactionReference,
@@ -96,7 +96,7 @@ export const checkIfLastServiceBanked = async (
     })
     .catch((error: any) =>
       throwClean(
-        'We could not check your previous service banking. Please try again.',
+        'We could not check the previous service banking. Please try again.',
         error
       )
     )
@@ -116,7 +116,8 @@ export const checkIfLastServiceBanked = async (
       'tellerConfirmationTime' in lastService
     )
   ) {
-    throw new Error(
+    // SYN-253: a refusal the user can act on — BAD_USER_INPUT logs at WARN.
+    throw badRequest(
       `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
         date.date
       )} before attempting to bank this week's offering`
@@ -788,14 +789,9 @@ const bankingMutation = {
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
     const session = context.executionContext.session()
 
-    await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
-      (error: any) => {
-        throwClean(
-          'We could not check your previous service banking. Please try again.',
-          error
-        )
-      }
-    )
+    // SYN-228: don't wrap — the helper already throwClean()s DB failures, and
+    // the outstanding-offering rule must reach the user verbatim.
+    await checkIfLastServiceBanked(args.serviceRecordId, context)
 
     const submissionResponse = rearrangeCypherObject(
       await session
@@ -849,14 +845,8 @@ const bankingMutation = {
       )
     }
 
-    await checkIfLastServiceBanked(args.serviceRecordId, context).catch(
-      (error: any) => {
-        throwClean(
-          'We could not check the previous service banking. Please try again.',
-          error
-        )
-      }
-    )
+    // SYN-228: don't wrap — the outstanding-offering rule must reach the user verbatim.
+    await checkIfLastServiceBanked(args.serviceRecordId, context)
 
     const submissionResponse = rearrangeCypherObject(
       await session

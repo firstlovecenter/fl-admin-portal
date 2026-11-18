@@ -60,7 +60,11 @@ beforeEach(() => {
   readResults = new Map<string, unknown>([
     [
       closeChurchCypher.checkBacentaHasNoMembers,
-      mockQueryResult({ name: 'Adenta', memberCount: 0 }),
+      mockQueryResult({
+        name: 'Adenta',
+        memberCount: 0,
+        hasGovernorship: true,
+      }),
     ],
     [
       closeChurchCypher.getLastServiceRecord,
@@ -92,7 +96,11 @@ describe('SYN-233 — CloseDownBacenta precondition errors', () => {
   it('SYN-233: rejects a bacenta with members as BAD_USER_INPUT before any write', async () => {
     readResults.set(
       closeChurchCypher.checkBacentaHasNoMembers,
-      mockQueryResult({ name: 'Adenta', memberCount: 15 })
+      mockQueryResult({
+        name: 'Adenta',
+        memberCount: 15,
+        hasGovernorship: true,
+      })
     )
 
     const error = await directoryMutation
@@ -112,7 +120,11 @@ describe('SYN-233 — CloseDownBacenta precondition errors', () => {
   it('SYN-233: reads a neo4j Integer member count, not just a JS number', async () => {
     readResults.set(
       closeChurchCypher.checkBacentaHasNoMembers,
-      mockQueryResult({ name: 'Adenta', memberCount: int(1) })
+      mockQueryResult({
+        name: 'Adenta',
+        memberCount: int(1),
+        hasGovernorship: true,
+      })
     )
 
     await expect(
