@@ -25,7 +25,8 @@ import {
 } from 'global-types'
 import { alertSuccess, directoryLock, throwToSentry } from 'global-utils'
 import useModal from 'hooks/useModal'
-import { ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
+import { ArrowRightLeft, ChevronRight, MapPin, Pencil, PencilLine, XCircle } from 'lucide-react'
+import TransferChurchSheet, { TransferableLevel } from 'components/directory/TransferChurchSheet'
 import { BacentaWithArrivals } from 'pages/arrivals/arrivals-types'
 import { DetailsArray } from 'pages/directory/display/DetailsBacenta'
 import UpdateBusPaymentDialog from 'pages/directory/update/UpdateBusPaymentDialog'
@@ -91,6 +92,7 @@ type DisplayChurchDetailsProps = {
     latitude: number
   }
   last3Weeks?: Last3WeeksCardProps['last3Weeks']
+  parentChurchId?: string
 }
 
 type FormOptions = {
@@ -139,6 +141,11 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
   const { show, handleShow, handleClose } = useModal()
   const [editBussingOpen, setEditBussingOpen] = useState(false)
   const [recordDialogOpen, setRecordDialogOpen] = useState(false)
+  const [isTransferOpen, setIsTransferOpen] = useState(false)
+
+  const transferableLevels: ChurchLevel[] = ['Bacenta', 'Governorship', 'Council', 'Stream']
+  const isTransferable =
+    transferableLevels.includes(props.churchType) && !!props.parentChurchId
   const { governorshipId, councilId, streamId, campusId, clickCard } =
     useContext(ChurchContext)
 
@@ -421,6 +428,17 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      {isTransferable && (
+        <TransferChurchSheet
+          open={isTransferOpen}
+          onClose={() => setIsTransferOpen(false)}
+          churchId={props.churchId}
+          churchName={props.name}
+          churchLevel={props.churchType as TransferableLevel}
+          oldParentId={props.parentChurchId!}
+        />
+      )}
+
       {/* Header */}
       <StickyPageHeader>
         <Breadcrumb breadcrumb={props.breadcrumb} />
@@ -435,6 +453,17 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
             <RoleView roles={props.editPermitted} directoryLock>
               <StickyPageHeaderActions>
                 <EditButton link={props.editlink} />
+                {isTransferable && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsTransferOpen(true)}
+                    className="min-h-[44px] gap-1.5 text-violet-500 border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-500"
+                  >
+                    <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Transfer</span>
+                  </Button>
+                )}
                 {props.churchType === 'Bacenta' && props.leader?.id && (
                   <CloseDownBacentaButton
                     bacentaId={props.churchId}

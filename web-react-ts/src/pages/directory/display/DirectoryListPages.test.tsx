@@ -34,7 +34,11 @@ const queryResult = vi.fn()
 
 vi.mock('@apollo/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@apollo/client')>()
-  return { ...actual, useQuery: () => queryResult() }
+  return {
+    ...actual,
+    useQuery: () => queryResult(),
+    useMutation: () => [vi.fn().mockResolvedValue({}), { loading: false }],
+  }
 })
 
 vi.mock('components/base-component/ApolloWrapper', () => ({

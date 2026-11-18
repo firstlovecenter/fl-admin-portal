@@ -25,8 +25,20 @@ import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
 import { Separator } from 'components/ui/separator'
+import { Checkbox } from 'components/ui/checkbox'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
 import { CheckCircle2, Inbox, Loader2, XCircle } from 'lucide-react'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import useBulkSelect from 'hooks/useBulkSelect'
 
 const formatAmount = (value: number | null | undefined, currency: string) => {
   const safeCurrency = currency || 'GHS'
@@ -62,6 +74,12 @@ const Approvals = () => {
       return next
     })
 
+  // Bulk select state
+  const [bulkCharge, setBulkCharge] = useState('')
+  const [bulkApproving, setBulkApproving] = useState(false)
+  const [bulkDeclining, setBulkDeclining] = useState(false)
+  const [confirmBulkDecline, setConfirmBulkDecline] = useState(false)
+
   const { data, loading, error, refetch } = useQuery(
     GET_COUNCIL_PENDING_APPROVAL_TRANSACTIONS,
     {
@@ -91,6 +109,15 @@ const Approvals = () => {
     0
   )
 
+  const allTransactionIds = useMemo(
+    () => councilsWithPending.flatMap((c) => c.transactions.map((t) => t.id)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [totalPending]
+  )
+
+  const { selectedIds, toggle, selectAll, clear, isSelected, count, isAllSelected } =
+    useBulkSelect(allTransactionIds)
+
   const initialValues = { charge: '' }
 
   const validationSchema = useMemo(
@@ -103,29 +130,89 @@ const Approvals = () => {
     [t]
   )
 
+  const handleBulkApprove = async () => {
+    const chargeValue = parseFloat(bulkCharge)
+    if (isNaN(chargeValue)) return
+    setBulkApproving(true)
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((transactionId) =>
+          approveExpense({ variables: { transactionId, charge: chargeValue } })
+        )
+      )
+      await refetch()
+      clear()
+      setBulkCharge('')
+    } catch (err) {
+      throwToSentry('Error bulk approving transactions', err)
+    } finally {
+      setBulkApproving(false)
+    }
+  }
+
+  const handleBulkDecline = async () => {
+    setConfirmBulkDecline(false)
+    setBulkDeclining(true)
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((transactionId) =>
+          declineExpense({ variables: { transactionId } })
+        )
+      )
+      await refetch()
+      clear()
+    } catch (err) {
+      throwToSentry('Error bulk declining transactions', err)
+    } finally {
+      setBulkDeclining(false)
+    }
+  }
+
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <div className={`min-h-svh bg-background ${count > 0 ? 'pb-48' : 'pb-[env(safe-area-inset-bottom)]'}`}>
         <StickyPageHeader>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('accounts.approvals.titlePrefix')}{' '}
-            <span className="text-banking">
-              {t('accounts.approvals.titleHighlight')}
-            </span>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {campus?.name}
-            {totalPending > 0 ? (
-              <>
-                {' · '}
-                <span className="font-medium tabular-nums text-foreground">
-                  {totalPending}
-                </span>{' '}
-                {t('accounts.approvals.awaitingReview')}
-              </>
-            ) : null}
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                {t('accounts.approvals.titlePrefix')}{' '}
+                <span className="text-banking">
+                  {t('accounts.approvals.titleHighlight')}
+                </span>
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {campus?.name}
+                {totalPending > 0 ? (
+                  <>
+                    {' · '}
+                    <span className="font-medium tabular-nums text-foreground">
+                      {totalPending}
+                    </span>{' '}
+                    {t('accounts.approvals.awaitingReview')}
+                  </>
+                ) : null}
+              </p>
+            </div>
+            {totalPending > 0 && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="select-all-transactions"
+                  checked={isAllSelected}
+                  onCheckedChange={(checked) => (checked ? selectAll() : clear())}
+                  aria-label="Select all pending transactions"
+                  className="h-5 w-5"
+                />
+                <label
+                  htmlFor="select-all-transactions"
+                  className="text-xs font-medium text-muted-foreground cursor-pointer select-none"
+                >
+                  All
+                </label>
+              </div>
+            )}
+          </div>
         </StickyPageHeader>
+
         <main className="mx-auto max-w-3xl px-4 py-5 lg:px-6 lg:py-8">
           {totalPending === 0 ? (
             <Card className="mt-6">
@@ -162,6 +249,8 @@ const Approvals = () => {
                   <div className="space-y-4">
                     {council.transactions.map(
                       (transaction: AccountTransaction) => {
+                        const selected = isSelected(transaction.id)
+
                         const onApprove = async (
                           values: typeof initialValues,
                           helpers: FormikHelpers<typeof initialValues>
@@ -188,8 +277,26 @@ const Approvals = () => {
                         }
 
                         return (
-                          <Card key={transaction.id} className="overflow-hidden">
+                          <Card
+                            key={transaction.id}
+                            className={`overflow-hidden transition-colors ${
+                              selected ? 'border-warning/40 bg-warning/5' : ''
+                            }`}
+                          >
                             <CardContent className="space-y-5 p-5">
+                              {/* Selection checkbox */}
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={selected}
+                                  onCheckedChange={() => toggle(transaction.id)}
+                                  aria-label={`Select transaction ${transaction.id}`}
+                                  className="h-5 w-5"
+                                />
+                                <span className="text-xs text-muted-foreground">
+                                  {selected ? 'Selected for bulk action' : 'Select for bulk action'}
+                                </span>
+                              </div>
+
                               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div className="min-w-0">
                                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -338,6 +445,91 @@ const Approvals = () => {
             </div>
           )}
         </main>
+
+        {/* Bulk action bar — fixed bottom, slides up when items are selected */}
+        <div
+          className={`fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-sm border-t border-border transition-transform duration-200 ease-in-out ${
+            count > 0 ? 'translate-y-0' : 'translate-y-full pointer-events-none'
+          }`}
+          aria-hidden={count === 0}
+        >
+          <div className="pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 px-4">
+            <p className="text-sm font-medium text-foreground mb-3">
+              <span className="text-banking font-bold">{count}</span>{' '}
+              expense{count !== 1 ? 's' : ''} selected
+            </p>
+            <div className="mb-3">
+              <label
+                htmlFor="bulk-charge"
+                className="block text-xs font-medium text-muted-foreground mb-1.5"
+              >
+                {t('accounts.approvals.chargeLabel')} (applies to all selected)
+              </label>
+              <input
+                id="bulk-charge"
+                type="number"
+                inputMode="decimal"
+                placeholder={t('accounts.approvals.chargePlaceholder')}
+                value={bulkCharge}
+                onChange={(e) => setBulkCharge(e.target.value)}
+                className="h-11 w-full rounded-lg border border-input bg-muted/40 px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 min-h-[44px] gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setConfirmBulkDecline(true)}
+                disabled={bulkDeclining || bulkApproving}
+              >
+                {bulkDeclining ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
+                Decline {count}
+              </Button>
+              <Button
+                className="flex-1 min-h-[44px] gap-1.5"
+                onClick={handleBulkApprove}
+                disabled={bulkApproving || bulkDeclining || !bulkCharge}
+              >
+                {bulkApproving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Approve {count}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk decline confirmation */}
+        <AlertDialog
+          open={confirmBulkDecline}
+          onOpenChange={setConfirmBulkDecline}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Decline {count} Expense{count !== 1 ? 's' : ''}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                These expenses will be declined and cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleBulkDecline}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Decline All
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </ApolloWrapper>
   )

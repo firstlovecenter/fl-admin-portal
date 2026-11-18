@@ -1,11 +1,14 @@
 import { useQuery } from '@apollo/client'
 import RoleView from 'auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import BulkActionBar from 'components/bulk-action-bar/BulkActionBar'
+import BulkTransferChurchSheet from 'components/directory/BulkTransferChurchSheet'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
+import { Checkbox } from 'components/ui/checkbox'
 import { Input } from 'components/ui/input'
 import { StatCard } from 'components/ui/stat-card'
 import { ChurchContext } from 'contexts/ChurchContext'
@@ -17,18 +20,22 @@ import {
   BreadcrumbSeparator,
 } from 'components/ui/breadcrumb'
 import {
+  ArrowRightLeft,
   Building2,
+  CheckSquare,
   ChevronRight,
   Home,
   Plus,
   Search,
   Users,
+  X,
 } from 'lucide-react'
 import { permitAdmin } from 'permission-utils'
 import { GET_COUNCIL_GOVERNORSHIPS } from 'queries/ListQueries'
 import { ChangeEvent, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import useBulkSelect from 'hooks/useBulkSelect'
 
 type GovernorshipBacenta = {
   id: string
@@ -87,6 +94,8 @@ const DisplayAllGovernorships = () => {
   const { t } = useTranslation()
   const { councilId, clickCard } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
+  const [selectMode, setSelectMode] = useState(false)
+  const [isBulkTransferOpen, setIsBulkTransferOpen] = useState(false)
 
   const { data, loading, error } = useQuery(GET_COUNCIL_GOVERNORSHIPS, {
     variables: { id: councilId },
@@ -94,6 +103,15 @@ const DisplayAllGovernorships = () => {
 
   const council = data?.councils?.[0]
   const governorships: GovernorshipRow[] = council?.governorships ?? []
+
+  const allIds = useMemo(() => governorships.map((g) => g.id), [governorships])
+  const { selectedIds, toggle, selectAll, clear, isSelected, count, isAllSelected } =
+    useBulkSelect(allIds)
+
+  const selectedNames = useMemo(
+    () => governorships.filter((g) => selectedIds.has(g.id)).map((g) => g.name),
+    [governorships, selectedIds]
+  )
 
   const bacentaPool: BacentaHit[] = useMemo(() => {
     return governorships.flatMap((g) =>
@@ -106,7 +124,7 @@ const DisplayAllGovernorships = () => {
   }, [governorships])
 
   const term = search.trim().toLowerCase()
-  const searching = term.length > 0
+  const searching = term.length > 0 && !selectMode
 
   const filteredGovernorships = useMemo(() => {
     if (!searching) return governorships
@@ -135,6 +153,11 @@ const DisplayAllGovernorships = () => {
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) =>
     setSearch(e.target.value)
 
+  const handleCancelSelect = () => {
+    setSelectMode(false)
+    clear()
+  }
+
   const handleBacentaClick = (
     bacenta: BacentaHit,
     parentGovernorshipId: string
@@ -157,35 +180,76 @@ const DisplayAllGovernorships = () => {
 
   return (
     <ApolloWrapper loading={loading} data={data} error={error}>
-      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <div className={`min-h-svh bg-background ${count > 0 ? 'pb-32' : 'pb-[env(safe-area-inset-bottom)]'}`}>
         <StickyPageHeader bare>
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t('directory.list.eyebrow')}
-              </p>
-              <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                {council?.name ? `${council.name} ` : ''}
-                <span className="text-members">
-                  {t('shared.churchLevelPlural.Governorship')}
-                </span>
-              </h1>
-            </div>
-            <RoleView roles={permitAdmin('Council')} directoryLock>
-              <Link to="/governorship/addgovernorship" className="shrink-0">
-                <Button size="sm" className="h-11 gap-2">
-                  <Plus className="size-4" />
-                  <span className="hidden sm:inline">
-                    {t('directory.list.add', {
-                      level: t('shared.churchLevel.Governorship'),
-                    })}
+            {selectMode ? (
+              <>
+                <div className="flex items-center gap-3 min-w-0">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={(checked) => (checked ? selectAll() : clear())}
+                    aria-label="Select all governorships"
+                    className="h-5 w-5"
+                  />
+                  <span className="text-sm font-medium text-foreground">
+                    {count > 0 ? `${count} selected` : 'Select governorships'}
                   </span>
-                  <span className="sm:hidden">
-                    {t('directory.list.addShort')}
-                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 gap-1.5 shrink-0"
+                  onClick={handleCancelSelect}
+                >
+                  <X className="size-4" />
+                  Cancel
                 </Button>
-              </Link>
-            </RoleView>
+              </>
+            ) : (
+              <>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('directory.list.eyebrow')}
+                  </p>
+                  <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {council?.name ? `${council.name} ` : ''}
+                    <span className="text-members">
+                      {t('shared.churchLevelPlural.Governorship')}
+                    </span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <RoleView roles={permitAdmin('Council')} directoryLock>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 gap-2"
+                      onClick={() => setSelectMode(true)}
+                      disabled={governorships.length === 0}
+                    >
+                      <CheckSquare className="size-4" />
+                      <span className="hidden sm:inline">Select</span>
+                    </Button>
+                  </RoleView>
+                  <RoleView roles={permitAdmin('Council')} directoryLock>
+                    <Link to="/governorship/addgovernorship" className="shrink-0">
+                      <Button size="sm" className="h-11 gap-2">
+                        <Plus className="size-4" />
+                        <span className="hidden sm:inline">
+                          {t('directory.list.add', {
+                            level: t('shared.churchLevel.Governorship'),
+                          })}
+                        </span>
+                        <span className="sm:hidden">
+                          {t('directory.list.addShort')}
+                        </span>
+                      </Button>
+                    </Link>
+                  </RoleView>
+                </div>
+              </>
+            )}
           </div>
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
@@ -206,25 +270,27 @@ const DisplayAllGovernorships = () => {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div className="border-t border-border lg:hidden">
-            <div className="mx-auto max-w-6xl px-4 py-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  className="h-11 pl-9"
-                  placeholder={t(
-                    'directory.list.searchGovernorshipsOrBacentas'
-                  )}
-                  value={search}
-                  onChange={handleSearch}
-                  aria-label={t(
-                    'directory.list.searchGovernorshipsAndBacentas'
-                  )}
-                />
+          {!selectMode && (
+            <div className="border-t border-border lg:hidden">
+              <div className="mx-auto max-w-6xl px-4 py-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    className="h-11 pl-9"
+                    placeholder={t(
+                      'directory.list.searchGovernorshipsOrBacentas'
+                    )}
+                    value={search}
+                    onChange={handleSearch}
+                    aria-label={t(
+                      'directory.list.searchGovernorshipsAndBacentas'
+                    )}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </StickyPageHeader>
 
         <main className="mx-auto max-w-6xl space-y-6 px-4 py-5 lg:px-6 lg:py-8">
@@ -297,6 +363,95 @@ const DisplayAllGovernorships = () => {
                               }` ||
                               governorship.name?.charAt(0) ||
                               '?'
+                            const selected = isSelected(governorship.id)
+
+                            const cardContent = (
+                              <div
+                                className={`flex min-h-[88px] items-center gap-3 p-4 rounded-xl border transition-colors ${
+                                  selectMode && selected
+                                    ? 'border-primary/40 bg-primary/5'
+                                    : 'border-border bg-card hover:bg-muted/40 active:bg-muted'
+                                }`}
+                              >
+                                {selectMode && (
+                                  <Checkbox
+                                    checked={selected}
+                                    onCheckedChange={() => toggle(governorship.id)}
+                                    aria-label={`Select ${governorship.name}`}
+                                    className="h-5 w-5 shrink-0"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                )}
+                                <Avatar className="size-12 shrink-0">
+                                  <AvatarImage
+                                    src={governorship.leader?.pictureUrl}
+                                    alt={
+                                      governorship.leader
+                                        ? `${governorship.leader.firstName} ${governorship.leader.lastName}`
+                                        : governorship.name
+                                    }
+                                  />
+                                  <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
+                                    {initials}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-base font-semibold text-foreground">
+                                    {governorship.name}{' '}
+                                    <span className="text-xs font-normal text-muted-foreground">
+                                      {t('shared.churchLevel.Governorship')}
+                                    </span>
+                                  </p>
+                                  <p className="truncate text-xs text-muted-foreground">
+                                    {governorship.leader
+                                      ? `${governorship.leader.firstName} ${governorship.leader.lastName}`
+                                      : t('directory.list.noLeader')}
+                                  </p>
+                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                    <Badge
+                                      variant="outline"
+                                      className="gap-1 px-2 py-0.5"
+                                    >
+                                      <Users className="size-3" />
+                                      <span className="font-mono tabular-nums">
+                                        {formatCount(
+                                          governorship.memberCount ?? 0
+                                        )}
+                                      </span>
+                                    </Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className="gap-1 px-2 py-0.5"
+                                    >
+                                      <Building2 className="size-3" />
+                                      <span className="font-mono tabular-nums">
+                                        {formatCount(
+                                          governorship.bacentaCount ?? 0
+                                        )}
+                                      </span>
+                                    </Badge>
+                                  </div>
+                                </div>
+                                {!selectMode && (
+                                  <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                                )}
+                              </div>
+                            )
+
+                            if (selectMode) {
+                              return (
+                                <button
+                                  key={governorship.id}
+                                  type="button"
+                                  className="group w-full text-left"
+                                  onClick={() => toggle(governorship.id)}
+                                  aria-pressed={selected}
+                                  aria-label={`${selected ? 'Deselect' : 'Select'} ${governorship.name}`}
+                                >
+                                  {cardContent}
+                                </button>
+                              )
+                            }
 
                             return (
                               <Link
@@ -306,61 +461,9 @@ const DisplayAllGovernorships = () => {
                                 aria-label={t('directory.list.openChurch', {
                                   name: governorship.name,
                                 })}
-                                className="group rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
+                                className="group"
                               >
-                                <div className="flex min-h-[88px] items-center gap-3 p-4">
-                                  <Avatar className="size-12 shrink-0">
-                                    <AvatarImage
-                                      src={governorship.leader?.pictureUrl}
-                                      alt={
-                                        governorship.leader
-                                          ? `${governorship.leader.firstName} ${governorship.leader.lastName}`
-                                          : governorship.name
-                                      }
-                                    />
-                                    <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
-                                      {initials}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-base font-semibold text-foreground">
-                                      {governorship.name}{' '}
-                                      <span className="text-xs font-normal text-muted-foreground">
-                                        {t('shared.churchLevel.Governorship')}
-                                      </span>
-                                    </p>
-                                    <p className="truncate text-xs text-muted-foreground">
-                                      {governorship.leader
-                                        ? `${governorship.leader.firstName} ${governorship.leader.lastName}`
-                                        : t('directory.list.noLeader')}
-                                    </p>
-                                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                      <Badge
-                                        variant="outline"
-                                        className="gap-1 px-2 py-0.5"
-                                      >
-                                        <Users className="size-3" />
-                                        <span className="font-mono tabular-nums">
-                                          {formatCount(
-                                            governorship.memberCount ?? 0
-                                          )}
-                                        </span>
-                                      </Badge>
-                                      <Badge
-                                        variant="outline"
-                                        className="gap-1 px-2 py-0.5"
-                                      >
-                                        <Building2 className="size-3" />
-                                        <span className="font-mono tabular-nums">
-                                          {formatCount(
-                                            governorship.bacentaCount ?? 0
-                                          )}
-                                        </span>
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                                </div>
+                                {cardContent}
                               </Link>
                             )
                           })}
@@ -498,24 +601,52 @@ const DisplayAllGovernorships = () => {
                 </Link>
               </div>
 
-              <div className="relative hidden lg:block">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  className="h-11 pl-9"
-                  placeholder={t(
-                    'directory.list.searchGovernorshipsOrBacentas'
-                  )}
-                  value={search}
-                  onChange={handleSearch}
-                  aria-label={t(
-                    'directory.list.searchGovernorshipsAndBacentas'
-                  )}
-                />
-              </div>
+              {!selectMode && (
+                <div className="relative hidden lg:block">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    className="h-11 pl-9"
+                    placeholder={t(
+                      'directory.list.searchGovernorshipsOrBacentas'
+                    )}
+                    value={search}
+                    onChange={handleSearch}
+                    aria-label={t(
+                      'directory.list.searchGovernorshipsAndBacentas'
+                    )}
+                  />
+                </div>
+              )}
             </aside>
           </div>
         </main>
+
+        {/* Bulk action bar */}
+        <BulkActionBar
+          count={count}
+          label="governorships selected"
+          actions={[
+            {
+              label: 'Transfer to Council',
+              variant: 'outline',
+              className: 'text-blue-500 border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-500',
+              icon: <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />,
+              onClick: () => setIsBulkTransferOpen(true),
+            },
+          ]}
+        />
+
+        {/* Bulk transfer sheet */}
+        <BulkTransferChurchSheet
+          open={isBulkTransferOpen}
+          onClose={() => setIsBulkTransferOpen(false)}
+          churchIds={Array.from(selectedIds)}
+          churchNames={selectedNames}
+          churchLevel="Governorship"
+          oldParentId={councilId}
+          onSuccess={handleCancelSelect}
+        />
       </div>
     </ApolloWrapper>
   )
