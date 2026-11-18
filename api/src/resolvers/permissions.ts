@@ -244,6 +244,30 @@ export const permitTellerStream = (): Role[] => {
   return ['tellerStream']
 }
 
+// SYN-230 — every role that can sign in and hold a device. Gates the
+// self-scoped push-token and notification-preference operations, which only
+// ever touch the caller's own Member node (jwt.userId), so there is nothing to
+// scope by church. `permitMe('Bacenta')` was used before, but it omits Stream
+// Arrivals Counters, Council Arrivals Payers and fishers-only members — they
+// could sign in and enable push, then every RegisterPushToken came back
+// FORBIDDEN. Roleless members are still excluded: they receive no reminders.
+// MIRROR any change in web-react-ts/src/permission-utils.ts (ADR-001).
+export const permitSelfService = (): Role[] => [
+  ...permitMe('Bacenta'),
+  ...permitArrivalsCounter(),
+  ...permitArrivalsPayer(),
+  'fishers',
+]
+
+// SYN-230 — true when the caller holds any `permitSelfService()` role. The FE
+// uses it to skip push-token registration (and the push soft-ask) for roleless
+// members, whom the BE gate would reject anyway.
+// Mirrors web-react-ts/src/permission-utils.ts (ADR-001).
+export const hasSelfServiceRole = (
+  roles?: Role[] | null | undefined
+): boolean =>
+  !!roles?.length && permitSelfService().some((r) => roles.includes(r))
+
 export const permitShepherdingControl = (): Role[] => [
   'leaderGovernorship',
   'leaderCouncil',

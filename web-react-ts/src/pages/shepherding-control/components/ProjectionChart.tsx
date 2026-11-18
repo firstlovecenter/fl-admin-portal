@@ -31,6 +31,9 @@ type Props = {
 type ChartRow = {
   week: number | null
   year: number | null
+  // ChurchGraph's X axis reads `weekLabel`. Recharts 3 drops any row whose
+  // category is null, so a missing label draws an empty chart.
+  weekLabel: string | null
   attendance: number | null
   income: number | null
   target: number | null
@@ -65,6 +68,19 @@ const ProjectionChart = ({
     : null
 
   const chartData = useMemo<ChartRow[]>(() => {
+    const currentYear = new Date().getFullYear()
+    const weekLabelFor = (
+      week: number | null | undefined,
+      year: number | null | undefined
+    ): string | null => {
+      if (week == null) return null
+      const yearSuffix =
+        year != null && year !== currentYear ? String(year).slice(-2) : ''
+      return yearSuffix
+        ? t('services.graphs.weekShortYear', { week, yearSuffix })
+        : t('services.graphs.weekShort', { week })
+    }
+
     const datasetA = METRIC_DATASET[metricA]
     const recordsA = sliceWindowedRecords(
       datasetA === 'service' ? serviceRecords : bussingRecords,
@@ -88,6 +104,7 @@ const ProjectionChart = ({
       const row: ChartRow = {
         week: rA.week ?? null,
         year: rA.year ?? null,
+        weekLabel: weekLabelFor(rA.week, rA.year),
         attendance: null,
         income: null,
         target: null,
@@ -111,6 +128,7 @@ const ProjectionChart = ({
     dataKeyA,
     dataKeyB,
     stat2Slot,
+    t,
   ])
 
   const sameUnit =

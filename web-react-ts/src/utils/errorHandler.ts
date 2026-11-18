@@ -91,3 +91,22 @@ export const isPermissionError = (error: unknown): boolean => {
   }
   return false
 }
+
+/**
+ * Checks if an error is a BAD_USER_INPUT rejection — a precondition the user
+ * can fix (e.g. a bacenta that still has members), not a fault to report.
+ * Accepts an ApolloError or a plain GraphQLFormattedError (`result.errors[0]`
+ * under errorPolicy: 'all').
+ */
+export const isUserInputError = (error: unknown): boolean => {
+  if (error instanceof ApolloError) {
+    return error.graphQLErrors.some(
+      (err) => err.extensions?.code === 'BAD_USER_INPUT'
+    )
+  }
+  if (typeof error === 'object' && error !== null && 'extensions' in error) {
+    const { extensions } = error as { extensions?: { code?: unknown } }
+    return extensions?.code === 'BAD_USER_INPUT'
+  }
+  return false
+}

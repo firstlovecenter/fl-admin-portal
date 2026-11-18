@@ -1,15 +1,48 @@
 /**
- * SYN-226 — servant-cypher.ts must parse and every query must survive intact.
- *
- * The SYN-220 comment block inside connectServiceLog quoted a name in
- * backticks. In a JS template literal a backtick closes the string, so the
- * module stopped compiling: tsc failed and every suite that imports the
- * directory resolvers failed to load. These tests import the module (so a
- * syntax error fails here, with a clear name) and pin connectServiceLog
- * end to end, so a truncated template cannot silently ship a shorter query.
+ * servant-cypher.ts holds every leader-change Cypher as a template literal, so
+ * a stray backtick inside a `//` Cypher comment terminates the string and the
+ * whole module stops parsing — taking down tsc and every resolver that imports
+ * it (directory-resolvers, make-remove-servants). That happened with the
+ * SYN-220 comment in connectServiceLog; these tests pin that the module loads
+ * and the SYN-220 retirement clause survived the comment fix intact.
  */
+
 import servantCypher from './servant-cypher'
 
+describe('servant-cypher module', () => {
+  it('loads and exposes every statement as a non-empty string', () => {
+    const entries = Object.entries(servantCypher)
+
+    expect(entries.length).toBeGreaterThan(0)
+    entries.forEach(([, statement]) => {
+      expect(typeof statement).toBe('string')
+      expect((statement as string).trim()).not.toBe('')
+    })
+  })
+
+  it('contains no backtick inside any statement (would end the template literal)', () => {
+    Object.values(servantCypher).forEach((statement) => {
+      expect(statement).not.toContain('`')
+    })
+  })
+
+  it('SYN-220: connectServiceLog still retires stale CURRENT_HISTORY edges for church and leader', () => {
+    const { connectServiceLog } = servantCypher
+
+    expect(connectServiceLog).toContain(
+      'OPTIONAL MATCH (church)-[staleChurch:CURRENT_HISTORY]->(other:ServiceLog)'
+    )
+    expect(connectServiceLog).toContain('DELETE staleChurch')
+    expect(connectServiceLog).toContain(
+      'OPTIONAL MATCH (leader)-[staleLeader:CURRENT_HISTORY]->(otherLeaderLog:ServiceLog)'
+    )
+    expect(connectServiceLog).toContain('DELETE staleLeader')
+  })
+})
+
+// SYN-226: the presence checks above would still pass if the template were cut
+// short, so these also pin every statement's RETURN and connectServiceLog end
+// to end: the $logId scoping, retire-before-create order and its final RETURN.
 describe('servant-cypher (SYN-226)', () => {
   it('SYN-226: exports every query as a non-empty Cypher string', () => {
     const entries = Object.entries(servantCypher)

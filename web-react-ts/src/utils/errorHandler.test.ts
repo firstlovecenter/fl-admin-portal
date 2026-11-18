@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { ApolloError } from '@apollo/client'
-import { getGraphQLErrorMessage } from './errorHandler'
+import { getGraphQLErrorMessage, isUserInputError } from './errorHandler'
 
 describe('getGraphQLErrorMessage', () => {
   it('returns a fallback message for a falsy error', () => {
@@ -47,5 +47,42 @@ describe('getGraphQLErrorMessage', () => {
     expect(getGraphQLErrorMessage('a plain string error')).toBe(
       'a plain string error'
     )
+  })
+})
+
+describe('isUserInputError (SYN-233)', () => {
+  it('SYN-233: is true for a plain formatted error coded BAD_USER_INPUT', () => {
+    expect(
+      isUserInputError({
+        message: 'Bacenta has 3 members.',
+        extensions: { code: 'BAD_USER_INPUT' },
+      })
+    ).toBe(true)
+  })
+
+  it('SYN-233: is true for an ApolloError carrying a BAD_USER_INPUT graphQLError', () => {
+    const error = new ApolloError({
+      graphQLErrors: [
+        { message: 'x', extensions: { code: 'BAD_USER_INPUT' } } as never,
+      ],
+    })
+    expect(isUserInputError(error)).toBe(true)
+  })
+
+  it('SYN-233: is false for server faults, untyped errors and non-objects', () => {
+    expect(
+      isUserInputError({
+        message: 'x',
+        extensions: { code: 'INTERNAL_SERVER_ERROR' },
+      })
+    ).toBe(false)
+    expect(
+      isUserInputError(
+        new ApolloError({ graphQLErrors: [{ message: 'x' } as never] })
+      )
+    ).toBe(false)
+    expect(isUserInputError(new Error('boom'))).toBe(false)
+    expect(isUserInputError(null)).toBe(false)
+    expect(isUserInputError('BAD_USER_INPUT')).toBe(false)
   })
 })
