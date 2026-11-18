@@ -370,6 +370,80 @@ describe('SM2 — SubmitBankingSlip: auth', () => {
 })
 
 // ---------------------------------------------------------------------------
+// SYN-228 — outstanding-offering rule surfaces verbatim
+// ---------------------------------------------------------------------------
+describe('SYN-228 — previous-service banking rule is not masked', () => {
+  const slipArgs = {
+    serviceRecordId: 'sr_test',
+    bankingSlip: 'https://res.cloudinary.com/slip.jpg',
+  }
+  const confirmArgs = { serviceRecordId: 'sr_test', bankingSlip: '' }
+  let errorSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+  afterEach(() => errorSpy.mockRestore())
+
+  const mockStreamChurch = () =>
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
+    })
+
+  it('SubmitBankingSlip: rejects with the outstanding-offering message, logs nothing, writes nothing', async () => {
+    mockSession.run.mockResolvedValueOnce(
+      makeLastServiceResult({ transactionStatus: null })
+    )
+
+    const promise = bankingMutation.SubmitBankingSlip(null, slipArgs, context)
+    await expect(promise).rejects.toThrow('Please bank outstanding offering')
+    await expect(promise).rejects.not.toThrow('We could not check')
+    expect(errorSpy).not.toHaveBeenCalled()
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  it('SubmitBankingSlip: a DB failure in the check still surfaces the curated retry message', async () => {
+    mockSession.run.mockRejectedValueOnce(new Error('Neo4j connection reset'))
+
+    await expect(
+      bankingMutation.SubmitBankingSlip(null, slipArgs, context)
+    ).rejects.toThrow(
+      'We could not check the previous service banking. Please try again.'
+    )
+    expect(errorSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('ManuallyConfirmOfferingPayment: rejects with the outstanding-offering message, logs nothing, writes nothing', async () => {
+    mockStreamChurch()
+    mockSession.run.mockResolvedValueOnce(
+      makeLastServiceResult({ transactionStatus: null })
+    )
+
+    const promise = bankingMutation.ManuallyConfirmOfferingPayment(
+      null,
+      confirmArgs,
+      context
+    )
+    await expect(promise).rejects.toThrow('Please bank outstanding offering')
+    await expect(promise).rejects.not.toThrow('We could not check')
+    expect(errorSpy).not.toHaveBeenCalled()
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
+  })
+
+  it('ManuallyConfirmOfferingPayment: a DB failure in the check still surfaces a curated retry message', async () => {
+    mockStreamChurch()
+    mockSession.run.mockRejectedValueOnce(new Error('Neo4j connection reset'))
+
+    await expect(
+      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+    ).rejects.toThrow(
+      'We could not check the previous service banking. Please try again.'
+    )
+    expect(errorSpy).toHaveBeenCalledTimes(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // submitBankingSlip Cypher — WHERE guard (SM2 terminal state protection)
 // ---------------------------------------------------------------------------
 describe("SM2 — submitBankingSlip Cypher: blocks 'pending' and 'success' states", () => {
