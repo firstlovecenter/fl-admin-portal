@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Bell, X } from 'lucide-react'
 import { useAuth } from 'contexts/AuthContext'
+import { hasSelfServiceRole } from 'permission-utils'
 import { Button } from 'components/ui/button'
 import { cn } from 'components/lib/utils'
 import { usePushNotificationSettings } from 'hooks/usePushNotificationSettings'
@@ -44,7 +45,7 @@ const isIosWithoutInstall = (): boolean => {
  */
 const PushSoftAsk = () => {
   const { t } = useTranslation()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { pathname } = useLocation()
   const { supported, permission, enabled, enabling, enable } =
     usePushNotificationSettings()
@@ -53,6 +54,9 @@ const PushSoftAsk = () => {
 
   const eligible =
     isAuthenticated &&
+    // SYN-230: roleless members can't register a token server-side, so asking
+    // them to enable push would only end in a silent FORBIDDEN.
+    hasSelfServiceRole(user?.roles) &&
     supported === true &&
     permission === 'default' &&
     !enabled &&

@@ -8,10 +8,14 @@ WITH DISTINCT otherRecords AS lastService ORDER BY otherRecords.createdAt DESC L
 RETURN lastService
 `
 
+// SYN-252: hasGovernorship lets the resolver refuse an orphaned bacenta before
+// RemoveServant commits, instead of after the close-down write matches nothing.
 export const checkBacentaHasNoMembers = `//cypher
 MATCH (bacenta:Bacenta {id:$bacentaId})
 OPTIONAL MATCH (bacenta)<-[:BELONGS_TO]-(member:Active:Member)
-RETURN bacenta.name AS name, COUNT(member) AS memberCount
+WITH bacenta, COUNT(member) AS memberCount
+RETURN bacenta.name AS name, memberCount,
+  EXISTS { (bacenta)<-[:HAS]-(:Governorship) } AS hasGovernorship
 `
 
 export const checkGovernorshipHasNoMembers = `//cypher
@@ -45,19 +49,21 @@ OPTIONAL MATCH (oversight)-[:HAS]->(campuses:Campus)
 RETURN oversight.name AS name, COUNT(campuses) AS campusCount
 `
 
+// SYN-252: tells a repeated/replayed close-down apart from an unknown id.
+export const checkBacentaAlreadyClosed = `//cypher
+MATCH (bacenta:ClosedBacenta {id:$bacentaId})
+RETURN bacenta.name AS name
+`
+
+// SYN-252: filtering MATCHes precede the CREATE so a zero-row run leaves no
+// orphaned HistoryLog; the result collapses to one governorship row.
 export const closeDownBacenta = `//cypher
 MATCH (bacenta:Bacenta {id:$bacentaId})<-[:HAS]-(governorship:Governorship)
+MATCH (admin:Member {id: $jwt.userId})
 
-WITH bacenta, governorship
 CREATE (log:HistoryLog {id:apoc.create.uuid()})
   SET log.timeStamp = datetime(),
   log.historyRecord = bacenta.name + ' Bacenta was closed down under ' + governorship.name +' Governorship'
-
-WITH bacenta, governorship, log
-MATCH (governorship)-[:HAS]->(bacentas:Bacenta)
-MATCH (admin:Member {id: $jwt.userId})
-UNWIND labels(governorship) AS stream
-
 
 MERGE (date:TimeGraph {date:date()})
 MERGE (log)-[:LOGGED_BY]->(admin)
@@ -68,9 +74,13 @@ MERGE (governorship)-[:HAS_HISTORY]->(log)
 SET bacenta:ClosedBacenta
 REMOVE bacenta:Bacenta
 
+WITH governorship
+OPTIONAL MATCH (governorship)-[:HAS]->(bacentas:Bacenta)
+WITH governorship, collect(bacentas {.id, .name}) AS bacentas
+
 RETURN governorship {
-  .id, .name, 
-  bacentas:[bacentas {.id, .name}]
+  .id, .name,
+  bacentas: bacentas
     }
 `
 

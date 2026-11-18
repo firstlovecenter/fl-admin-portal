@@ -1385,7 +1385,12 @@
       "button": "Cerrar",
       "title": "Cerrar bacenta",
       "confirm": "Cerrar {{name}}",
-      "cancel": "No, volver atrás"
+      "cancel": "No, volver atrás",
+      "description": "¿Está seguro de que desea cerrar {{name}}? La bacenta quedará marcada como inactiva.",
+      "yes": "Sí, estoy seguro",
+      "hasMembers_one": "{{name}} todavía tiene {{count}} miembro. Transfiéralo a otra bacenta antes de cerrarla.",
+      "hasMembers_other": "{{name}} todavía tiene {{count}} miembros. Transfiéralos todos a otra bacenta antes de cerrarla.",
+      "viewMembers": "Ver miembros"
     },
     "memberTable": {
       "loadError": "No se pudieron cargar los miembros. Inténtelo de nuevo.",

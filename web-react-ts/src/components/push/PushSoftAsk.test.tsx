@@ -17,13 +17,14 @@ import PushSoftAsk from './PushSoftAsk'
 const enable = vi.fn()
 let supported = true
 let permission: NotificationPermission = 'default'
+let roles: string[] = ['leaderBacenta']
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), info: vi.fn(), error: vi.fn() },
 }))
 
 vi.mock('contexts/AuthContext', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => ({ isAuthenticated: true, user: { roles } }),
 }))
 
 vi.mock('hooks/usePushNotificationSettings', () => ({
@@ -60,6 +61,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   supported = true
   permission = 'default'
+  roles = ['leaderBacenta']
   enable.mockReset().mockResolvedValue(undefined)
 })
 
@@ -138,5 +140,21 @@ describe('PushSoftAsk', () => {
     renderAndReveal()
 
     expect(screen.queryByText('Turn on notifications')).not.toBeInTheDocument()
+  })
+
+  // SYN-230: the server rejects RegisterPushToken for members with no sign-in
+  // role, so the card must not invite them to enable push.
+  it('never renders for a roleless member', () => {
+    roles = []
+    renderAndReveal()
+
+    expect(screen.queryByText('Turn on notifications')).not.toBeInTheDocument()
+  })
+
+  it('renders for an arrivals-counter-only member', () => {
+    roles = ['arrivalsCounterStream']
+    renderAndReveal()
+
+    expect(screen.getByText('Turn on notifications')).toBeInTheDocument()
   })
 })

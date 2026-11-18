@@ -1385,7 +1385,12 @@
       "button": "Schließen",
       "title": "Bacenta schließen",
       "confirm": "{{name}} schließen",
-      "cancel": "Nein, zurück"
+      "cancel": "Nein, zurück",
+      "description": "Sind Sie sicher, dass Sie {{name}} schließen möchten? Die Bacenta wird als inaktiv markiert.",
+      "yes": "Ja, ich bin sicher",
+      "hasMembers_one": "{{name}} hat noch {{count}} Mitglied. Übertragen Sie es in eine andere Bacenta, bevor Sie sie schließen.",
+      "hasMembers_other": "{{name}} hat noch {{count}} Mitglieder. Übertragen Sie alle in eine andere Bacenta, bevor Sie sie schließen.",
+      "viewMembers": "Mitglieder anzeigen"
     },
     "memberTable": {
       "loadError": "Mitglieder konnten nicht geladen werden. Bitte erneut versuchen.",
