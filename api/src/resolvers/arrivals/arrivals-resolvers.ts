@@ -8,6 +8,7 @@ import {
   isAuth,
   parseNeoNumber,
   rearrangeCypherObject,
+  summariseError,
   throwToSentry,
 } from '../utils/utils'
 import {
@@ -134,12 +135,17 @@ const applyVehicleSupport = async (
       await session.run(cypher, { vehicleRecordId, vehicleTopUp: amount })
     )
     if (options.notify) {
-      sendBulkSMS([data.leaderPhoneNumber], message).catch((error) =>
-        throwToSentry(
-          'There was an error sending the bussing payment SMS',
-          error
+      // SYN-253: fire-and-forget, so this catch is where the failure is
+      // handled and logged — once. Rethrowing via throwToSentry here only
+      // produced an unhandled rejection.
+      sendBulkSMS([data.leaderPhoneNumber], message).catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(
+          `There was an error sending the bussing payment SMS: ${summariseError(
+            error
+          )}`
         )
-      )
+      })
     }
     return result?.record?.properties
   }

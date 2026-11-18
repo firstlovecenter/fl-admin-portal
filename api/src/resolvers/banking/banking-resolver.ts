@@ -15,7 +15,7 @@ import {
   MOMO_NUM_REGEX,
   Network,
 } from '../utils/financial-utils'
-import { isAuth, rearrangeCypherObject } from '../utils/utils'
+import { badRequest, isAuth, rearrangeCypherObject } from '../utils/utils'
 import { assertScopeViaServiceRecord } from '../utils/scope-utils'
 import {
   checkTransactionReference,
@@ -116,7 +116,8 @@ export const checkIfLastServiceBanked = async (
       'tellerConfirmationTime' in lastService
     )
   ) {
-    throw new Error(
+    // SYN-253: a refusal the user can act on — BAD_USER_INPUT logs at WARN.
+    throw badRequest(
       `Please bank outstanding offering for your service filled on ${getHumanReadableDate(
         date.date
       )} before attempting to bank this week's offering`

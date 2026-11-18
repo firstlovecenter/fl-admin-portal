@@ -47,7 +47,7 @@ jest.mock('../utils/financial-utils', () => ({
   }),
 }))
 
-import bankingMutation from './banking-resolver'
+import bankingMutation, { checkIfLastServiceBanked } from './banking-resolver'
 import type { Context } from '../utils/neo4j-types'
 import { isAuth } from '../utils/utils'
 import { permitAdmin } from '../permissions'
@@ -459,5 +459,53 @@ describe('SM1 — setRecordTransactionReferenceManually Cypher shape', () => {
     const setPos = setRecordTransactionReferenceManually.search(/\nSET/)
     expect(wherePos).toBeGreaterThan(-1)
     expect(setPos).toBeGreaterThan(wherePos)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// SYN-253 — "Please bank outstanding offering" is a refusal the leader acts
+// on, so it is BAD_USER_INPUT (logged at WARN) with the message unchanged.
+// ---------------------------------------------------------------------------
+describe('SYN-253 — checkIfLastServiceBanked refusal', () => {
+  const lastServiceContext = (lastService: Record<string, unknown>) =>
+    ({
+      jwt: { userId: 'u1', roles: [] },
+      executionContext: {
+        session: () => ({
+          run: jest.fn().mockResolvedValue({
+            records: [
+              {
+                keys: ['lastService', 'lastDate'],
+                _fields: [
+                  { properties: lastService },
+                  { properties: { date: '2026-11-08' } },
+                ],
+              },
+            ],
+          }),
+          close: jest.fn(),
+        }),
+      },
+    } as unknown as Context)
+
+  it('SYN-253: refuses an unbanked previous service as BAD_USER_INPUT', async () => {
+    const error = await checkIfLastServiceBanked(
+      'sr_1',
+      lastServiceContext({ transactionStatus: 'pending' })
+    ).catch((e: unknown) => e)
+
+    expect(error).toMatchObject({ extensions: { code: 'BAD_USER_INPUT' } })
+    expect((error as Error).message).toMatch(
+      /^Please bank outstanding offering for your service filled on .+ before attempting to bank this week's offering$/
+    )
+  })
+
+  it('SYN-253: passes when the previous service was banked', async () => {
+    await expect(
+      checkIfLastServiceBanked(
+        'sr_1',
+        lastServiceContext({ transactionStatus: 'success' })
+      )
+    ).resolves.toBe(true)
   })
 })
