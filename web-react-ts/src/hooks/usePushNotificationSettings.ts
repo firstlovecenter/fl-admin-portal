@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useMutation } from '@apollo/client'
+import { useAuth } from 'contexts/AuthContext'
+import { hasSelfServiceRole } from 'permission-utils'
 import {
   enablePushNotifications,
   isPushSupported,
@@ -54,6 +56,10 @@ export const usePushNotificationSettings = (): PushNotificationSettings => {
 
   const [registerPushToken] = useMutation(REGISTER_PUSH_TOKEN)
   const [unregisterPushToken] = useMutation(UNREGISTER_PUSH_TOKEN)
+  // SYN-230: roleless members fail the server's `permitSelfService` gate, so
+  // never send them the token mutations — they would only log FORBIDDEN.
+  const { user } = useAuth()
+  const canSync = hasSelfServiceRole(user?.roles)
 
   useEffect(() => {
     let active = true
@@ -78,7 +84,9 @@ export const usePushNotificationSettings = (): PushNotificationSettings => {
       // Persist the device token so scheduled reminders can reach it. A server
       // failure here shouldn't strip the local grant — usePushNotifications
       // re-registers server-side on the next load, which self-heals this.
-      await registerPushToken({ variables: { token } }).catch(() => undefined)
+      if (canSync) {
+        await registerPushToken({ variables: { token } }).catch(() => undefined)
+      }
       writePushEnabled(true)
       setEnabled(true)
       setPermission(readBrowserPermission())
@@ -91,17 +99,21 @@ export const usePushNotificationSettings = (): PushNotificationSettings => {
     } finally {
       setEnabling(false)
     }
-  }, [registerPushToken])
+  }, [canSync, registerPushToken])
 
   const disable = useCallback((): void => {
     writePushEnabled(false)
     setEnabled(false)
     const token = readPushToken()
     if (token) {
-      void unregisterPushToken({ variables: { token } }).catch(() => undefined)
+      if (canSync) {
+        void unregisterPushToken({ variables: { token } }).catch(
+          () => undefined
+        )
+      }
       clearPushToken()
     }
-  }, [unregisterPushToken])
+  }, [canSync, unregisterPushToken])
 
   return { supported, permission, enabled, enabling, enable, disable }
 }
