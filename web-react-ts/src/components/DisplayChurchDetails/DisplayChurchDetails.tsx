@@ -440,6 +440,7 @@ const DisplayChurchDetails = (props: DisplayChurchDetailsProps) => {
                     bacentaId={props.churchId}
                     bacentaName={props.name}
                     leaderId={props.leader.id}
+                    memberCount={props.church?.memberCount}
                   />
                 )}
               </StickyPageHeaderActions>

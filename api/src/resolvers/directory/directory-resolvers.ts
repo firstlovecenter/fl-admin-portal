@@ -376,9 +376,10 @@ const directoryMutation = {
         )
       }
 
-      // SYN-236: user-actionable refusals — classified so the catch rethrows
-      // them as-is instead of logging them to CloudWatch via throwToSentry.
-      if (bacentaCheck.memberCount > 0) {
+      // SYN-236 / SYN-233: user-actionable refusals (members left, unbanked
+      // offering) are badRequest; the catch rethrows them as-is so the user
+      // sees the reason without the "Error closing down bacenta:" prefix.
+      if (Number(bacentaCheck.memberCount) > 0) {
         throw badRequest(
           `${bacentaCheck?.name} Bacenta has ${bacentaCheck?.memberCount} members. Please transfer all members and try again.`
         )
