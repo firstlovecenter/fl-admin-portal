@@ -1,5 +1,7 @@
 import { randomBytes } from 'crypto'
 import type { ApolloServerPlugin, BaseContext } from '@apollo/server'
+import { unwrapResolverError } from '@apollo/server/errors'
+import type { GraphQLFormattedError } from 'graphql'
 
 const MAX_LOGGED_ERRORS = 10
 const MAX_MESSAGE_LENGTH = 300
@@ -30,6 +32,37 @@ const WARN_CODES = new Set(['BAD_USER_INPUT', 'FORBIDDEN', 'UNAUTHENTICATED'])
 
 export const logLevelForCode = (code: unknown): 'warn' | 'error' =>
   typeof code === 'string' && WARN_CODES.has(code) ? 'warn' : 'error'
+
+// SYN-258 — @neo4j/graphql's @authentication / @authorization refusals carry
+// no `extensions.code`, so Apollo stamped them INTERNAL_SERVER_ERROR and an
+// expired-session read logged at ERROR. Match the library's error classes by
+// `constructor.name`: they are not exported, the base class's `name` is
+// 'GraphQLError', and a message-only match would recode our own errors. Names
+// survive only while the API is not bundled or minified.
+const neo4jGraphQLAuthCode = (error: unknown): string | undefined => {
+  if (!(error instanceof Error)) return undefined
+  const className = error.constructor.name
+  if (className === 'Neo4jGraphQLAuthenticationError') return 'UNAUTHENTICATED'
+  if (className === 'Neo4jGraphQLForbiddenError') return 'FORBIDDEN'
+  if (className === 'Neo4jGraphQLError' && error.message === 'Unauthenticated')
+    return 'UNAUTHENTICATED'
+  return undefined
+}
+
+// Apollo `formatError` hook; registered in both bootstraps. Apollo formats
+// errors before willSendResponse, so errorReferencePlugin logs the new code.
+export const formatError = (
+  formattedError: GraphQLFormattedError,
+  error: unknown
+): GraphQLFormattedError => {
+  const code = neo4jGraphQLAuthCode(unwrapResolverError(error))
+  if (!code) return formattedError
+
+  return {
+    ...formattedError,
+    extensions: { ...formattedError.extensions, code },
+  }
+}
 
 // The UI never shows raw GraphQL errors (SYN-178), so a user report would
 // otherwise carry nothing to search for. Each error gets a short reference
