@@ -83,6 +83,51 @@ export const STORAGE_KEYS = {
 } as const
 
 /**
+ * SYN-231: pre-SYN-173 builds persisted both tokens under these keys. Nothing
+ * writes them any more, but a browser/PWA last signed in on an old build still
+ * carries them and was never issued the httpOnly refresh cookie. Kept only so
+ * they can be detected and purged. (These are localStorage keys — distinct
+ * from the `fl_refresh_token` httpOnly cookie, which JS cannot see.)
+ */
+export const LEGACY_ACCESS_TOKEN_KEY = 'fl_access_token'
+export const LEGACY_REFRESH_TOKEN_KEY = 'fl_refresh_token'
+
+/**
+ * SYN-231: whether the stored session predates SYN-173 and so has no refresh
+ * cookie. Bootstrapping it can only fail: a cookie-less POST
+ * /auth/refresh-token that the auth service logs as `ApiError: No refresh
+ * token provided` (once per such device — the 401 then clears `fl_user`).
+ *
+ * Requires a leftover refresh-token key AND an `fl_user` still carrying
+ * `roles`: post-SYN-175 `storeAuth` strips `roles`, so a user who has signed
+ * in since (and holds the cookie) is not misread just because the old key was
+ * never cleaned up — the rejected key-only check would sign them out. Known,
+ * accepted false positive: a login on the SYN-173-without-SYN-175 dev build
+ * (a few hours on 2026-06-23) still wrote `roles`; it costs one re-login.
+ */
+export function isLegacyStoredSession(): boolean {
+  if (typeof window === 'undefined') return false
+  if (localStorage.getItem(LEGACY_REFRESH_TOKEN_KEY) === null) return false
+  try {
+    const profile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) ?? '')
+    return !!profile && typeof profile === 'object' && 'roles' in profile
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Remove any pre-SYN-173 token left in web storage. SYN-173's invariant is
+ * that no credential lives in storage; the migration stopped writing these
+ * keys but never deleted them (SYN-231).
+ */
+export function purgeLegacyTokens(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY)
+  localStorage.removeItem(LEGACY_REFRESH_TOKEN_KEY)
+}
+
+/**
  * Routes that render without authentication (login, password setup, etc.)
  */
 export const PUBLIC_AUTH_ROUTES = [
@@ -166,6 +211,7 @@ export function storeAuth(data: AuthTokens): void {
   const profile = { ...data.user }
   delete profile.roles
   localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(profile))
+  purgeLegacyTokens()
 }
 
 /**
@@ -176,6 +222,7 @@ export function clearAuth(): void {
   if (typeof window === 'undefined') return
 
   localStorage.removeItem(STORAGE_KEYS.USER)
+  purgeLegacyTokens()
 
   // Clear sessionStorage
   sessionStorage.removeItem('token')
@@ -254,13 +301,22 @@ export function sameRoles(a: string[] = [], b: string[] = []): boolean {
 }
 
 /**
+ * SYN-224: the auth service's email lookup is case-sensitive and Member emails
+ * are stored trimmed + lowercased, so mobile auto-capitalisation ("John@…")
+ * failed login with a correct password. Normalise here, not per form.
+ */
+export function normaliseEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+/**
  * Sign up a new user
  */
 export async function signup(data: SignupData): Promise<AuthTokens> {
   const response = await fetch(`${AUTH_API_URL}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, email: normaliseEmail(data.email) }),
   })
 
   const result = await response.json()
@@ -288,7 +344,7 @@ export async function login(data: LoginData): Promise<AuthTokens> {
     // Include credentials so the browser stores the httpOnly refresh cookie the
     // auth service sets on success (SYN-173).
     credentials: 'include',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, email: normaliseEmail(data.email) }),
   })
 
   const result = await response.json()
@@ -430,7 +486,8 @@ export async function resetPassword(
   const response = await fetch(`${AUTH_API_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    // SYN-224: same case-sensitive lookup as login — see normaliseEmail.
+    body: JSON.stringify({ ...data, email: normaliseEmail(data.email) }),
   })
 
   const result = await response.json()
@@ -459,7 +516,8 @@ export async function requestPasswordReset(
   const response = await fetch(`${AUTH_API_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    // SYN-224: same case-sensitive lookup as login — see normaliseEmail.
+    body: JSON.stringify({ email: normaliseEmail(email) }),
   })
 
   const result = await response.json()

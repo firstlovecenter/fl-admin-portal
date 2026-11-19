@@ -116,6 +116,10 @@ const SimpleLogin = ({ onLoginSuccess }: SimpleLoginProps) => {
             disabled={loading}
             autoComplete="email"
             inputMode="email"
+            // SYN-224: stop mobile keyboards capitalising the first letter.
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
           />
         </div>
 
@@ -262,6 +266,10 @@ const ForgotPasswordForm = ({ loading, setLoading, onBack }: ForgotPasswordFormP
             disabled={loading || success}
             autoComplete="email"
             inputMode="email"
+            // SYN-224: stop mobile keyboards capitalising the first letter.
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
           />
         </div>
 

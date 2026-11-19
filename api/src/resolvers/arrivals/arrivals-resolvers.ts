@@ -8,6 +8,7 @@ import {
   isAuth,
   parseNeoNumber,
   rearrangeCypherObject,
+  summariseError,
   throwToSentry,
 } from '../utils/utils'
 import {
@@ -134,12 +135,17 @@ const applyVehicleSupport = async (
       await session.run(cypher, { vehicleRecordId, vehicleTopUp: amount })
     )
     if (options.notify) {
-      sendBulkSMS([data.leaderPhoneNumber], message).catch((error) =>
-        throwToSentry(
-          'There was an error sending the bussing payment SMS',
-          error
+      // SYN-253: fire-and-forget, so this catch is where the failure is
+      // handled and logged — once. Rethrowing via throwToSentry here only
+      // produced an unhandled rejection.
+      sendBulkSMS([data.leaderPhoneNumber], message).catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error(
+          `There was an error sending the bussing payment SMS: ${summariseError(
+            error
+          )}`
         )
-      )
+      })
     }
     return result?.record?.properties
   }
@@ -194,6 +200,8 @@ const applyVehicleSupport = async (
     ])
   )
 }
+
+const GHANA_LOCAL_MOBILE_REGEX = /^0[2-9]\d{8}$/
 
 export const arrivalsMutation = {
   MakeGovernorshipArrivalsAdmin: async (
@@ -908,6 +916,16 @@ export const arrivalsMutation = {
     context: Context
   ) => {
     isAuth(['leaderBacenta'], context.jwt?.roles)
+
+    // SYN-242: reject a malformed number as a user error instead of letting
+    // the notify service 502. Local Ghana form only — the shared
+    // MOMO_NUM_REGEX also admits 10 digits with no leading 0, which would
+    // reach /send-sms un-prefixed and be read as a foreign number.
+    if (!GHANA_LOCAL_MOBILE_REGEX.test(args.phoneNumber ?? '')) {
+      throw badRequest(
+        'Enter a valid mobile money number (10 digits, e.g. 02XXXXXXXX).'
+      )
+    }
 
     const response = await sendBulkSMS(
       [args.phoneNumber],

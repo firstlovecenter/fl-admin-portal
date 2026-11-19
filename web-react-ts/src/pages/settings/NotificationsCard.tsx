@@ -12,6 +12,8 @@ import { Switch } from 'components/ui/switch'
 import { Badge } from 'components/ui/badge'
 import { Alert, AlertDescription } from 'components/ui/alert'
 import { usePushNotificationSettings } from 'hooks/usePushNotificationSettings'
+import { useAuth } from 'contexts/AuthContext'
+import { hasSelfServiceRole } from 'permission-utils'
 import {
   NotificationCategory,
   useNotificationPreferences,
@@ -46,8 +48,13 @@ const NotificationsCard = () => {
   const blocked = permission === 'denied'
   const pushOn = enabled && permission === 'granted'
 
+  // SYN-230: a roleless member fails the server's `permitSelfService` gate, so
+  // neither query their preferences nor offer a toggle that can't register.
+  const { user } = useAuth()
+  const eligible = hasSelfServiceRole(user?.roles)
+
   const { preferences, loading: prefsLoading, setPreference } =
-    useNotificationPreferences(supported !== true)
+    useNotificationPreferences(supported !== true || !eligible)
 
   const handlePushToggle = async (next: boolean) => {
     if (!next) {
@@ -83,6 +90,8 @@ const NotificationsCard = () => {
       toast.error(t('settings.notifications.prefSaveFailedToast'))
     }
   }
+
+  if (!eligible) return null
 
   return (
     <Card className="mt-6">

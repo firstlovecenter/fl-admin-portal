@@ -27,6 +27,13 @@ const settings = {
   disable: vi.fn(),
 }
 
+let roles: string[] = ['leaderBacenta']
+const useNotificationPreferencesSpy = vi.fn()
+
+vi.mock('contexts/AuthContext', () => ({
+  useAuth: () => ({ isAuthenticated: true, user: { roles } }),
+}))
+
 let preferences = {
   services: true,
   banking: true,
@@ -39,15 +46,16 @@ vi.mock('hooks/usePushNotificationSettings', () => ({
 }))
 
 vi.mock('hooks/useNotificationPreferences', () => ({
-  useNotificationPreferences: () => ({
-    preferences,
-    loading: false,
-    setPreference,
-  }),
+  useNotificationPreferences: (skip: boolean) => {
+    useNotificationPreferencesSpy(skip)
+    return { preferences, loading: false, setPreference }
+  },
 }))
 
 beforeEach(() => {
   setPreference.mockReset()
+  useNotificationPreferencesSpy.mockReset()
+  roles = ['leaderBacenta']
   preferences = {
     services: true,
     banking: true,
@@ -89,5 +97,25 @@ describe('NotificationsCard — Defaulters row', () => {
 
     expect(screen.getByText('Rappels de défaillants')).toBeInTheDocument()
     expect(screen.queryByText(defaultersLabel)).not.toBeInTheDocument()
+  })
+})
+
+// SYN-230 — a roleless member would get FORBIDDEN from both the preferences
+// query and RegisterPushToken, so the card hides and skips the query.
+describe('NotificationsCard — role gate', () => {
+  it('renders nothing and skips the preferences query for a roleless member', () => {
+    roles = []
+    const { container } = render(<NotificationsCard />)
+
+    expect(container).toBeEmptyDOMElement()
+    expect(useNotificationPreferencesSpy).toHaveBeenCalledWith(true)
+  })
+
+  it('renders and queries preferences for an arrivals-counter-only member', () => {
+    roles = ['arrivalsCounterStream']
+    render(<NotificationsCard />)
+
+    expect(screen.getByText(defaultersLabel)).toBeInTheDocument()
+    expect(useNotificationPreferencesSpy).toHaveBeenCalledWith(false)
   })
 })

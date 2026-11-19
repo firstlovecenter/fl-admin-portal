@@ -1,5 +1,6 @@
 const neo4j = require('neo4j-driver')
 const { loadSecrets } = require('./secrets.js')
+const { connectWithRetry } = require('./connect-with-retry.js')
 const {
   aggregateBacentaOnGovernorship,
   aggregateGovernorshipOnCouncil,
@@ -54,6 +55,8 @@ const handler = async () => {
     new Date().toISOString()
   )
 
+  let driver
+
   try {
     // Load secrets (works in both AWS Lambda and Netlify Functions)
     const SECRETS = await loadSecrets()
@@ -65,23 +68,25 @@ const handler = async () => {
         : SECRETS.NEO4J_URI || 'bolt://localhost:7687'
 
     // Create Neo4j driver
-    const driver = neo4j.driver(
+    driver = neo4j.driver(
       uri,
       neo4j.auth.basic(
         SECRETS.NEO4J_USER || 'neo4j',
         SECRETS.NEO4J_PASSWORD || 'neo4j'
-      )
+      ),
+      // Cap each connect attempt (default 30s) so a host that drops packets
+      // instead of refusing can't eat the 330s Lambda timeout across the
+      // connect retries below: worst case ~5x10s + 30s backoff (SYN-225)
+      { connectionTimeout: 10000 }
     )
 
-    // Verify connection
-    await driver.verifyConnectivity()
+    // Verify connection — retries a transient refusal instead of failing
+    // the whole run on one blip (SYN-225)
+    await connectWithRetry(driver)
     console.log('[Neo4j] Connection established successfully')
 
     // Run aggregation queries
     await initializeDatabase(driver)
-
-    // Close the Neo4j driver when done
-    await driver.close()
 
     return {
       statusCode: 200,
@@ -98,6 +103,15 @@ const handler = async () => {
         message: 'Error aggregating service graphs',
         error: error.message,
       }),
+    }
+  } finally {
+    // Close on every path (previously success-only, leaving sockets open on
+    // failure). A failed close must not turn a finished run into a thrown
+    // Lambda error that the scheduler retries (SYN-225)
+    if (driver) {
+      await driver.close().catch((error) => {
+        console.warn('[Neo4j] Failed to close driver:', error.message)
+      })
     }
   }
 }

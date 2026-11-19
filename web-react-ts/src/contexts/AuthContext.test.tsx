@@ -33,7 +33,12 @@ import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 
 import { AuthProvider, useAuth } from 'contexts/AuthContext'
-import { isTokenExpired, getRolesFromToken } from 'lib/auth-service'
+import {
+  isTokenExpired,
+  getRolesFromToken,
+  isLegacyStoredSession,
+  purgeLegacyTokens,
+} from 'lib/auth-service'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -594,5 +599,184 @@ describe('isTokenExpired — pure function', () => {
   it('15. token beyond buffer (exp in 301s) → treated as valid', () => {
     // At 301s out, we are just outside the 300s buffer.
     expect(isTokenExpired(makeJwt(+301))).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Group: pre-SYN-173 stored sessions (SYN-231)
+// ---------------------------------------------------------------------------
+
+/**
+ * Seed what a browser last signed in on a pre-SYN-173 build carries: both
+ * tokens in localStorage and a full `fl_user` (roles included) — but no
+ * refresh cookie, which those builds never received.
+ */
+function seedLegacySession() {
+  localStorage.setItem(
+    'fl_user',
+    JSON.stringify({ ...TEST_USER, roles: ['leaderBacenta'] })
+  )
+  localStorage.setItem('fl_access_token', makeJwt(-3600))
+  localStorage.setItem('fl_refresh_token', 'legacy-refresh-token')
+}
+
+describe('AuthProvider — pre-SYN-173 stored session (SYN-231)', () => {
+  it('23. legacy session → no cookie-less refresh request; signed out and storage purged', async () => {
+    seedLegacySession()
+    let refreshCalls = 0
+    server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () => {
+        refreshCalls += 1
+        return HttpResponse.json(
+          { error: 'No refresh token provided', statusCode: 401 },
+          { status: 401 }
+        )
+      })
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await act(async () => {})
+
+    // The whole point of SYN-231: the auth service is never asked.
+    expect(refreshCalls).toBe(0)
+    expect(result.current.isAuthenticated).toBe(false)
+    expect(result.current.isLoading).toBe(false)
+    expect(localStorage.getItem('fl_user')).toBeNull()
+    expectNoTokensInStorage()
+  })
+
+  it('24. re-signed-in since the migration (leftover token key, roles-less fl_user) → still bootstraps from the cookie; leftover purged', async () => {
+    seedStoredUser()
+    localStorage.setItem('fl_refresh_token', 'legacy-refresh-token')
+    const newToken = makeJwt(+3600)
+    let refreshCalls = 0
+
+    server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () => {
+        refreshCalls += 1
+        return HttpResponse.json({ accessToken: newToken }, { status: 200 })
+      }),
+      http.post(`${AUTH_URL}/auth/verify`, () =>
+        HttpResponse.json({ user: TEST_USER }, { status: 200 })
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await act(async () => {})
+
+    expect(refreshCalls).toBe(1)
+    expect(result.current.isAuthenticated).toBe(true)
+    expectNoTokensInStorage()
+  })
+
+  it('25a. accepted false positive: roles-bearing fl_user + leftover key → signed out without a refresh, even if a cookie exists', async () => {
+    // Shape left by a login on the SYN-173-only dev build (roles still
+    // written). Pinned so the trade-off documented on isLegacyStoredSession
+    // is deliberate: one re-login, never a cookie-less refresh.
+    seedLegacySession()
+    let refreshCalls = 0
+    server.use(
+      http.post(`${AUTH_URL}/auth/refresh-token`, () => {
+        refreshCalls += 1
+        return HttpResponse.json({ accessToken: makeJwt(+3600) }, { status: 200 })
+      })
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {})
+
+    expect(refreshCalls).toBe(0)
+    expect(result.current.isAuthenticated).toBe(false)
+  })
+
+  it('25b. logout purges leftover pre-SYN-173 token keys', async () => {
+    server.use(
+      http.post(`${AUTH_URL}/auth/login`, () =>
+        HttpResponse.json(
+          { accessToken: makeJwt(+3600), user: TEST_USER },
+          { status: 200 }
+        )
+      ),
+      http.post(`${AUTH_URL}/auth/logout`, () =>
+        HttpResponse.json({ message: 'ok' }, { status: 200 })
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {})
+    await act(async () => {
+      await result.current.login({ email: TEST_USER.email, password: 'pw' })
+    })
+
+    // Re-plant the keys after login so only logout's clearAuth can remove them.
+    localStorage.setItem('fl_access_token', 'legacy-access-token')
+    localStorage.setItem('fl_refresh_token', 'legacy-refresh-token')
+
+    await act(async () => {
+      result.current.logout()
+    })
+
+    expect(result.current.isAuthenticated).toBe(false)
+    expectNoTokensInStorage()
+  })
+
+  it('25. login purges leftover pre-SYN-173 token keys', async () => {
+    localStorage.setItem('fl_access_token', 'legacy-access-token')
+    localStorage.setItem('fl_refresh_token', 'legacy-refresh-token')
+    server.use(
+      http.post(`${AUTH_URL}/auth/login`, () =>
+        HttpResponse.json(
+          { accessToken: makeJwt(+3600), user: TEST_USER },
+          { status: 200 }
+        )
+      )
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {})
+
+    await act(async () => {
+      await result.current.login({ email: TEST_USER.email, password: 'pw' })
+    })
+
+    expect(result.current.isAuthenticated).toBe(true)
+    expectNoTokensInStorage()
+  })
+})
+
+describe('isLegacyStoredSession / purgeLegacyTokens — pure functions (SYN-231)', () => {
+  it('26. true only when fl_refresh_token AND a roles-bearing fl_user are both present', () => {
+    seedLegacySession()
+    expect(isLegacyStoredSession()).toBe(true)
+  })
+
+  it('27. false with no leftover refresh token (e.g. tampered fl_user roles alone)', () => {
+    localStorage.setItem(
+      'fl_user',
+      JSON.stringify({ ...TEST_USER, roles: ['adminDenomination'] })
+    )
+    expect(isLegacyStoredSession()).toBe(false)
+  })
+
+  it('28. false when fl_user has no roles key (written by a post-SYN-173 login)', () => {
+    seedStoredUser()
+    localStorage.setItem('fl_refresh_token', 'legacy-refresh-token')
+    expect(isLegacyStoredSession()).toBe(false)
+  })
+
+  it('29. false when fl_user is missing or not valid JSON', () => {
+    localStorage.setItem('fl_refresh_token', 'legacy-refresh-token')
+    expect(isLegacyStoredSession()).toBe(false)
+    localStorage.setItem('fl_user', '{not json')
+    expect(isLegacyStoredSession()).toBe(false)
+  })
+
+  it('30. purgeLegacyTokens removes both legacy keys and leaves fl_user alone', () => {
+    seedLegacySession()
+    purgeLegacyTokens()
+    expectNoTokensInStorage()
+    expect(localStorage.getItem('fl_user')).not.toBeNull()
   })
 })

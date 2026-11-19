@@ -1,3 +1,11 @@
+// @vitest-environment node
+//
+// SYN-226: this suite exercises the fetch-level link chain, not the DOM, so it
+// runs in the `node` environment. Under jsdom the global AbortController is
+// jsdom's while fetch/Request are Node's own; Apollo's HttpLink passes a jsdom
+// AbortSignal into MSW's `new Request(...)`, and Node's undici (Node 24)
+// rejects it ("Expected signal to be an instance of AbortSignal") before any
+// handler runs, so every request-level assertion failed.
 /**
  * createApolloClient.test.tsx — SYN-79
  *

@@ -3,6 +3,7 @@ import { GraphQLError } from 'graphql'
 import {
   createErrorRef,
   errorReferencePlugin,
+  logLevelForCode,
   sanitiseForLog,
 } from './error-reference'
 
@@ -12,6 +13,9 @@ const typeDefs = `
     income: Float!
     optionalIncome: Float
     forbidden: Boolean!
+    refused: Boolean!
+    unauthenticated: Boolean!
+    crashed: Boolean!
   }
 `
 
@@ -24,6 +28,20 @@ const resolvers = {
       throw new GraphQLError('You are not permitted to run this mutation', {
         extensions: { code: 'FORBIDDEN' },
       })
+    },
+    refused: () => {
+      throw new GraphQLError('Please transfer all members and try again.', {
+        extensions: { code: 'BAD_USER_INPUT' },
+      })
+    },
+    unauthenticated: () => {
+      throw new GraphQLError('Unauthenticated', {
+        extensions: { code: 'UNAUTHENTICATED' },
+      })
+    },
+    // A plain Error is what Apollo reports as INTERNAL_SERVER_ERROR.
+    crashed: () => {
+      throw new Error('Neo4j unavailable')
     },
   },
 }
@@ -92,15 +110,64 @@ describe('sanitiseForLog', () => {
   })
 })
 
+describe('logLevelForCode (SYN-253)', () => {
+  it.each(['BAD_USER_INPUT', 'FORBIDDEN', 'UNAUTHENTICATED'])(
+    'logs the user-facing refusal code %s at warn',
+    (code) => {
+      expect(logLevelForCode(code)).toBe('warn')
+    }
+  )
+
+  it.each([
+    'INTERNAL_SERVER_ERROR',
+    'UNKNOWN',
+    'GRAPHQL_VALIDATION_FAILED',
+    undefined,
+    null,
+    42,
+  ])('keeps %s at error', (code) => {
+    expect(logLevelForCode(code)).toBe('error')
+  })
+})
+
 describe('errorReferencePlugin', () => {
   let errorLog: jest.SpyInstance
+  let warnLog: jest.SpyInstance
 
   beforeEach(() => {
     errorLog = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    warnLog = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
   })
 
   afterEach(() => {
     errorLog.mockRestore()
+    warnLog.mockRestore()
+  })
+
+  it.each([
+    ['refused', 'BAD_USER_INPUT'],
+    ['forbidden', 'FORBIDDEN'],
+    ['unauthenticated', 'UNAUTHENTICATED'],
+  ])(
+    'SYN-253: logs a %s refusal once at warn, not error',
+    async (field, code) => {
+      const result = await run(`query Probe { ${field} }`)
+
+      expect(result.errors?.[0].extensions?.code).toBe(code)
+      expect(errorLog).not.toHaveBeenCalled()
+      expect(warnLog).toHaveBeenCalledTimes(1)
+      expect(warnLog.mock.calls[0][0]).toContain(`code=${code}`)
+    }
+  )
+
+  it('SYN-253: keeps a real failure at error, once', async () => {
+    const result = await run('query Probe { crashed }')
+
+    expect(result.errors?.[0].extensions?.code).toBe('INTERNAL_SERVER_ERROR')
+    expect(warnLog).not.toHaveBeenCalled()
+    expect(errorLog).toHaveBeenCalledTimes(1)
+    expect(errorLog.mock.calls[0][0]).toContain('code=INTERNAL_SERVER_ERROR')
+    expect(errorLog.mock.calls[0][0]).toContain('Neo4j unavailable')
   })
 
   it('creates an 8 character uppercase hex reference', () => {
@@ -133,7 +200,8 @@ describe('errorReferencePlugin', () => {
   it('logs anonymous callers without a jwt', async () => {
     await run('query Probe { forbidden }')
 
-    expect(errorLog.mock.calls[0][0]).toContain('user=anonymous')
+    // FORBIDDEN is a refusal, so it lands on the warn line (SYN-253).
+    expect(warnLog.mock.calls[0][0]).toContain('user=anonymous')
   })
 
   it('references every error but caps the log lines per request', async () => {
