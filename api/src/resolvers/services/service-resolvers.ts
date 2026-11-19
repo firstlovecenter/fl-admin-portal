@@ -3,6 +3,7 @@ import { makeServantCypher } from '../directory/utils'
 import { permitLeaderAdmin } from '../permissions'
 import { Context } from '../utils/neo4j-types'
 import {
+  badRequest,
   checkIfArrayHasRepeatingValues,
   isAuth,
   rearrangeCypherObject,
@@ -162,16 +163,17 @@ const serviceMutation = {
       const serviceCheck = rearrangeCypherObject(serviceCheckRes[0])
       const currencyCheck = rearrangeCypherObject(serviceCheckRes[1])
 
+      // SYN-264: expected refusals — BAD_USER_INPUT logs at WARN (SYN-253).
       if (
         serviceCheck.alreadyFilled &&
         !['Oversight', 'Denomination'].some((label) =>
           serviceCheck.labels?.includes(label)
         )
       ) {
-        throw new Error(errorMessage.no_double_form_filling)
+        throw badRequest(errorMessage.no_double_form_filling)
       }
       if (serviceCheck.labels?.includes('Vacation')) {
-        throw new Error(errorMessage.vacation_cannot_fill_service)
+        throw badRequest(errorMessage.vacation_cannot_fill_service)
       }
 
       // Division by zero stores Inf in Neo4j and GraphQL Float serialization
@@ -268,8 +270,9 @@ const serviceMutation = {
 
       const currencyCheck = rearrangeCypherObject(serviceCheckRes[0])
 
+      // SYN-264: expected refusals — BAD_USER_INPUT logs at WARN (SYN-253).
       if (currencyCheck.labels?.includes('Vacation')) {
-        throw new Error(errorMessage.vacation_cannot_fill_service)
+        throw badRequest(errorMessage.vacation_cannot_fill_service)
       }
 
       const conversionRate = Number(currencyCheck.conversionRateToDollar)
@@ -370,11 +373,12 @@ const serviceMutation = {
       await session.executeRead((tx) => tx.run(checkFormFilledThisWeek, args))
     )
 
+    // SYN-264: expected refusals — BAD_USER_INPUT logs at WARN (SYN-253).
     if (serviceCheck.alreadyFilled) {
-      throw new Error(errorMessage.no_double_form_filling)
+      throw badRequest(errorMessage.no_double_form_filling)
     }
     if (serviceCheck.labels?.includes('Vacation')) {
-      throw new Error(errorMessage.vacation_cannot_fill_service)
+      throw badRequest(errorMessage.vacation_cannot_fill_service)
     }
 
     const cypherResponse = await session.executeWrite((tx) =>
