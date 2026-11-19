@@ -11,11 +11,14 @@ vi.mock('hooks/useInfiniteScroll')
 vi.mock('./MemberTable', () => ({ default: () => <div data-testid="member-table" /> }))
 vi.mock('./Filters', () => ({ default: () => <div data-testid="filters" /> }))
 vi.mock('auth/RoleView', () => ({ default: ({ children }: { children: React.ReactNode }) => <>{children}</> }))
-vi.mock('components/ui/sheet', () => ({
-  Sheet: ({ open, children }: { open: boolean; children: React.ReactNode }) => open ? <>{children}</> : null,
-  SheetContent: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
-  SheetHeader: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
-  SheetTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+vi.mock('components/directory/BulkTransferMemberSheet', () => ({ default: () => null }))
+vi.mock('components/bulk-action-bar/BulkActionBar', () => ({ default: () => null }))
+vi.mock('components/ui/dialog', () => ({
+  Dialog: ({ open, children }: { open: boolean; children: React.ReactNode }) => open ? <>{children}</> : null,
+  DialogContent: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
+  DialogHeader: ({ children }: { children: React.ReactNode }) => <header>{children}</header>,
+  DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
 }))
 
 const mockedUseInfiniteScroll = vi.mocked(useInfiniteScroll)

@@ -202,10 +202,9 @@ export function createApolloClient({
   // boundary then wraps authLink + httpLink so each attempt picks up a fresh
   // Authorization header (token rotation between attempts is supported).
   return new ApolloClient({
-    uri: resolvedUri,
     link: from([errorLink, retryLink, authLink.concat(httpLink)]),
     cache: buildApolloCache(),
-    connectToDevTools: true,
+    devtools: { enabled: true },
     defaultOptions: {
       watchQuery: {
         errorPolicy,

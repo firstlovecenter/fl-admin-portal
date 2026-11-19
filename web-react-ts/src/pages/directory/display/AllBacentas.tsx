@@ -1,13 +1,25 @@
-import { useQuery } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 import RoleView from 'auth/RoleView'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
+import BulkActionBar from 'components/bulk-action-bar/BulkActionBar'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { Avatar, AvatarFallback, AvatarImage } from 'components/ui/avatar'
 import { Badge } from 'components/ui/badge'
 import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
+import { Checkbox } from 'components/ui/checkbox'
 import { Input } from 'components/ui/input'
 import { StatCard } from 'components/ui/stat-card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'components/ui/alert-dialog'
 import { ChurchContext } from 'contexts/ChurchContext'
 import {
   Breadcrumb,
@@ -16,13 +28,21 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from 'components/ui/breadcrumb'
-import { Building2, ChevronRight, Plus, Search, Users } from 'lucide-react'
+import { ArrowRightLeft, Building2, CheckSquare, ChevronRight, Loader2, Plus, Search, Users, X } from 'lucide-react'
 import { permitAdminArrivals } from 'permission-utils'
 import { GET_GOVERNORSHIP_BACENTAS } from 'queries/ListQueries'
 import { useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { classifyBacenta } from './bacenta-classification'
+import useBulkSelect from 'hooks/useBulkSelect'
+import {
+  SET_ACTIVE_BACENTA,
+  SET_VACATION_BACENTA,
+} from 'pages/directory/update/StatusChanges'
+import { throwToSentry } from 'global-utils'
+import { displayError, isPermissionError } from 'utils/errorHandler'
+import BulkTransferChurchSheet from 'components/directory/BulkTransferChurchSheet'
 
 type BacentaRow = {
   id: string
@@ -55,13 +75,29 @@ const DisplayAllBacentas = () => {
   const { t } = useTranslation()
   const { governorshipId, clickCard } = useContext(ChurchContext)
   const [search, setSearch] = useState('')
+  const [selectMode, setSelectMode] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'vacation' | 'active' | null>(null)
+  const [applying, setApplying] = useState(false)
+  const [isBulkTransferOpen, setIsBulkTransferOpen] = useState(false)
 
-  const { data, loading, error } = useQuery(GET_GOVERNORSHIP_BACENTAS, {
+  const { data, loading, error, refetch } = useQuery(GET_GOVERNORSHIP_BACENTAS, {
     variables: { id: governorshipId },
   })
 
+  const [SetVacationBacenta] = useMutation(SET_VACATION_BACENTA)
+  const [SetActiveBacenta] = useMutation(SET_ACTIVE_BACENTA)
+
   const governorship = data?.governorships?.[0]
   const bacentas: BacentaRow[] = governorship?.bacentas ?? []
+  const allIds = useMemo(() => bacentas.map((b) => b.id), [bacentas])
+
+  const { selectedIds, toggle, selectAll, clear, isSelected, count, isAllSelected } =
+    useBulkSelect(allIds)
+
+  const selectedNames = useMemo(
+    () => bacentas.filter((b) => selectedIds.has(b.id)).map((b) => b.name),
+    [bacentas, selectedIds]
+  )
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -78,37 +114,106 @@ const DisplayAllBacentas = () => {
     })
   }, [bacentas, search])
 
+  const handleCancelSelect = () => {
+    setSelectMode(false)
+    clear()
+  }
+
+  const handleBulkApply = async (action: 'vacation' | 'active') => {
+    setApplying(true)
+    setConfirmAction(null)
+    const mutation = action === 'vacation' ? SetVacationBacenta : SetActiveBacenta
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((bacentaId) =>
+          mutation({ variables: { bacentaId } })
+        )
+      )
+      await refetch()
+      clear()
+      setSelectMode(false)
+    } catch (e) {
+      if (!isPermissionError(e)) {
+        throwToSentry(`Error setting bacentas to ${action}`, e)
+      }
+      displayError(`Could not set bacentas to ${action}`, e)
+    } finally {
+      setApplying(false)
+    }
+  }
+
   return (
     <ApolloWrapper loading={loading} data={data} error={error}>
-      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      <div className={`min-h-svh bg-background ${count > 0 ? 'pb-32' : 'pb-[env(safe-area-inset-bottom)]'}`}>
         <StickyPageHeader bare>
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 py-3 pl-16 pr-16 md:px-4 lg:px-6">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t('directory.list.eyebrow')}
-              </p>
-              <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-                {governorship?.name ? `${governorship.name} ` : ''}
-                <span className="text-members">
-                  {t('shared.churchLevelPlural.Bacenta')}
-                </span>
-              </h1>
-            </div>
-            <RoleView roles={permitAdminArrivals('Council')} directoryLock>
-              <Link to="/bacenta/addbacenta" className="shrink-0">
-                <Button size="sm" className="h-11 gap-2">
-                  <Plus className="size-4" />
-                  <span className="hidden sm:inline">
-                    {t('directory.list.add', {
-                      level: t('shared.churchLevel.Bacenta'),
-                    })}
+            {selectMode ? (
+              <>
+                <div className="flex items-center gap-3 min-w-0">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={(checked) => (checked ? selectAll() : clear())}
+                    aria-label="Select all bacentas"
+                    className="h-5 w-5"
+                  />
+                  <span className="text-sm font-medium text-foreground">
+                    {count > 0 ? `${count} selected` : 'Select bacentas'}
                   </span>
-                  <span className="sm:hidden">
-                    {t('directory.list.addShort')}
-                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 gap-1.5 shrink-0"
+                  onClick={handleCancelSelect}
+                >
+                  <X className="size-4" />
+                  Cancel
                 </Button>
-              </Link>
-            </RoleView>
+              </>
+            ) : (
+              <>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('directory.list.eyebrow')}
+                  </p>
+                  <h1 className="truncate text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                    {governorship?.name ? `${governorship.name} ` : ''}
+                    <span className="text-members">
+                      {t('shared.churchLevelPlural.Bacenta')}
+                    </span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <RoleView roles={permitAdminArrivals('Council')} directoryLock>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 gap-2"
+                      onClick={() => setSelectMode(true)}
+                      disabled={bacentas.length === 0}
+                    >
+                      <CheckSquare className="size-4" />
+                      <span className="hidden sm:inline">Select</span>
+                    </Button>
+                  </RoleView>
+                  <RoleView roles={permitAdminArrivals('Council')} directoryLock>
+                    <Link to="/bacenta/addbacenta" className="shrink-0">
+                      <Button size="sm" className="h-11 gap-2">
+                        <Plus className="size-4" />
+                        <span className="hidden sm:inline">
+                          {t('directory.list.add', {
+                            level: t('shared.churchLevel.Bacenta'),
+                          })}
+                        </span>
+                        <span className="sm:hidden">
+                          {t('directory.list.addShort')}
+                        </span>
+                      </Button>
+                    </Link>
+                  </RoleView>
+                </div>
+              </>
+            )}
           </div>
           <div className="mx-auto max-w-6xl px-4 pb-2 lg:px-6">
             <Breadcrumb>
@@ -194,6 +299,98 @@ const DisplayAllBacentas = () => {
                       '?'
                     const isVacation = bacenta.vacationStatus === 'Vacation'
                     const category = classifyBacenta(bacenta.labels)
+                    const selected = isSelected(bacenta.id)
+
+                    const cardContent = (
+                      <div
+                        className={`flex min-h-[88px] items-center gap-3 p-4 rounded-xl border transition-colors ${
+                          selectMode && selected
+                            ? 'border-primary/40 bg-primary/5'
+                            : 'border-border bg-card hover:bg-muted/40 active:bg-muted'
+                        }`}
+                      >
+                        {selectMode && (
+                          <Checkbox
+                            checked={selected}
+                            onCheckedChange={() => toggle(bacenta.id)}
+                            aria-label={`Select ${bacenta.name}`}
+                            className="h-5 w-5 shrink-0"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )}
+                        <Avatar className="size-12 shrink-0">
+                          <AvatarImage
+                            src={bacenta.leader?.pictureUrl}
+                            alt={
+                              bacenta.leader
+                                ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
+                                : bacenta.name
+                            }
+                          />
+                          <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-semibold text-foreground">
+                            {bacenta.name}{' '}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              {t('shared.churchLevel.Bacenta')}
+                            </span>
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {bacenta.leader
+                              ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
+                              : t('directory.list.noLeader')}
+                          </p>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <Badge
+                              variant="outline"
+                              className="gap-1 px-2 py-0.5"
+                            >
+                              <Users className="size-3" />
+                              <span className="font-mono tabular-nums">
+                                {formatCount(bacenta.memberCount ?? 0)}
+                              </span>
+                            </Badge>
+                            {isVacation && (
+                              <Badge
+                                variant="destructive"
+                                className="px-2 py-0.5"
+                              >
+                                {t('directory.list.vacation')}
+                              </Badge>
+                            )}
+                            {category && (
+                              <Badge
+                                variant={category.variant}
+                                className="px-2 py-0.5"
+                              >
+                                {category.label}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        {!selectMode && (
+                          <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                        )}
+                      </div>
+                    )
+
+                    if (selectMode) {
+                      return (
+                        <button
+                          key={bacenta.id}
+                          type="button"
+                          className="group w-full text-left"
+                          onClick={() => toggle(bacenta.id)}
+                          aria-pressed={selected}
+                          aria-label={`${selected ? 'Deselect' : 'Select'} ${bacenta.name}`}
+                        >
+                          {cardContent}
+                        </button>
+                      )
+                    }
 
                     return (
                       <Link
@@ -203,64 +400,9 @@ const DisplayAllBacentas = () => {
                         aria-label={t('directory.list.openChurch', {
                           name: bacenta.name,
                         })}
-                        className="group rounded-xl border border-border bg-card transition-colors hover:bg-muted/40 active:bg-muted"
+                        className="group"
                       >
-                        <div className="flex min-h-[88px] items-center gap-3 p-4">
-                          <Avatar className="size-12 shrink-0">
-                            <AvatarImage
-                              src={bacenta.leader?.pictureUrl}
-                              alt={
-                                bacenta.leader
-                                  ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
-                                  : bacenta.name
-                              }
-                            />
-                            <AvatarFallback className="bg-members/10 text-sm font-medium text-members">
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-base font-semibold text-foreground">
-                              {bacenta.name}{' '}
-                              <span className="text-xs font-normal text-muted-foreground">
-                                {t('shared.churchLevel.Bacenta')}
-                              </span>
-                            </p>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {bacenta.leader
-                                ? `${bacenta.leader.firstName} ${bacenta.leader.lastName}`
-                                : t('directory.list.noLeader')}
-                            </p>
-                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                              <Badge
-                                variant="outline"
-                                className="gap-1 px-2 py-0.5"
-                              >
-                                <Users className="size-3" />
-                                <span className="font-mono tabular-nums">
-                                  {formatCount(bacenta.memberCount ?? 0)}
-                                </span>
-                              </Badge>
-                              {isVacation && (
-                                <Badge
-                                  variant="destructive"
-                                  className="px-2 py-0.5"
-                                >
-                                  {t('directory.list.vacation')}
-                                </Badge>
-                              )}
-                              {category && (
-                                <Badge
-                                  variant={category.variant}
-                                  className="px-2 py-0.5"
-                                >
-                                  {category.label}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                        </div>
+                        {cardContent}
                       </Link>
                     )
                   })}
@@ -366,6 +508,86 @@ const DisplayAllBacentas = () => {
             </aside>
           </div>
         </main>
+
+        {/* Bulk action bar */}
+        <BulkActionBar
+          count={count}
+          label="bacentas selected"
+          actions={[
+            {
+              label: 'Transfer',
+              variant: 'outline',
+              className: 'text-violet-500 border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-500',
+              icon: <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />,
+              disabled: applying,
+              onClick: () => setIsBulkTransferOpen(true),
+            },
+            {
+              label: 'Set Active',
+              variant: 'outline',
+              className: 'text-green-600 border-green-600/30 hover:bg-green-600/10 hover:text-green-600',
+              icon: applying ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined,
+              disabled: applying,
+              onClick: () => setConfirmAction('active'),
+            },
+            {
+              label: 'Set Vacation',
+              variant: 'outline',
+              className: 'text-amber-600 border-amber-600/30 hover:bg-amber-600/10 hover:text-amber-600',
+              icon: applying ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined,
+              disabled: applying,
+              onClick: () => setConfirmAction('vacation'),
+            },
+          ]}
+        />
+
+        {/* Bulk transfer sheet */}
+        <BulkTransferChurchSheet
+          open={isBulkTransferOpen}
+          onClose={() => setIsBulkTransferOpen(false)}
+          churchIds={Array.from(selectedIds)}
+          churchNames={selectedNames}
+          churchLevel="Bacenta"
+          oldParentId={governorshipId}
+          onSuccess={() => {
+            clear()
+            setSelectMode(false)
+          }}
+        />
+
+        {/* Confirmation dialogs */}
+        <AlertDialog
+          open={confirmAction !== null}
+          onOpenChange={(o) => !o && setConfirmAction(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {confirmAction === 'vacation'
+                  ? `Set ${count} Bacenta${count !== 1 ? 's' : ''} to Vacation?`
+                  : `Set ${count} Bacenta${count !== 1 ? 's' : ''} to Active?`}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {confirmAction === 'vacation'
+                  ? `These bacentas will be marked as on vacation and will not be counted as defaulters.`
+                  : `These bacentas will be restored to active status.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => confirmAction && handleBulkApply(confirmAction)}
+                className={
+                  confirmAction === 'vacation'
+                    ? 'bg-amber-600 hover:bg-amber-700'
+                    : 'bg-green-600 hover:bg-green-700'
+                }
+              >
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </ApolloWrapper>
   )
