@@ -5,17 +5,21 @@ import '@testing-library/jest-dom/vitest'
 // without these shims every Radix-driven interaction test dies on
 // `target.hasPointerCapture is not a function` before it can assert anything.
 // These are environment gaps, not behaviour under test — shim, don't mock.
-if (!Element.prototype.hasPointerCapture) {
-  Element.prototype.hasPointerCapture = () => false
-}
-if (!Element.prototype.setPointerCapture) {
-  Element.prototype.setPointerCapture = () => undefined
-}
-if (!Element.prototype.releasePointerCapture) {
-  Element.prototype.releasePointerCapture = () => undefined
-}
-if (!Element.prototype.scrollIntoView) {
-  Element.prototype.scrollIntoView = () => undefined
+// SYN-226: guarded on `Element` because network-layer suites opt into the
+// `node` environment (see lib/createApolloClient.test.tsx), where there is no DOM.
+if (typeof Element !== 'undefined') {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => undefined
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => undefined
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => undefined
+  }
 }
 
 if (typeof globalThis.ResizeObserver === 'undefined') {

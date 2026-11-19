@@ -8,9 +8,14 @@ import { ChurchLevel, Member, neonumber, Role } from './types'
 // `GraphQLError` (not a plain Error with `error.extensions` set) is required so
 // Apollo Server 4's default formatError preserves `extensions.code` once
 // NODE_ENV=production — without this the FE always sees INTERNAL_SERVER_ERROR.
-export const badRequest = (message: string): GraphQLError =>
+// `details` rides along in `extensions` for a refusal the client renders itself
+// (SYN-227). It is spread first so it can never override the code or severity.
+export const badRequest = (
+  message: string,
+  details: Record<string, unknown> = {}
+): GraphQLError =>
   new GraphQLError(message, {
-    extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+    extensions: { ...details, code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
   })
 
 // Structured collision error for the member-edit path: instead of a flat
@@ -87,7 +92,7 @@ export const checkIfArrayHasRepeatingValues = (array: any[]) => {
 // message text per known error type and drops everything else. Notably
 // no more `JSON.stringify(error?.response?.data?.data)` — which on a
 // Paystack error happily logged full webhook payloads.
-const summariseError = (error: unknown): string => {
+export const summariseError = (error: unknown): string => {
   if (!error) return ''
   if (typeof error === 'string') return error
   // Axios-style HTTP error from upstream services (Paystack, mNotify,
@@ -107,14 +112,26 @@ const summariseError = (error: unknown): string => {
   return `Unknown error of type ${typeof error}`
 }
 
+// SYN-253 — rethrow only, never log. Every error thrown here reaches the
+// `[GraphQL] ✖` line in error-reference.ts, which is the one place a failure
+// is logged; logging here as well produced a duplicate ERROR line per layer.
+// Callers that swallow the error (fire-and-forget `.catch`) must log it
+// themselves instead of calling this. The message keeps its existing
+// "<context>: <cause>" shape because users see it, and the original error
+// stays attached as `cause`. A refusal (BAD_USER_INPUT / FORBIDDEN) keeps
+// its code so it is logged at WARN rather than as INTERNAL_SERVER_ERROR.
 export const throwToSentry = (
   message: string,
   error: ErrorCustom | string | any
 ) => {
-  const errorSummary = summariseError(error)
-  // eslint-disable-next-line no-console
-  console.error(`${message}: ${errorSummary}`)
-  throw new Error(`${message}: ${errorSummary}`)
+  const fullMessage = `${message}: ${summariseError(error)}`
+  if (isClassifiedError(error)) {
+    throw new GraphQLError(fullMessage, {
+      extensions: { ...error.extensions },
+      originalError: error,
+    })
+  }
+  throw new Error(fullMessage, { cause: error })
 }
 
 export const noEmptyArgsValidation = (args: any[]) => {
@@ -137,7 +154,8 @@ export const noEmptyArgsValidation = (args: any[]) => {
 
 export const errorHandling = (member: Member) => {
   if (!member.email) {
-    throw new Error(
+    // SYN-253: a refusal the user can fix, not a server failure.
+    throw badRequest(
       `${member.firstName} ${member.lastName} does not have a valid email address. Please add an email address and then try again`
     )
   }

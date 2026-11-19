@@ -1,4 +1,4 @@
-import { permitMe } from '../permissions'
+import { permitSelfService } from '../permissions'
 import { Context } from '../utils/neo4j-types'
 import { isAuth, throwToSentry } from '../utils/utils'
 import { REGISTER_PUSH_TOKEN, UNREGISTER_PUSH_TOKEN } from './push-token-cypher'
@@ -20,14 +20,16 @@ const cleanToken = (raw: string | undefined): string | null => {
 // Both mutations are self-scoped: the write always targets the Member node
 // identified by `context.jwt.userId`. The caller can only ever add/remove a
 // token on their own account, so no IDOR surface exists regardless of role —
-// `permitMe('Bacenta')` (any servant) is the gate.
+// `permitSelfService()` (every sign-in role) is the gate. SYN-230: this was
+// `permitMe('Bacenta')`, which rejected arrivals counters/payers and
+// fishers-only members with FORBIDDEN after they had enabled push.
 
 export const RegisterPushToken = async (
   _source: unknown,
   args: PushTokenArgs,
   context: Context
 ): Promise<boolean> => {
-  isAuth(permitMe('Bacenta'), context.jwt?.roles)
+  isAuth(permitSelfService(), context.jwt?.roles)
 
   const userId = context.jwt?.userId
   const token = cleanToken(args.token)
@@ -56,7 +58,7 @@ export const UnregisterPushToken = async (
   args: PushTokenArgs,
   context: Context
 ): Promise<boolean> => {
-  isAuth(permitMe('Bacenta'), context.jwt?.roles)
+  isAuth(permitSelfService(), context.jwt?.roles)
 
   const userId = context.jwt?.userId
   const token = cleanToken(args.token)

@@ -387,7 +387,9 @@ const selectBacentaFromDropdown = async (bacentaName = 'Grace Bacenta') => {
   await user.click(bacentaInput)
   await user.clear(bacentaInput)
   await user.type(bacentaInput, bacentaName.split(' ')[0])
-  const option = await screen.findByText(bacentaName)
+  // SYN-226: the option only renders after the 500ms debounce plus the mocked
+  // search round-trip, which on a loaded runner overshoots findBy's 1s default.
+  const option = await screen.findByText(bacentaName, {}, { timeout: 5000 })
   await user.click(option)
 }
 
@@ -397,7 +399,11 @@ const submitForm = async () => {
   await user.click(submitButton)
 }
 
-describe('UpdateMember — SYN-205 email-collision handling', () => {
+// SYN-226: each case is a full render -> debounced search -> type -> submit
+// flow. Measured 4-9s per case on a loaded runner, so vitest's 5s default timed
+// them out before any assertion ran. Budget mirrors the explicit per-test
+// timeouts in lib/createApolloClient.test.tsx; assertions are unchanged.
+describe('UpdateMember — SYN-205 email-collision handling', { timeout: 30000 }, () => {
   it('shows the collision dialog (does not navigate away) when the update returns a collision error', async () => {
     const variables = baseUpdateVariables('taken@example.com')
 

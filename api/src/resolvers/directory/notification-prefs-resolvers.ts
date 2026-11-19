@@ -1,4 +1,4 @@
-import { permitMe } from '../permissions'
+import { permitSelfService } from '../permissions'
 import { Context } from '../utils/neo4j-types'
 import { isAuth, throwToSentry } from '../utils/utils'
 import {
@@ -38,8 +38,9 @@ const ALL_SUBSCRIBED: NotificationPreferences = {
 
 // Both operations are self-scoped: the read/write always targets the Member
 // identified by `context.jwt.userId`, so no caller can read or change another
-// member's preferences regardless of role. `permitMe('Bacenta')` (any servant)
-// is the gate.
+// member's preferences regardless of role. `permitSelfService()` (every
+// sign-in role) is the gate — SYN-230, same widening as the push-token
+// mutations so the Settings notifications card works for the same users.
 
 const toPreferences = (record: {
   get: (key: string) => boolean
@@ -55,7 +56,7 @@ export const myNotificationPreferences = async (
   _args: unknown,
   context: Context
 ): Promise<NotificationPreferences> => {
-  isAuth(permitMe('Bacenta'), context.jwt?.roles)
+  isAuth(permitSelfService(), context.jwt?.roles)
 
   const userId = context.jwt?.userId
   if (!userId) {
@@ -89,7 +90,7 @@ export const SetNotificationPreference = async (
   args: SetPreferenceArgs,
   context: Context
 ): Promise<NotificationPreferences> => {
-  isAuth(permitMe('Bacenta'), context.jwt?.roles)
+  isAuth(permitSelfService(), context.jwt?.roles)
 
   const userId = context.jwt?.userId
   if (!userId || !CATEGORIES.includes(args.category)) {

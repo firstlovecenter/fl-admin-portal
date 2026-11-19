@@ -110,7 +110,9 @@ const initializeServer = async () => {
     server = new ApolloServer({
       schema,
       introspection: isDevelopment,
-      status400ForVariableCoercionErrors: true,
+      // SYN-223 — no `status400ForVariableCoercionErrors` here. Apollo Server
+      // v5 returns 400 for variable-coercion errors by default; passing `true`
+      // has no effect and logs a deprecation WARN on every cold start.
       // SYN-177 — fail closed on the same ENVIRONMENT signal as introspection
       // (not process.env.NODE_ENV, which may be unset in the Lambda) so raw
       // stack traces / Neo4j error text never reach clients in production.
@@ -220,6 +222,22 @@ exports.handler = async (event, context) => {
     )
   }
 
+  const badRequest = (message, httpMethod) => {
+    console.warn(
+      `[Request] Rejected malformed ${httpMethod} request: ${message}`
+    )
+    return {
+      statusCode: 400,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders,
+      },
+      body: JSON.stringify({
+        errors: [{ message, extensions: { code: 'BAD_REQUEST' } }],
+      }),
+    }
+  }
+
   try {
     // Log only the event's top-level shape for debugging. SYN-177: the previous
     // `JSON.stringify(safeEvent)` dumped the entire request body on every
@@ -241,15 +259,27 @@ exports.handler = async (event, context) => {
     console.log('[Request Debug] Body type:', typeof body)
     console.log('[Request Debug] HTTP Method:', httpMethod)
 
+    // SYN-254 — an empty, non-JSON or non-object body is a malformed CLIENT
+    // request (e.g. a stray `GET /graphql` probe; the app always POSTs JSON),
+    // not a server failure: answer 400 and warn rather than console.error +
+    // 500. Never log the body itself (SYN-177: it can carry PII).
     if (!body) {
-      throw new SyntaxError('Request body is undefined or empty')
+      return badRequest('Request body is undefined or empty', httpMethod)
     }
 
     let parsedBody
     try {
       parsedBody = JSON.parse(body)
     } catch (error) {
-      throw new SyntaxError('Invalid JSON in request body')
+      return badRequest('Invalid JSON in request body', httpMethod)
+    }
+
+    if (
+      !parsedBody ||
+      typeof parsedBody !== 'object' ||
+      Array.isArray(parsedBody)
+    ) {
+      return badRequest('Request body must be a JSON object', httpMethod)
     }
 
     const { query, variables = {}, operationName } = parsedBody

@@ -70,6 +70,8 @@ Always use these helpers, never hand-build a `Role[]` for a route or `isAuth` ca
 | `permitAdminArrivals(level)` | Admin + Arrivals | Admin + arrivals pages |
 | `permitTellerStream()` | `['tellerStream']` | Banking confirmation UI |
 | `permitMe(level)` | Leader + Admin + Arrivals helpers + Teller | The standard "any privileged user at this level" gate |
+| `permitSelfService()` | `permitMe('Bacenta')` + Counter + Payer + `fishers` (every sign-in role except `all`) | Self-scoped operations on the caller's own Member: push-token registration, notification preferences (SYN-230) |
+| `hasSelfServiceRole(roles)` | `true` when `roles` holds any `permitSelfService()` role; `false` for roleless members | FE: skip push registration / hide the push soft-ask and Settings notifications card for roleless members |
 
 ## What each role can do
 
