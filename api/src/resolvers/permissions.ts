@@ -244,6 +244,18 @@ export const permitTellerStream = (): Role[] => {
   return ['tellerStream']
 }
 
+// SYN-266 — who may confirm an offering by hand (ManuallyConfirmOfferingPayment)
+// on a service at any church level: Stream tellers and Stream-and-higher
+// admins. Always pair it with a per-church check (assertCan on the BE, useCan
+// on the FE) so the role must cover the service's own church. `fishers` is
+// deliberately absent: it maps to no servant edge, so it can never be bound
+// to a church.
+// MIRROR any change in web-react-ts/src/permission-utils.ts (ADR-001).
+export const permitConfirmOffering = (): Role[] => [
+  ...permitTellerStream(),
+  ...permitAdmin('Stream'),
+]
+
 // SYN-230 — every role that can sign in and hold a device. Gates the
 // self-scoped push-token and notification-preference operations, which only
 // ever touch the caller's own Member node (jwt.userId), so there is nothing to

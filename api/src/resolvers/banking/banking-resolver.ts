@@ -4,9 +4,9 @@ import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import {
   permitAdmin,
+  permitConfirmOffering,
   permitLeaderAdmin,
   permitMe,
-  permitTellerStream,
 } from '../permissions'
 import {
   getMobileCode,
@@ -18,9 +18,11 @@ import {
 } from '../utils/financial-utils'
 import { badRequest, isAuth, rearrangeCypherObject } from '../utils/utils'
 import { assertScopeViaServiceRecord } from '../utils/scope-utils'
+import { assertCan } from '../utils/assert-can'
 import {
   checkTransactionReference,
   getLastServiceRecord,
+  getServiceRecordChurches,
   initiateServiceRecordTransaction,
   setTransactionStatusFailed,
   setTransactionStatusReversed,
@@ -812,75 +814,86 @@ const bankingMutation = {
     return submissionResponse.record.properties
   },
 
+  // SYN-266: a Stream teller or a Stream-and-higher admin confirms the
+  // offering of a service at ANY church level. The role must be held at
+  // every church holding the record (assertCan, as the teller batch flow
+  // does): isAuth plus the any-servant-edge scope check alone would let a
+  // teller of one Stream confirm money in another Stream where they merely
+  // lead a church. Gate shared with the Confirm Offering button via
+  // permitConfirmOffering (ADR-001).
   ManuallyConfirmOfferingPayment: async (
     object: any,
-    args: { serviceRecordId: string; bankingSlip: string },
+    args: { serviceRecordId: string },
     context: Context
   ) => {
-    isAuth(['fishers', ...permitTellerStream()], context.jwt?.roles)
+    isAuth(permitConfirmOffering(), context.jwt?.roles)
     await assertScopeViaServiceRecord(context, args.serviceRecordId)
+
     const session = context.executionContext.session()
-
-    const churchRes = await session.executeRead((tx) =>
-      tx.run(
-        `MATCH (record:ServiceRecord {id: $serviceRecordId})
-        MATCH (record)<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
-        RETURN labels(church) AS churchLabels`,
-        args
-      )
-    )
-    const churchLabels: string[] = churchRes.records[0].get('churchLabels')
-
-    // Manual confirmation is a Stream-level (or higher) action by design —
-    // it's the teller flow for streams with bankAccount === 'manual', not
-    // a generic per-record override. Restrict every caller (both
-    // tellerStream and fishers) to records that hang off a Stream+ church.
-    // Bacenta-level records go through self-banking or slip upload.
-    // SYN-266: an expected refusal — FORBIDDEN logs at WARN (SYN-253), not
-    // as INTERNAL_SERVER_ERROR. ServiceDetails hides the button below Stream.
-    if (
-      !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
-        churchLabels.includes(churchLevel)
-      )
-    ) {
-      throw new GraphQLError(
-        'You are not allowed to manually confirm offering payment for this church',
-        { extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' } }
-      )
-    }
-
-    // SYN-228: don't wrap — the outstanding-offering rule must reach the user verbatim.
-    await checkIfLastServiceBanked(args.serviceRecordId, context)
-
-    const submissionResponse = rearrangeCypherObject(
-      await session
-        .run(manuallyConfirmOfferingPayment, {
-          ...args,
-          jwt: context.jwt,
-          ...bhParams(
-            'teller',
-            'teller-confirmed',
-            'Teller manually confirmed offering'
-          ),
-        })
+    try {
+      const churchResponse = await session
+        .executeRead((tx) => tx.run(getServiceRecordChurches, args))
         .catch((error: any) =>
           throwClean(
             'We could not confirm this offering payment. Please try again.',
             error
           )
         )
-    )
-
-    // SM2 atomic guard returned no rows — another teller confirmed first.
-    // Don't clobber the existing tellerConfirmationTime or re-attribute the
-    // CONFIRMED_BANKING_FOR edge.
-    if (!submissionResponse?.service) {
-      throw new Error(
-        'This offering has already been confirmed by another teller. Refresh to see the latest banking state.'
+      // A ServiceLog shared by two churches (SYN-220) must not let either
+      // side's teller confirm the other's money, so every church is checked.
+      // No church at all (closed since the scope check) is refused outright.
+      const churchIds: string[] =
+        churchResponse.records[0]?.get('churchIds') ?? []
+      if (!churchIds.length) {
+        throw new GraphQLError(
+          'You are not permitted to confirm the offering for this service.',
+          { extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' } }
+        )
+      }
+      churchIds.forEach((churchId) =>
+        assertCan(context, permitConfirmOffering(), churchId)
       )
-    }
 
-    return submissionResponse.service.properties
+      // SYN-228: don't wrap — the outstanding-offering rule must reach the user verbatim.
+      await checkIfLastServiceBanked(args.serviceRecordId, context)
+
+      const submissionResponse = rearrangeCypherObject(
+        await session
+          .executeWrite((tx) =>
+            tx.run(manuallyConfirmOfferingPayment, {
+              ...args,
+              jwt: context.jwt,
+              // Role-neutral: admins confirm too, and the BankingHistoryLog
+              // actor records who did.
+              ...bhParams(
+                'teller',
+                'teller-confirmed',
+                'Offering manually confirmed'
+              ),
+            })
+          )
+          .catch((error: any) =>
+            throwClean(
+              'We could not confirm this offering payment. Please try again.',
+              error
+            )
+          )
+      )
+
+      // SM2 atomic guard returned no rows — someone confirmed it first.
+      // Don't clobber the existing tellerConfirmationTime or re-attribute the
+      // CONFIRMED_BANKING_FOR edge. An expected refusal, so BAD_USER_INPUT
+      // (logged at WARN, SYN-253) rather than a server error.
+      if (!submissionResponse?.service) {
+        throw badRequest(
+          'This offering has already been confirmed. Refresh to see the latest banking state.'
+        )
+      }
+
+      return submissionResponse.service.properties
+    } finally {
+      await session.close()
+    }
   },
 
   // Admin recovery path: an SM1 transition from {null, failed} back to
