@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@apollo/client'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +22,9 @@ import {
   Loader2,
   ChevronRight,
   Trash2,
+  ArrowRightLeft,
 } from 'lucide-react'
+import TransferMemberSheet from 'components/directory/TransferMemberSheet'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { useNavigate } from 'react-router'
 import useModal from 'hooks/useModal'
@@ -272,6 +274,7 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
   )
   const { show, handleShow, handleClose } = useModal()
   const { isOpen: isDeleteOpen, togglePopup: toggleDelete } = usePopup()
+  const [isTransferOpen, setIsTransferOpen] = useState(false)
   const initialValues = { note: member?.stickyNote ?? '' }
   const validationSchema = Yup.object({
     note: Yup.string().required(t('directory.memberDisplay.noteRequired')),
@@ -330,6 +333,16 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
 
   return (
     <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+      {member && memberChurch?.bacenta && (
+        <TransferMemberSheet
+          open={isTransferOpen}
+          onClose={() => setIsTransferOpen(false)}
+          memberId={memberId}
+          memberName={member.nameWithTitle ?? `${member.firstName} ${member.lastName}`}
+          currentBacentaId={memberChurch.bacenta.id}
+          currentBacentaName={memberChurch.bacenta.name ?? ''}
+        />
+      )}
       <MemberDeleteDialog
         open={isDeleteOpen}
         onClose={toggleDelete}
@@ -437,6 +450,19 @@ const MemberDisplay = ({ memberId }: { memberId: string }) => {
               ]}
             >
               <EditButton link="/member/editmember" />
+            </RoleView>
+
+            <RoleView roles={permitLeaderAdmin('Bacenta')}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsTransferOpen(true)}
+                disabled={bioLoading || !member}
+                className="min-h-[44px] gap-1.5 text-violet-500 border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-500"
+              >
+                <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Transfer</span>
+              </Button>
             </RoleView>
 
             <RoleView roles={permitLeaderAdmin('Governorship')}>

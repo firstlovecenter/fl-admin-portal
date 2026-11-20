@@ -66,6 +66,7 @@ const DetailsGovernorship = () => {
         buttons={data?.governorships[0]?.bacentas}
         editlink="/governorship/editgovernorship"
         editPermitted={permitAdminArrivals('Council')}
+        parentChurchId={data?.governorships[0]?.council?.id}
         history={
           data?.governorships[0]?.history.length !== 0 &&
           data?.governorships[0]?.history

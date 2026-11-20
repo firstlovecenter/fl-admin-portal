@@ -1,22 +1,41 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { DocumentNode } from '@apollo/client'
 import useInfiniteScroll from 'hooks/useInfiniteScroll'
+import useBulkSelect from 'hooks/useBulkSelect'
 import MemberTable, { GridMember } from './MemberTable'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { Button } from 'components/ui/button'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from 'components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from 'components/ui/dropdown-menu'
 import { Skeleton } from 'components/ui/skeleton'
+import { Checkbox } from 'components/ui/checkbox'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import BulkActionBar from 'components/bulk-action-bar/BulkActionBar'
+import BulkTransferMemberSheet from 'components/directory/BulkTransferMemberSheet'
 import Filters from './Filters'
 import RoleView from 'auth/RoleView'
 import { permitLeaderAdmin } from 'permission-utils'
-import { Download, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
+import {
+  ArrowRightLeft,
+  CheckSquare,
+  Download,
+  FileDown,
+  Search,
+  SlidersHorizontal,
+  UserPlus,
+  X,
+} from 'lucide-react'
 import { cn } from 'components/lib/utils'
 import { useTranslation } from 'react-i18next'
 import {
@@ -67,6 +86,24 @@ const buildFilterVars = (filters: MemberFilters) => ({
   leaderRanks: filters.leaderRank?.length ? filters.leaderRank : null,
 })
 
+const exportMembersCsv = (members: GridMember[], filename: string) => {
+  const header = 'First Name,Last Name,Bacenta,Basonta'
+  const rows = members.map(
+    (m) =>
+      [m.firstName, m.lastName, m.bacenta?.name ?? '', m.basonta?.name ?? '']
+        .map((v) => `"${(v ?? '').replace(/"/g, '""')}"`)
+        .join(',')
+  )
+  const csv = [header, ...rows].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 const MembersGrid = ({
   query,
   parentId,
@@ -75,22 +112,14 @@ const MembersGrid = ({
   getHeading,
 }: MembersGridProps) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { filters } = useContext(ChurchContext) as { filters: MemberFilters }
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(() =>
-    window.matchMedia('(min-width: 768px)').matches
-  )
-
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)')
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
+  const [selectMode, setSelectMode] = useState(false)
+  const [bulkTransferOpen, setBulkTransferOpen] = useState(false)
   useEffect(() => {
     const timer = setTimeout(
       () => setDebouncedSearch(searchInput.trim()),
@@ -129,6 +158,10 @@ const MembersGrid = ({
       : undefined,
   })
 
+  const allMemberIds = useMemo(() => items.map((m) => m.id), [items])
+  const { selectedIds, toggle, selectAll, clear, count, isAllSelected } =
+    useBulkSelect(allMemberIds)
+
   const heading = getHeading(pluckParent(data))
 
   const hasActiveFilters =
@@ -146,28 +179,62 @@ const MembersGrid = ({
     ? (parentTypename as keyof typeof MEMBERSHIP_DOWNLOAD_PATHS)
     : undefined
 
+  const handleCancelSelect = () => {
+    setSelectMode(false)
+    clear()
+  }
+
+  const selectedMembers = items.filter((m) => selectedIds.has(m.id))
+
   return (
-    <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+    <div className={cn('min-h-svh bg-background', count > 0 ? 'pb-32' : 'pb-[env(safe-area-inset-bottom)]')}>
       <StickyPageHeader innerClassName="space-y-3">
         <div className="flex items-center justify-between">
-          {loading || !heading ? (
-            <Skeleton className="h-8 w-48 rounded" />
+          {selectMode ? (
+            <>
+              <div className="flex min-h-[44px] items-center gap-3">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={(v) => (v ? selectAll() : clear())}
+                  aria-label="Select all members"
+                  className="h-5 w-5"
+                />
+                <span className="text-sm font-medium text-foreground">
+                  {count > 0 ? `${count} selected` : 'Select members'}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="default"
+                className="h-11 gap-1.5 text-sm"
+                onClick={handleCancelSelect}
+              >
+                <X className="size-4" />
+                Cancel
+              </Button>
+            </>
           ) : (
-            <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
-              {heading}
-            </h1>
-          )}
-          {!loading && (
-            <span className="text-sm tabular-nums shrink-0 ml-2">
-              <span className="font-semibold text-members">
-                {displayCount}
-              </span>
-              <span className="text-muted-foreground">
-                {isFiltering
-                  ? t('directory.memberGrid.matches')
-                  : t('directory.memberGrid.members')}
-              </span>
-            </span>
+            <>
+              {loading || !heading ? (
+                <Skeleton className="h-8 w-48 rounded" />
+              ) : (
+                <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight">
+                  {heading}
+                </h1>
+              )}
+              {!loading && (
+                <span className="text-sm tabular-nums shrink-0 ml-2">
+                  <span className="font-semibold text-members">
+                    {displayCount}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {isFiltering
+                      ? t('directory.memberGrid.matches')
+                      : t('directory.memberGrid.members')}
+                  </span>
+                </span>
+              )}
+            </>
           )}
         </div>
 
@@ -183,36 +250,84 @@ const MembersGrid = ({
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <RoleView roles={permitLeaderAdmin('Bacenta')}>
-            <Link to="/member/addmember">
-              <Button
-                variant="outline"
-                size="default"
-                className="h-11 gap-1.5 text-sm text-foreground"
-              >
-                <UserPlus className="size-4" />
-                {t('directory.memberGrid.addMember')}
-              </Button>
-            </Link>
-          </RoleView>
+          {!selectMode && (
+            <RoleView roles={permitLeaderAdmin('Bacenta')}>
+              <Link to="/member/addmember">
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="h-11 gap-1.5 text-sm text-foreground"
+                >
+                  <UserPlus className="size-4" />
+                  {t('directory.memberGrid.addMember')}
+                </Button>
+              </Link>
+            </RoleView>
+          )}
           <div className="ml-auto flex items-center gap-1">
+            {/* Select toggle */}
+            <RoleView roles={permitLeaderAdmin('Bacenta')}>
+              <Button
+                variant={selectMode ? 'default' : 'ghost'}
+                size="default"
+                className="h-11 gap-1.5 text-sm"
+                onClick={() => setSelectMode((prev) => !prev)}
+                disabled={items.length === 0}
+              >
+                <CheckSquare className="size-4" />
+                <span className="hidden sm:inline">Select</span>
+              </Button>
+            </RoleView>
+
+            {/* Download / export */}
             {downloadPath && downloadLevel && (
               <RoleView roles={permitLeaderAdmin(downloadLevel)}>
-                <Link to={downloadPath}>
-                  <Button
-                    variant="ghost"
-                    size="default"
-                    className="h-11 gap-1.5 text-sm text-foreground"
-                    aria-label={t('directory.memberGrid.downloadMembershipList')}
-                  >
-                    <Download className="size-4" />
-                    <span className="hidden sm:inline">
-                      {t('directory.memberGrid.download')}
-                    </span>
-                  </Button>
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="default"
+                      className="h-11 gap-1.5 text-sm text-foreground"
+                      aria-label={t('directory.memberGrid.downloadMembershipList')}
+                    >
+                      <Download className="size-4" />
+                      <span className="hidden sm:inline">
+                        {t('directory.memberGrid.download')}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        exportMembersCsv(
+                          items,
+                          `members-${parentId}.csv`
+                        )
+                      }
+                    >
+                      <FileDown className="mr-2 size-4" />
+                      Export visible ({displayCount})
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setSelectMode(true)
+                      }}
+                    >
+                      <CheckSquare className="mr-2 size-4" />
+                      Select to export
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate(downloadPath)}
+                    >
+                      <Download className="mr-2 size-4" />
+                      {t('directory.memberGrid.download')} page
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </RoleView>
             )}
+
+            {/* Filters */}
             <Button
               variant="ghost"
               size="default"
@@ -238,28 +353,52 @@ const MembersGrid = ({
           error={error}
           loading={loading}
           fetchingMore={fetchingMore}
+          selectMode={selectMode}
+          selectedIds={selectedIds}
+          onToggle={toggle}
         />
         {hasMore && <div ref={sentinelRef} aria-hidden className="h-1" />}
       </div>
 
-      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
-        <SheetContent
-          side={isDesktop ? 'right' : 'bottom'}
-          className={cn(
-            'overflow-y-auto',
-            isDesktop
-              ? 'w-full sm:max-w-md'
-              : 'max-h-[85vh] rounded-t-2xl'
-          )}
-        >
-          <SheetHeader>
-            <SheetTitle>{t('directory.memberGrid.filterMembers')}</SheetTitle>
-          </SheetHeader>
-          <div className="px-4 pb-8">
-            <Filters onClose={() => setFilterOpen(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Filters dialog */}
+      <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('directory.memberGrid.filterMembers')}</DialogTitle>
+          </DialogHeader>
+          <Filters onClose={() => setFilterOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk action bar */}
+      <BulkActionBar
+        count={count}
+        label={`member${count !== 1 ? 's' : ''} selected`}
+        actions={[
+          {
+            label: 'Transfer',
+            variant: 'outline',
+            icon: <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />,
+            onClick: () => setBulkTransferOpen(true),
+            className: 'text-violet-500 border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-500',
+          },
+          {
+            label: `Export CSV (${count})`,
+            variant: 'default',
+            icon: <FileDown className="h-4 w-4" aria-hidden="true" />,
+            onClick: () =>
+              exportMembersCsv(selectedMembers, `members-selected-${parentId}.csv`),
+          },
+        ]}
+      />
+
+      {/* Bulk transfer sheet */}
+      <BulkTransferMemberSheet
+        open={bulkTransferOpen}
+        onClose={() => setBulkTransferOpen(false)}
+        memberIds={Array.from(selectedIds)}
+        onSuccess={handleCancelSelect}
+      />
     </div>
   )
 }

@@ -80,7 +80,7 @@ jest.mock(
 )
 jest.mock(
   './resolvers/utils/error-reference',
-  () => ({ errorReferencePlugin: {} }),
+  () => ({ errorReferencePlugin: {}, formatError: jest.fn() }),
   { virtual: true }
 )
 jest.mock(
@@ -191,6 +191,15 @@ describe('graphql handler — CORS preflight, DEVELOPMENT branch (SECRETS warm)'
     const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
 
     expect(config.plugins).toContain(errorReferencePlugin)
+  })
+
+  it('registers the shared formatError so @neo4j/graphql auth errors get a code (SYN-258)', () => {
+    const { ApolloServer } = require('@apollo/server')
+    const { formatError } = require('./resolvers/utils/error-reference')
+
+    const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
+
+    expect(config.formatError).toBe(formatError)
   })
 
   it('does not pass the v5-deprecated status400ForVariableCoercionErrors option (SYN-223)', () => {

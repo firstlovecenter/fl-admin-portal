@@ -14,7 +14,10 @@ import { verifyJwt } from './resolvers/utils/verify-jwt'
 import { computeUserAuthority } from './resolvers/utils/allowed-church-ids'
 import { requireAuthForMutationsPlugin } from './resolvers/utils/require-auth-for-mutations'
 import { depthLimit } from './resolvers/utils/depth-limit'
-import { errorReferencePlugin } from './resolvers/utils/error-reference'
+import {
+  errorReferencePlugin,
+  formatError,
+} from './resolvers/utils/error-reference'
 import mountDownloadRoutes from './resolvers/downloads/downloads-express'
 
 // Logs every GraphQL request's lifecycle so operations show up in the server
@@ -146,6 +149,8 @@ const startServer = async () => {
     // SYN-177 — depth guard on the auto-generated schema. Runs in every
     // environment; blocks pathological deep-traversal queries before execution.
     validationRules: [depthLimit()],
+    // SYN-258 — codes @neo4j/graphql's auth errors before they are logged.
+    formatError,
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       requireAuthForMutationsPlugin,

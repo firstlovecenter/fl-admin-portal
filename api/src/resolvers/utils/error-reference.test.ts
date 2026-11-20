@@ -1,8 +1,10 @@
 import { ApolloServer } from '@apollo/server'
+import { Neo4jGraphQL } from '@neo4j/graphql'
 import { GraphQLError } from 'graphql'
 import {
   createErrorRef,
   errorReferencePlugin,
+  formatError,
   logLevelForCode,
   sanitiseForLog,
 } from './error-reference'
@@ -87,7 +89,11 @@ describe('sanitiseForLog', () => {
       'Variable "$whatsappNumber" got invalid value "+233241234567"; Int cannot represent non-integer value: "+233241234567"',
       ['+233241234567'],
     ],
-    ['bare email', 'Lookup failed for ama@example.com today', ['ama@example.com']],
+    [
+      'bare email',
+      'Lookup failed for ama@example.com today',
+      ['ama@example.com'],
+    ],
     ['bare phone', 'Lookup failed for 0241234567 today', ['0241234567']],
   ])('removes member data from a %s message', (_name, message, secrets) => {
     const sanitised = sanitiseForLog(message)
@@ -205,7 +211,10 @@ describe('errorReferencePlugin', () => {
   })
 
   it('references every error but caps the log lines per request', async () => {
-    const aliases = Array.from({ length: 12 }, (_, i) => `a${i}: optionalIncome`)
+    const aliases = Array.from(
+      { length: 12 },
+      (_, i) => `a${i}: optionalIncome`
+    )
 
     const result = await run(`query Probe { ${aliases.join(' ')} }`)
 
@@ -218,5 +227,118 @@ describe('errorReferencePlugin', () => {
 
     expect(result.errors).toBeUndefined()
     expect(errorLog).not.toHaveBeenCalled()
+  })
+})
+
+describe('formatError (SYN-258)', () => {
+  // The library's error classes are not exported, so build look-alikes that
+  // mirror them: same class names, and the base class keeps the inherited
+  // `name === 'GraphQLError'` exactly as the library's does.
+  class Neo4jGraphQLError extends GraphQLError {}
+  class Neo4jGraphQLAuthenticationError extends Neo4jGraphQLError {}
+  class Neo4jGraphQLForbiddenError extends Neo4jGraphQLError {}
+  const classes: Record<string, new (message: string) => GraphQLError> = {
+    Neo4jGraphQLError,
+    Neo4jGraphQLAuthenticationError,
+    Neo4jGraphQLForbiddenError,
+  }
+  const libraryError = (name: string, message: string) =>
+    new classes[name](message)
+
+  // How graphql-js hands a resolver's throw to Apollo: located at a path,
+  // the library error kept as `originalError`.
+  const located = (original: Error) =>
+    new GraphQLError(original.message, {
+      path: ['streams'],
+      originalError: original,
+    })
+
+  const formatted = {
+    message: 'x',
+    extensions: { code: 'INTERNAL_SERVER_ERROR', keep: 1 },
+  }
+
+  it.each([
+    ['Neo4jGraphQLError', 'Unauthenticated', 'UNAUTHENTICATED'],
+    ['Neo4jGraphQLAuthenticationError', 'Unauthenticated', 'UNAUTHENTICATED'],
+    ['Neo4jGraphQLForbiddenError', 'Forbidden', 'FORBIDDEN'],
+  ])('codes a %s "%s" as %s', (name, message, code) => {
+    const result = formatError(formatted, located(libraryError(name, message)))
+
+    expect(result.extensions).toEqual({ code, keep: 1 })
+  })
+
+  it.each([
+    [
+      'another @neo4j/graphql error',
+      libraryError('Neo4jGraphQLError', 'Constraint validation failed'),
+    ],
+    ['our own resolver error with the same text', new Error('Unauthenticated')],
+    ['a crash', new Error('Neo4j unavailable')],
+    ['a non-error throw', 'boom'],
+  ])('leaves %s untouched', (_name, original) => {
+    const error = original instanceof Error ? located(original) : original
+
+    expect(formatError(formatted, error)).toBe(formatted)
+  })
+})
+
+describe('anonymous @authentication query (SYN-258)', () => {
+  let errorLog: jest.SpyInstance
+  let warnLog: jest.SpyInstance
+
+  beforeEach(() => {
+    errorLog = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    warnLog = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    errorLog.mockRestore()
+    warnLog.mockRestore()
+  })
+
+  // Reproduces the ticket end to end: the real library refuses the anonymous
+  // read while translating it. The stub transaction only answers the
+  // library's one-off version probe, so no database is needed.
+  it('reports UNAUTHENTICATED and logs at warn, not INTERNAL_SERVER_ERROR at error', async () => {
+    const neoSchema = new Neo4jGraphQL({
+      typeDefs: `
+        type Stream @authentication(operations: [READ]) @node {
+          id: ID!
+        }
+      `,
+      features: { authorization: { key: 'test-secret' } },
+    })
+    const server = new ApolloServer({
+      schema: await neoSchema.getSchema(),
+      formatError,
+      plugins: [errorReferencePlugin],
+    })
+    const transactionRun = jest
+      .fn()
+      .mockResolvedValue({ records: [['5.26.0', 'enterprise']] })
+
+    const response = await server.executeOperation(
+      {
+        query: 'query streamDefaulters { streams { id } }',
+        operationName: 'streamDefaulters',
+      },
+      { contextValue: { executionContext: { run: transactionRun } } }
+    )
+    await server.stop()
+
+    if (response.body.kind !== 'single') throw new Error('expected single')
+    const [error] = response.body.singleResult.errors ?? []
+    expect(error.message).toBe('Unauthenticated')
+    expect(error.extensions?.code).toBe('UNAUTHENTICATED')
+    expect(errorLog).not.toHaveBeenCalled()
+    expect(warnLog).toHaveBeenCalledTimes(1)
+    expect(warnLog.mock.calls[0][0]).toContain(
+      'op=streamDefaulters user=anonymous code=UNAUTHENTICATED'
+    )
+    // Refused before any data query was sent.
+    transactionRun.mock.calls.forEach(([cypher]) =>
+      expect(cypher).toContain('dbms.components')
+    )
   })
 })
