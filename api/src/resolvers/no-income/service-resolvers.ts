@@ -1,4 +1,4 @@
-import { isAuth, rearrangeCypherObject } from '../utils/utils'
+import { badRequest, isAuth, rearrangeCypherObject } from '../utils/utils'
 import {
   checkCurrentServiceLog,
   checkFormFilledThisWeek,
@@ -67,11 +67,12 @@ const serviceNoIncomeMutations = {
         await session.executeRead((tx) => tx.run(checkFormFilledThisWeek, args))
       )
 
+      // SYN-264: expected refusals — BAD_USER_INPUT logs at WARN (SYN-253).
       if (serviceCheck.alreadyFilled) {
-        throw new Error(errorMessage.no_double_form_filling)
+        throw badRequest(errorMessage.no_double_form_filling)
       }
       if (serviceCheck.labels?.includes('Vacation')) {
-        throw new Error(errorMessage.vacation_cannot_fill_service)
+        throw badRequest(errorMessage.vacation_cannot_fill_service)
       }
 
       const serviceDetails = rearrangeCypherObject(
