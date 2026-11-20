@@ -10,6 +10,11 @@ const {
   aggregateOversightOnDenomination,
 } = require('./query-exec/aggregateAllChurches.js')
 
+// Per-attempt connect cap, and the time kept back for the aggregation queries
+// once connect retries end (SYN-265)
+const CONNECTION_TIMEOUT_MS = 10000
+const QUERY_RESERVE_MS = 90000
+
 /**
  * Execute all aggregation queries
  * @param {Object} neoDriver - Neo4j driver instance
@@ -47,9 +52,10 @@ const initializeDatabase = (driver) => {
 /**
  * Main handler for the Service Graph Aggregator
  * Compatible with both AWS Lambda and Netlify Functions
+ * @param {Object} [context] - Lambda context; bounds the connect retries
  * @returns {Promise<Object>} - Response object
  */
-const handler = async () => {
+const handler = async (context) => {
   console.log(
     'Running service graph aggregator on date',
     new Date().toISOString()
@@ -76,13 +82,21 @@ const handler = async () => {
       ),
       // Cap each connect attempt (default 30s) so a host that drops packets
       // instead of refusing can't eat the 330s Lambda timeout across the
-      // connect retries below: worst case ~5x10s + 30s backoff (SYN-225)
-      { connectionTimeout: 10000 }
+      // connect retries below (SYN-225)
+      { connectionTimeout: CONNECTION_TIMEOUT_MS }
     )
 
     // Verify connection — retries a transient refusal instead of failing
-    // the whole run on one blip (SYN-225)
-    await connectWithRetry(driver)
+    // the whole run on one blip (SYN-225), stopping in time to leave
+    // QUERY_RESERVE_MS before the Lambda timeout (SYN-265)
+    const deadline =
+      typeof context?.getRemainingTimeInMillis === 'function'
+        ? Date.now() + context.getRemainingTimeInMillis() - QUERY_RESERVE_MS
+        : Infinity
+    await connectWithRetry(driver, {
+      deadline,
+      attemptTimeoutMs: CONNECTION_TIMEOUT_MS,
+    })
     console.log('[Neo4j] Connection established successfully')
 
     // Run aggregation queries
@@ -119,5 +133,5 @@ const handler = async () => {
 // Export for AWS Lambda
 exports.handler = async (event, context) => {
   console.log('AWS Lambda handler invoked', { event })
-  return handler()
+  return handler(context)
 }
