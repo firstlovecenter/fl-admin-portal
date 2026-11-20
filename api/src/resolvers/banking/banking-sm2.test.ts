@@ -50,6 +50,8 @@ import {
 } from './banking-cypher'
 import type { Context } from '../utils/neo4j-types'
 import { isAuth } from '../utils/utils'
+import { GraphQLError } from 'graphql'
+import { logLevelForCode } from '../utils/error-reference'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -204,6 +206,28 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
         tellerContext
       )
     ).rejects.toThrow('not allowed to manually confirm')
+  })
+
+  // SYN-266: the refusal is expected traffic, so it must carry FORBIDDEN and
+  // log at WARN (SYN-253) — a plain Error logged INTERNAL_SERVER_ERROR.
+  it('SM2: the below-Stream refusal is coded FORBIDDEN so it logs at WARN', async () => {
+    mockSession.executeRead.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue(['Council']) }],
+    })
+
+    const error = await bankingMutation
+      .ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect((error as GraphQLError).extensions).toEqual({
+      code: 'FORBIDDEN',
+      severity: 'USER_ERROR',
+    })
+    expect(logLevelForCode((error as GraphQLError).extensions.code)).toBe(
+      'warn'
+    )
+    expect(mockSession.run).not.toHaveBeenCalled()
   })
 
   it('SM2: fishers role is also blocked when the church is not Stream+ (church-level guard applies to all callers)', async () => {

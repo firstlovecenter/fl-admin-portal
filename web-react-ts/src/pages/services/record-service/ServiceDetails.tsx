@@ -67,6 +67,16 @@ const SELF_BANKING_ROLES_BY_TYPE: Record<string, Role[]> = {
   Stream: ['leaderStream', 'adminStream'],
 }
 
+// SYN-266: ManuallyConfirmOfferingPayment refuses every record below Stream,
+// so only offer the button where it can succeed. Keep in step with the
+// resolver's church-level guard in banking-resolver.ts.
+const MANUAL_CONFIRM_CHURCH_TYPES = [
+  'Stream',
+  'Campus',
+  'Oversight',
+  'Denomination',
+]
+
 function DetailRow({
   label,
   children,
@@ -276,6 +286,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
 
   const showWarning = trackIncome && noBankingProof
   const showAdminBankingActions = trackIncome && noBankingProof
+  const showManualConfirm =
+    showAdminBankingActions &&
+    MANUAL_CONFIRM_CHURCH_TYPES.includes(churchType ?? '')
   const showSelfBankingPay =
     trackIncome &&
     noBankingProof &&
@@ -478,7 +491,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                         <DetailRow label={t('services.details.cash')}>
                           <CurrencySpan number={service.cash} />
                         </DetailRow>
-                        <DetailRow label={t('services.details.numberOfTithers')}>
+                        <DetailRow
+                          label={t('services.details.numberOfTithers')}
+                        >
                           <span className="tabular-nums">
                             {service.numberOfTithers}
                           </span>
@@ -575,74 +590,80 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                       )}
                       {showAdminBankingActions && (
                         <>
-                          <RoleView
-                            roles={['fishers', ...permitTellerStream()]}
-                          >
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  className="w-full min-h-11 gap-2"
-                                  disabled={submitting}
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                  {submitting
-                                    ? t('services.details.confirming')
-                                    : t('services.details.confirmOffering')}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    {t('services.details.confirmOfferingTitle')}
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    {t(
-                                      'services.details.confirmOfferingDescription'
-                                    )}
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel
+                          {showManualConfirm && (
+                            <RoleView
+                              roles={['fishers', ...permitTellerStream()]}
+                            >
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    className="w-full min-h-11 gap-2"
                                     disabled={submitting}
-                                    className="min-h-11"
                                   >
-                                    {t('services.details.cancel')}
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    disabled={submitting}
-                                    className="min-h-11"
-                                    onClick={async (event) => {
-                                      event.preventDefault()
-                                      setSubmitting(true)
-                                      try {
-                                        const res =
-                                          await ManuallyConfirmOfferingPayment({
-                                            variables: {
-                                              serviceRecordId: service.id,
-                                            },
-                                          })
-                                        if (res.errors)
-                                          throw new Error(
-                                            res.errors[0].message
-                                          )
-                                        alertSuccess(
-                                          t('services.details.confirmSuccess')
-                                        )
-                                      } catch (error) {
-                                        throwToSentry('', error)
-                                      } finally {
-                                        setSubmitting(false)
-                                      }
-                                    }}
-                                  >
+                                    <CheckCircle className="h-4 w-4" />
                                     {submitting
                                       ? t('services.details.confirming')
                                       : t('services.details.confirmOffering')}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </RoleView>
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      {t(
+                                        'services.details.confirmOfferingTitle'
+                                      )}
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      {t(
+                                        'services.details.confirmOfferingDescription'
+                                      )}
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel
+                                      disabled={submitting}
+                                      className="min-h-11"
+                                    >
+                                      {t('services.details.cancel')}
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      disabled={submitting}
+                                      className="min-h-11"
+                                      onClick={async (event) => {
+                                        event.preventDefault()
+                                        setSubmitting(true)
+                                        try {
+                                          const res =
+                                            await ManuallyConfirmOfferingPayment(
+                                              {
+                                                variables: {
+                                                  serviceRecordId: service.id,
+                                                },
+                                              }
+                                            )
+                                          if (res.errors)
+                                            throw new Error(
+                                              res.errors[0].message
+                                            )
+                                          alertSuccess(
+                                            t('services.details.confirmSuccess')
+                                          )
+                                        } catch (error) {
+                                          throwToSentry('', error)
+                                        } finally {
+                                          setSubmitting(false)
+                                        }
+                                      }}
+                                    >
+                                      {submitting
+                                        ? t('services.details.confirming')
+                                        : t('services.details.confirmOffering')}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </RoleView>
+                          )}
                           <RoleView roles={permitAdmin('Stream')}>
                             <Button
                               variant="outline"

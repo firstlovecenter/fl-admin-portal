@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { GraphQLError } from 'graphql'
 import { getHumanReadableDate } from '../utils/date-utils'
 import { Context } from '../utils/neo4j-types'
 import {
@@ -835,13 +836,16 @@ const bankingMutation = {
     // a generic per-record override. Restrict every caller (both
     // tellerStream and fishers) to records that hang off a Stream+ church.
     // Bacenta-level records go through self-banking or slip upload.
+    // SYN-266: an expected refusal — FORBIDDEN logs at WARN (SYN-253), not
+    // as INTERNAL_SERVER_ERROR. ServiceDetails hides the button below Stream.
     if (
       !['Stream', 'Campus', 'Oversight', 'Denomination'].some((churchLevel) =>
         churchLabels.includes(churchLevel)
       )
     ) {
-      throw new Error(
-        'You are not allowed to manually confirm offering payment for this church'
+      throw new GraphQLError(
+        'You are not allowed to manually confirm offering payment for this church',
+        { extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' } }
       )
     }
 
