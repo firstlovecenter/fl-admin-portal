@@ -323,6 +323,15 @@ WHERE record.transactionStatus = 'pending' OR record.transactionStatus = 'send O
 RETURN record
 `
 
+// SYN-266: every spine church whose ServiceLog holds the record — the anchors
+// for ManuallyConfirmOfferingPayment's per-church role check (assertCan). It
+// returns them all because one log can be shared by two churches (SYN-220).
+export const getServiceRecordChurches = `
+MATCH (record:ServiceRecord {id: $serviceRecordId})<-[:HAS_SERVICE]-(:ServiceLog)<-[:HAS_HISTORY]-(church)
+WHERE church:Bacenta OR church:Governorship OR church:Council OR church:Stream OR church:Campus OR church:Oversight OR church:Denomination
+RETURN collect(DISTINCT church.id) AS churchIds
+`
+
 // SM2 atomic guard: only the first concurrent teller wins.
 // Without the WHERE clause two tellers clicking "Confirm Offering" at
 // nearly the same time both overwrite tellerConfirmationTime and both

@@ -198,3 +198,18 @@ export const SHEPHERDING_CONTROL_ROLES: string[] = [
   'adminOversight',
   'adminDenomination',
 ]
+
+// ---------------------------------------------------------------------------
+// permitConfirmOffering — SYN-266. Stream tellers + Stream-and-higher admins,
+// in the order permitTellerStream() then permitAdmin('Stream') produce them.
+// No `fishers`: every role here must come from a servant edge so assertCan /
+// useCan can bind it to the service's church.
+// ---------------------------------------------------------------------------
+
+export const CONFIRM_OFFERING_ROLES: string[] = [
+  'tellerStream',
+  'adminDenomination',
+  'adminOversight',
+  'adminCampus',
+  'adminStream',
+]

@@ -48,7 +48,7 @@ States observed in `api/src/resolvers/banking/banking-cypher.ts` and
 | `null` \| `failed` | `failed` | `ConfirmOfferingPayment` defensive write (no-reference / transaction_not_found / verify failure) | `setTransactionStatusFailed` |
 | `failed` \| `abandoned` | `pending` | User re-initiates banking | `BankServiceOffering` |
 | `pending` \| `send OTP` \| `failed` \| `success` | `reversed` | Paystack verify reports `reversed` (refund to customer) | `setTransactionStatusReversed` |
-| any | (reset) | Manual confirmation by `tellerStream` overrides via `ManuallyConfirmOfferingPayment` (sets `tellerConfirmationTime` instead of touching `transactionStatus`) | `manuallyConfirmOfferingPayment` |
+| any | (reset) | Manual confirmation by `tellerStream` or a Stream-and-higher admin, holding that role at the service's church, overrides via `ManuallyConfirmOfferingPayment` (sets `tellerConfirmationTime` instead of touching `transactionStatus`; a service at any church level — SYN-266) | `manuallyConfirmOfferingPayment` |
 
 **Rules:**
 - `success` is terminal for self-banking — with one exception: `success → reversed`
@@ -73,7 +73,7 @@ A service is considered **banked** when at least one of the following is true (p
 
 - `bankingSlip` field is set (manual upload), OR
 - `transactionStatus === 'success'` (Paystack), OR
-- `tellerConfirmationTime` field is set (teller manually confirmed)
+- `tellerConfirmationTime` field is set (teller or Stream-and-higher admin manually confirmed)
 
 Otherwise it is a **defaulter** for the week and blocks new bankings.
 

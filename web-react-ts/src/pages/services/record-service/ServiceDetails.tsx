@@ -35,7 +35,13 @@ import {
   FileUp,
   Trash2,
 } from 'lucide-react'
-import { permitAdmin, permitLeader, permitTellerStream } from 'permission-utils'
+import {
+  permitAdmin,
+  permitConfirmOffering,
+  permitLeader,
+  permitTellerStream,
+} from 'permission-utils'
+import useCan from 'hooks/useCan'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import BankingHistorySection from './BankingHistorySection'
 import {
@@ -164,6 +170,11 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
   const { t, i18n } = useTranslation()
   const { currentUser, userJobs } = useContext(MemberContext)
   const navigate = useNavigate()
+  // SYN-266: a Stream teller or Stream-and-higher admin confirms an offering
+  // on a service at any church level, but only where that role covers THIS
+  // church — the per-church check ManuallyConfirmOfferingPayment makes with
+  // assertCan, so the button is not offered to a role the server refuses.
+  const canConfirmOffering = useCan(permitConfirmOffering(), church?.id)
 
   const formatServiceDate = (date?: string) => {
     if (!date) return ''
@@ -478,7 +489,9 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                         <DetailRow label={t('services.details.cash')}>
                           <CurrencySpan number={service.cash} />
                         </DetailRow>
-                        <DetailRow label={t('services.details.numberOfTithers')}>
+                        <DetailRow
+                          label={t('services.details.numberOfTithers')}
+                        >
                           <span className="tabular-nums">
                             {service.numberOfTithers}
                           </span>
@@ -575,9 +588,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                       )}
                       {showAdminBankingActions && (
                         <>
-                          <RoleView
-                            roles={['fishers', ...permitTellerStream()]}
-                          >
+                          {canConfirmOffering && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
@@ -622,9 +633,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                             },
                                           })
                                         if (res.errors)
-                                          throw new Error(
-                                            res.errors[0].message
-                                          )
+                                          throw new Error(res.errors[0].message)
                                         alertSuccess(
                                           t('services.details.confirmSuccess')
                                         )
@@ -642,7 +651,7 @@ const ServiceDetails = ({ service, church, loading }: ServiceDetailsProps) => {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
-                          </RoleView>
+                          )}
                           <RoleView roles={permitAdmin('Stream')}>
                             <Button
                               variant="outline"

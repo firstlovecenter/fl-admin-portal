@@ -17,9 +17,11 @@
  *   9. permitLeaderAdminArrivals — composition
  *  10. permitAdminArrivals       — composition
  *  11. permitShepherdingControl  — fixed list, level-independent
+ *  12. permitSelfService / hasSelfServiceRole — SYN-230
+ *  13. permitConfirmOffering     — SYN-266; every role binds to a servant edge
  */
 import { describe, it, expect } from 'vitest'
-import type { ChurchLevel } from 'global-types'
+import type { ChurchLevel, ServantTree } from 'global-types'
 import {
   permitLeader,
   permitAdmin,
@@ -35,6 +37,9 @@ import {
   permitShepherdingControl,
   permitSelfService,
   hasSelfServiceRole,
+  permitConfirmOffering,
+  edgeToRole,
+  canDoAt,
 } from 'permission-utils'
 import {
   ALL_CHURCH_LEVELS,
@@ -44,6 +49,7 @@ import {
   ARRIVALS_HELPERS_SCENARIOS,
   SENSITIVE_ROLES,
   SHEPHERDING_CONTROL_ROLES,
+  CONFIRM_OFFERING_ROLES,
 } from '../../lib/permission-test-scenarios'
 
 // ---------------------------------------------------------------------------
@@ -487,5 +493,69 @@ describe('hasSelfServiceRole (FE)', () => {
     expect(hasSelfServiceRole([])).toBe(false)
     expect(hasSelfServiceRole(null)).toBe(false)
     expect(hasSelfServiceRole(undefined)).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 13. permitConfirmOffering — SYN-266
+// ---------------------------------------------------------------------------
+describe('permitConfirmOffering (FE)', () => {
+  it('returns Stream tellers plus the Stream-and-higher admins', () => {
+    expect(permitConfirmOffering()).toEqual(CONFIRM_OFFERING_ROLES)
+    expect(permitConfirmOffering()).toEqual([
+      ...permitTellerStream(),
+      ...permitAdmin('Stream'),
+    ])
+  })
+
+  it('leaves out fishers, leaders, arrivals roles and the sub-Stream admins', () => {
+    const result = permitConfirmOffering()
+    for (const role of [
+      'fishers',
+      'leaderBacenta',
+      'leaderStream',
+      'adminGovernorship',
+      'adminCouncil',
+      'arrivalsCounterStream',
+    ]) {
+      expect(result).not.toContain(role)
+    }
+  })
+
+  // assertCan / useCan bind the gate to the service's church through the
+  // caller's servant trees, so every role must come from a servant edge.
+  it('every role is granted by a servant edge, so it can be bound to a church', () => {
+    const edgeRoles = [
+      edgeToRole('IS_TELLER_FOR', 'Stream'),
+      edgeToRole('IS_ADMIN_FOR', 'Stream'),
+      edgeToRole('IS_ADMIN_FOR', 'Campus'),
+      edgeToRole('IS_ADMIN_FOR', 'Oversight'),
+      edgeToRole('IS_ADMIN_FOR', 'Denomination'),
+    ]
+    expect([...edgeRoles].sort()).toEqual([...permitConfirmOffering()].sort())
+  })
+
+  it('with canDoAt, a Stream teller can confirm inside their Stream only', () => {
+    const trees: ServantTree[] = [
+      {
+        type: 'IS_TELLER_FOR',
+        level: 'Stream',
+        churchId: 'stream-a',
+        churchName: 'Stream A',
+        reach: ['stream-a', 'council-a', 'gov-a', 'bacenta-a'],
+      },
+      {
+        type: 'LEADS',
+        level: 'Bacenta',
+        churchId: 'bacenta-b',
+        churchName: 'Bacenta B',
+        reach: ['bacenta-b'],
+      },
+    ]
+
+    expect(canDoAt(trees, permitConfirmOffering(), 'bacenta-a')).toBe(true)
+    expect(canDoAt(trees, permitConfirmOffering(), 'stream-a')).toBe(true)
+    // Leading Bacenta B grants no confirming role there.
+    expect(canDoAt(trees, permitConfirmOffering(), 'bacenta-b')).toBe(false)
   })
 })
