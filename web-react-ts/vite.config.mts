@@ -25,6 +25,38 @@ export default defineConfig(({ command, mode }) => {
     server: {
       open: true,
       port: 3000,
+      proxy: {
+        // Routes auth requests through Vite so they are same-origin in local
+        // dev. Avoids CORS + Secure-cookie issues when hitting the Lambda URL
+        // directly from http://localhost. VITE_AUTH_API_URL should be set to
+        // /auth-proxy in .env.local.
+        '/auth-proxy': {
+          target:
+            env.VITE_AUTH_PROXY_TARGET ||
+            'https://rgldisl2bxl3l2upaauxodtrhy0uxkot.lambda-url.eu-west-2.on.aws',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/auth-proxy/, ''),
+          // Fix httpOnly refresh cookie for local HTTP dev:
+          // 1. Strip `Secure` so the browser accepts the cookie over HTTP.
+          // 2. Rewrite `Path` to `/` — the Lambda sets Path=/auth/refresh-token
+          //    but our proxy prefix (/auth-proxy/…) means the browser never
+          //    matches that path and never sends the cookie back.
+          // 3. Downgrade SameSite=None (requires Secure) to Lax.
+          configure: (proxy) => {
+            proxy.on('proxyRes', (proxyRes) => {
+              const setCookie = proxyRes.headers['set-cookie']
+              if (setCookie) {
+                proxyRes.headers['set-cookie'] = setCookie.map((cookie) =>
+                  cookie
+                    .replace(/;\s*Secure/gi, '')
+                    .replace(/;\s*SameSite=None/gi, '; SameSite=Lax')
+                    .replace(/;\s*Path=[^;]*/gi, '; Path=/')
+                )
+              }
+            })
+          },
+        },
+      },
     },
     build: {
       // 'hidden' still emits .map files (so Sentry can resolve stack traces)

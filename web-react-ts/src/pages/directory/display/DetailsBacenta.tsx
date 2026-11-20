@@ -123,6 +123,7 @@ const DetailsBacenta = () => {
         churchType="Bacenta"
         editlink="/bacenta/editbacenta"
         editPermitted={permitAdminArrivals('Governorship')}
+        parentChurchId={bacenta?.governorship?.id}
         history={history?.history.length !== 0 ? history?.history : []}
         breadcrumb={breadcrumb && breadcrumb}
         buttons={[]}
