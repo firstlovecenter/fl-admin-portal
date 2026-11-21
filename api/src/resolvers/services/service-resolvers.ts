@@ -144,8 +144,10 @@ const serviceMutation = {
     const sessionThree = context.executionContext.session()
 
     try {
+      // SYN-269: picking the same treasurer twice is a refusal the leader can
+      // fix on the form, so BAD_USER_INPUT (WARN, SYN-253), not a plain Error.
       if (checkIfArrayHasRepeatingValues(args.treasurers)) {
-        throw new Error(errorMessage.repeatingTreasurers)
+        throw badRequest(errorMessage.repeatingTreasurers)
       }
 
       await checkServantHasCurrentHistory(session, context, {
@@ -253,8 +255,10 @@ const serviceMutation = {
     const sessionThree = context.executionContext.session()
 
     try {
+      // SYN-269: picking the same treasurer twice is a refusal the leader can
+      // fix on the form, so BAD_USER_INPUT (WARN, SYN-253), not a plain Error.
       if (checkIfArrayHasRepeatingValues(args.treasurers)) {
-        throw new Error(errorMessage.repeatingTreasurers)
+        throw badRequest(errorMessage.repeatingTreasurers)
       }
 
       await checkServantHasCurrentHistory(session, context, {
