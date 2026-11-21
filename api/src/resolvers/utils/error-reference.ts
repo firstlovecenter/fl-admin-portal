@@ -1,6 +1,9 @@
 import { randomBytes } from 'crypto'
 import type { ApolloServerPlugin, BaseContext } from '@apollo/server'
-import { unwrapResolverError } from '@apollo/server/errors'
+import {
+  ApolloServerValidationErrorCode,
+  unwrapResolverError,
+} from '@apollo/server/errors'
 import type { GraphQLFormattedError } from 'graphql'
 
 const MAX_LOGGED_ERRORS = 10
@@ -32,6 +35,17 @@ const WARN_CODES = new Set(['BAD_USER_INPUT', 'FORBIDDEN', 'UNAUTHENTICATED'])
 
 export const logLevelForCode = (code: unknown): 'warn' | 'error' =>
   typeof code === 'string' && WARN_CODES.has(code) ? 'warn' : 'error'
+
+// SYN-268 — production refuses introspection on purpose (SYN-177), so log that
+// refusal at WARN, keyed on Apollo's validationErrorCode, not the message text.
+// Other GRAPHQL_VALIDATION_FAILED stay at ERROR: they signal client/schema drift.
+export const logLevelForError = (
+  error: GraphQLFormattedError
+): 'warn' | 'error' =>
+  error.extensions?.validationErrorCode ===
+  ApolloServerValidationErrorCode.INTROSPECTION_DISABLED
+    ? 'warn'
+    : logLevelForCode(error.extensions?.code)
 
 // SYN-258 — @neo4j/graphql's @authentication / @authorization refusals carry
 // no `extensions.code`, so Apollo stamped them INTERNAL_SERVER_ERROR and an
@@ -91,7 +105,7 @@ export const errorReferencePlugin: ApolloServerPlugin<BaseContext> = {
             const code = error.extensions?.code ?? 'UNKNOWN'
             const path = error.path?.join('.') ?? '<none>'
             // eslint-disable-next-line no-console
-            console[logLevelForCode(code)](
+            console[logLevelForError(error)](
               `[GraphQL] ✖ ref=${errorRef} op=${opName} user=${userId} code=${code} path=${sanitiseForLog(path)} — ${sanitiseForLog(error.message)}`
             )
           }
