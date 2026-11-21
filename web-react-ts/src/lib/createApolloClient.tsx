@@ -204,7 +204,10 @@ export function createApolloClient({
   return new ApolloClient({
     link: from([errorLink, retryLink, authLink.concat(httpLink)]),
     cache: buildApolloCache(),
-    devtools: { enabled: true },
+    // SYN-268 — DevTools only in local dev builds: in production the extension's
+    // Explorer introspects through this authed link, which the API refuses
+    // (SYN-177). Pinned to Vite's flag rather than Apollo's __DEV__ fallback.
+    devtools: { enabled: import.meta.env.DEV },
     defaultOptions: {
       watchQuery: {
         errorPolicy,

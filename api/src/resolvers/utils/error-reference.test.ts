@@ -6,6 +6,7 @@ import {
   errorReferencePlugin,
   formatError,
   logLevelForCode,
+  logLevelForError,
   sanitiseForLog,
 } from './error-reference'
 
@@ -48,16 +49,20 @@ const resolvers = {
   },
 }
 
-const buildServer = () =>
+// Wired like both bootstraps: the real formatError runs before the plugin, and
+// `introspection: false` mirrors production (SYN-177).
+const buildServer = (introspection = true) =>
   new ApolloServer({
     typeDefs,
     resolvers,
+    formatError,
     plugins: [errorReferencePlugin],
     includeStacktraceInErrorResponses: false,
+    introspection,
   })
 
-const run = async (query: string, contextValue = {}) => {
-  const server = buildServer()
+const run = async (query: string, contextValue = {}, introspection = true) => {
+  const server = buildServer(introspection)
   const response = await server.executeOperation(
     { query, operationName: 'Probe' },
     { contextValue }
@@ -136,6 +141,36 @@ describe('logLevelForCode (SYN-253)', () => {
   })
 })
 
+describe('logLevelForError (SYN-268)', () => {
+  it('logs the introspection refusal at warn', () => {
+    expect(
+      logLevelForError({
+        message: 'GraphQL introspection is not allowed',
+        extensions: {
+          code: 'GRAPHQL_VALIDATION_FAILED',
+          validationErrorCode: 'INTROSPECTION_DISABLED',
+        },
+      })
+    ).toBe('warn')
+  })
+
+  it('keeps any other validation failure at error', () => {
+    expect(
+      logLevelForError({
+        message: 'Cannot query field "gone" on type "Query".',
+        extensions: { code: 'GRAPHQL_VALIDATION_FAILED' },
+      })
+    ).toBe('error')
+  })
+
+  it('falls back to the code-based level', () => {
+    expect(
+      logLevelForError({ message: 'x', extensions: { code: 'FORBIDDEN' } })
+    ).toBe('warn')
+    expect(logLevelForError({ message: 'x' })).toBe('error')
+  })
+})
+
 describe('errorReferencePlugin', () => {
   let errorLog: jest.SpyInstance
   let warnLog: jest.SpyInstance
@@ -174,6 +209,32 @@ describe('errorReferencePlugin', () => {
     expect(errorLog).toHaveBeenCalledTimes(1)
     expect(errorLog.mock.calls[0][0]).toContain('code=INTERNAL_SERVER_ERROR')
     expect(errorLog.mock.calls[0][0]).toContain('Neo4j unavailable')
+  })
+
+  it('SYN-268: logs a refused introspection query once at warn, not error', async () => {
+    const result = await run(
+      'query Probe { __schema { queryType { name } } }',
+      {},
+      false
+    )
+
+    expect(result.errors?.[0].extensions?.code).toBe(
+      'GRAPHQL_VALIDATION_FAILED'
+    )
+    expect(errorLog).not.toHaveBeenCalled()
+    expect(warnLog).toHaveBeenCalledTimes(1)
+    expect(warnLog.mock.calls[0][0]).toContain('code=GRAPHQL_VALIDATION_FAILED')
+    expect(warnLog.mock.calls[0][0]).toContain('introspection is not allowed')
+  })
+
+  it('SYN-268: keeps a query against a missing field at error', async () => {
+    const result = await run('query Probe { gone }', {}, false)
+
+    expect(result.errors?.[0].extensions?.code).toBe(
+      'GRAPHQL_VALIDATION_FAILED'
+    )
+    expect(warnLog).not.toHaveBeenCalled()
+    expect(errorLog).toHaveBeenCalledTimes(1)
   })
 
   it('creates an 8 character uppercase hex reference', () => {
