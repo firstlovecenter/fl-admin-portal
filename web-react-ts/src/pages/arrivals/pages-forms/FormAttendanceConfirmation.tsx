@@ -53,10 +53,14 @@ const FormAttendanceConfirmation = () => {
     comments: '',
   }
 
+  // SYN-276: mirror ConfirmVehicleByAdmin's 0–200 guard so an out-of-range
+  // count is caught on the form instead of round-tripping to a server refusal.
   const validationSchema = Yup.object({
     attendance: Yup.number()
       .typeError(t('arrivals.form.validNumber'))
       .integer(t('arrivals.form.noAttendanceDecimals'))
+      .min(0, t('arrivals.form.validNumber'))
+      .max(200, t('arrivals.form.attendanceMax'))
       .required(t('arrivals.form.required')),
     vehicle: Yup.string().required(t('arrivals.form.required')),
     comments: Yup.string().when(['attendance', 'vehicle'], {
@@ -161,6 +165,7 @@ const FormAttendanceConfirmation = () => {
             <Form className="space-y-4">
               <Input
                 name="attendance"
+                type="number"
                 label={t('arrivals.form.attendanceFromPicture')}
                 placeholder={vehicle?.leaderDeclaration.toString()}
               />

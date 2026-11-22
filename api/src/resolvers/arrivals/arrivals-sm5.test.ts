@@ -384,7 +384,81 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
         confirmArgs,
         counterContext()
       )
-    ).rejects.toThrow('It is now past the time for arrivals. Thank you!')
+    ).rejects.toMatchObject({
+      message: 'It is now past the time for arrivals. Thank you!',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+  })
+
+  // SYN-276: an out-of-range count is a refusal the counter can fix, so it
+  // must carry BAD_USER_INPUT (logged at WARN) rather than surface as a plain
+  // Error that Apollo stamps INTERNAL_SERVER_ERROR. Rejected before any write.
+  it.each([201, -1, 2.5])(
+    'SYN-276: attendance %p is refused as BAD_USER_INPUT before any Cypher runs',
+    async (attendance) => {
+      await expect(
+        arrivalsMutation.ConfirmVehicleByAdmin(
+          null as never,
+          { ...confirmArgs, attendance },
+          counterContext()
+        )
+      ).rejects.toMatchObject({
+        message: 'Attendance must be a whole number between 0 and 200.',
+        extensions: { code: 'BAD_USER_INPUT' },
+      })
+      expect(mockSession.run).not.toHaveBeenCalled()
+    }
+  )
+
+  it('SYN-276: attendance of exactly 200 is accepted', async () => {
+    mockSession.run
+      .mockResolvedValueOnce(checkResult())
+      .mockResolvedValueOnce(confirmCypherResult())
+      .mockResolvedValueOnce(supportData({ attendance: 200 }))
+      .mockResolvedValueOnce(recordResult())
+      .mockResolvedValueOnce(aggregateResult())
+
+    await arrivalsMutation.ConfirmVehicleByAdmin(
+      null as never,
+      { ...confirmArgs, attendance: 200 },
+      counterContext()
+    )
+
+    const confirmCall = mockSession.run.mock.calls.find(
+      ([cypher]) => cypher === confirmVehicleByAdmin
+    )
+    expect(confirmCall?.[1]).toMatchObject({ attendance: 200 })
+  })
+
+  it('SYN-276: an unknown vehicle label is refused as BAD_USER_INPUT', async () => {
+    await expect(
+      arrivalsMutation.ConfirmVehicleByAdmin(
+        null as never,
+        { ...confirmArgs, vehicle: 'Bicycle' as never },
+        counterContext()
+      )
+    ).rejects.toMatchObject({
+      message: 'Vehicle must be Urvan, Sprinter, or Car.',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(mockSession.run).not.toHaveBeenCalled()
+  })
+
+  it('SYN-276: a bussing record from another day is refused as BAD_USER_INPUT', async () => {
+    mockSession.run.mockResolvedValueOnce(checkResult({ isToday: false }))
+
+    await expect(
+      arrivalsMutation.ConfirmVehicleByAdmin(
+        null as never,
+        confirmArgs,
+        counterContext()
+      )
+    ).rejects.toMatchObject({
+      message:
+        'This bussing record is not for today. You can only count vehicles for today.',
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(mockSession.run).toHaveBeenCalledTimes(1)
   })
 })
 
