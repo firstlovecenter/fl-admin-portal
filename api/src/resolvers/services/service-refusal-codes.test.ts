@@ -1,6 +1,7 @@
 /**
- * SYN-264 — the service-form refusals (vacation church, form already filled
- * this week) are refusals the leader is meant to see. They must reach Apollo
+ * SYN-264 / SYN-269 — the service-form refusals (vacation church, form
+ * already filled this week, same treasurer picked twice) are refusals the
+ * leader is meant to see. They must reach Apollo
  * as BAD_USER_INPUT so error-reference.ts logs them at WARN instead of filing
  * an INTERNAL_SERVER_ERROR ticket per refusal (SYN-253).
  *
@@ -215,5 +216,36 @@ describe('SYN-264 — RecordServiceNoIncome refusals', () => {
       ),
       ALREADY_FILLED_ERROR
     )
+  })
+})
+
+describe('SYN-269 — duplicate-treasurer refusals are BAD_USER_INPUT', () => {
+  const REPEATING_TREASURERS_ERROR =
+    'You cannot choose the same treasurer twice!'
+  const duplicateTreasurerArgs = {
+    ...incomeArgs,
+    treasurers: ['member_1', 'member_1'],
+  }
+
+  it('RecordService codes it BAD_USER_INPUT through throwToSentry', async () => {
+    await expectRefusal(
+      serviceMutation.RecordService(null, duplicateTreasurerArgs, context),
+      REPEATING_TREASURERS_ERROR
+    )
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalled()
+  })
+
+  it('RecordSpecialService codes it BAD_USER_INPUT through throwToSentry', async () => {
+    await expectRefusal(
+      serviceMutation.RecordSpecialService(
+        null,
+        duplicateTreasurerArgs,
+        context
+      ),
+      REPEATING_TREASURERS_ERROR
+    )
+    expect(mockSession.executeRead).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalled()
   })
 })

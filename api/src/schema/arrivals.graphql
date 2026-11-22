@@ -649,6 +649,9 @@ extend type Council {
       """
       columnName: "bussingMembersOnTheWayCount"
     )
+  # SYN-273: RETURN the matched `bacentas` variable. A stray undefined
+  # `bacenta` here failed every councilBacentasToCount query with
+  # "Variable `bacenta` not defined".
   bacentasNotCounted(arrivalDate: String!): [Bacenta!]!
     @cypher(
       statement: """
@@ -659,7 +662,7 @@ extend type Council {
       WHERE NOT EXISTS {
        MATCH (record)-[:COUNTED_BY]->(:Member)
       }
-      RETURN DISTINCT bacenta AS bacentasNotCounted
+      RETURN DISTINCT bacentas AS bacentasNotCounted
       """
       columnName: "bacentasNotCounted"
     )

@@ -50,7 +50,7 @@ Narrow-scope roles for specific operational flows.
 | `arrivalsCounterStream` | Counts arrived members at the Stream | `permitArrivalsCounter` |
 | `arrivalsPayerCouncil` | Pays drivers via momo for arrivals at the Council | `permitArrivalsPayer` |
 | `tellerStream` | Confirms manual bank deposits for offerings at the Stream | `permitTellerStream` |
-| `fishers` | Broad-access **coarse** marker — "a little bit of everything". Can edit Denomination details, bypass account-open checks in expense forms, confirm banking (alongside `tellerStream`), and access service details/special-service forms at elevated scope. Assigned to a small set of trusted users. **Caveat (important):** `fishers` maps to no servant edge, so `edgeToRole`/`rolesAt`/`canDoAt` can **never** grant it per-instance — it only ever passes the coarse `isAuth` check, never `assertCan`. Changing the **Denomination leader** therefore requires `fishers` **AND** `adminDenomination` at that denomination: the factory runs `isAuth(['fishers'], jwt.roles)` then gates on `permitAdmin('Denomination')` (drives validateMutation's isAuth+assertCan). Mirrors the FE — `<RoleView roles={['fishers']}>` around the leader picker + the `permitAdmin('Denomination')` editdenomination route. **Never use `['fishers']` alone as a servant-mutation gate** — `assertCan` rejects it unconditionally (was a dead/always-FORBIDDEN path until fixed 2026-06-01). | `servant-resolver-factory.ts`, `ExpenseForm.tsx`, `ServiceForm.tsx`, `DetailsDenomination.tsx` |
+| `fishers` | Broad-access **coarse** marker — "a little bit of everything". Can edit Denomination details, bypass account-open checks in expense forms, does **not** confirm offerings (SYN-266 binds offering confirmation to the service's church, which `fishers` cannot satisfy), and access service details/special-service forms at elevated scope. Assigned to a small set of trusted users. **Caveat (important):** `fishers` maps to no servant edge, so `edgeToRole`/`rolesAt`/`canDoAt` can **never** grant it per-instance — it only ever passes the coarse `isAuth` check, never `assertCan`. Changing the **Denomination leader** therefore requires `fishers` **AND** `adminDenomination` at that denomination: the factory runs `isAuth(['fishers'], jwt.roles)` then gates on `permitAdmin('Denomination')` (drives validateMutation's isAuth+assertCan). Mirrors the FE — `<RoleView roles={['fishers']}>` around the leader picker + the `permitAdmin('Denomination')` editdenomination route. **Never use `['fishers']` alone as a servant-mutation gate** — `assertCan` rejects it unconditionally (was a dead/always-FORBIDDEN path until fixed 2026-06-01). | `servant-resolver-factory.ts`, `ExpenseForm.tsx`, `ServiceForm.tsx`, `DetailsDenomination.tsx` |
 | `all` | Sentinel meaning "any authenticated user" | Used as default when a route declares no roles |
 
 ## Permission helpers
@@ -69,6 +69,7 @@ Always use these helpers, never hand-build a `Role[]` for a route or `isAuth` ca
 | `permitLeaderAdminArrivals(level)` | Leader + Admin + Arrivals | Mixed-purpose pages |
 | `permitAdminArrivals(level)` | Admin + Arrivals | Admin + arrivals pages |
 | `permitTellerStream()` | `['tellerStream']` | Banking confirmation UI |
+| `permitConfirmOffering()` | `permitTellerStream()` + `permitAdmin('Stream')` (no `fishers`) | Confirming an offering by hand on any church level's service (SYN-266). Always paired with a per-church check |
 | `permitMe(level)` | Leader + Admin + Arrivals helpers + Teller | The standard "any privileged user at this level" gate |
 | `permitSelfService()` | `permitMe('Bacenta')` + Counter + Payer + `fishers` (every sign-in role except `all`) | Self-scoped operations on the caller's own Member: push-token registration, notification preferences (SYN-230) |
 | `hasSelfServiceRole(roles)` | `true` when `roles` holds any `permitSelfService()` role; `false` for roleless members | FE: skip push registration / hide the push soft-ask and Settings notifications card for roleless members |
@@ -86,7 +87,7 @@ question — flag it before changing the helper.
 | Record a service | `permitLeaderAdmin('Bacenta')` (for Bacenta services) |
 | Record a cancelled service | Same as recording a service |
 | Bank a service offering | `permitLeaderAdmin('Bacenta')` |
-| Confirm a manual banking | `permitTellerStream()` |
+| Confirm a manual banking (`ManuallyConfirmOfferingPayment`, a service at any church level — SYN-266) | `permitConfirmOffering()` held **at the service's church**: `assertCan` on the BE, `useCan` on the FE |
 | Fill a bussing record | `permitLeaderAdmin('Bacenta')` |
 | View arrivals dashboard | `permitArrivals(level)` |
 | Pay a vehicle | `permitArrivalsPayer()` |
