@@ -632,15 +632,18 @@ export const arrivalsMutation = {
     // Reject negative/NaN/absurdly-large counts and unknown vehicle labels
     // so neither the VehicleRecord write nor the downstream aggregation can
     // be poisoned by tampered client input.
+    // SYN-277: every refusal in this resolver is one the counter can act on
+    // (fix the count, wrong day, window closed), so BAD_USER_INPUT (WARN,
+    // SYN-253), not a plain Error that Apollo logs as INTERNAL_SERVER_ERROR.
     if (
       !Number.isInteger(args.attendance) ||
       args.attendance < 0 ||
       args.attendance > 200
     ) {
-      throw new Error('Attendance must be a whole number between 0 and 200.')
+      throw badRequest('Attendance must be a whole number between 0 and 200.')
     }
     if (!['Urvan', 'Sprinter', 'Car'].includes(args.vehicle)) {
-      throw new Error('Vehicle must be Urvan, Sprinter, or Car.')
+      throw badRequest('Vehicle must be Urvan, Sprinter, or Car.')
     }
 
     const session = context.executionContext.session()
@@ -665,7 +668,7 @@ export const arrivalsMutation = {
       } = recordResponse
 
       if (!isToday) {
-        throw new Error(
+        throw badRequest(
           'This bussing record is not for today. You can only count vehicles for today.'
         )
       }
@@ -678,7 +681,7 @@ export const arrivalsMutation = {
         const today = new Date()
 
         if (today > arrivalEndTimeCalculator(arrivalEndTime)) {
-          throw new Error('It is now past the time for arrivals. Thank you!')
+          throw badRequest('It is now past the time for arrivals. Thank you!')
         }
 
         const adjustedArgs = args
