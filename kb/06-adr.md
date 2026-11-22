@@ -113,7 +113,7 @@ and must not be re-entered.
 **Consequences:**
 - Resolvers like `BankServiceOffering` call `checkTransactionReference` before
   initiating a Paystack debit.
-- Manual confirmations (`tellerStream`) write `tellerConfirmationTime` instead of
+- Manual confirmations (`tellerStream` or a Stream-and-higher admin) write `tellerConfirmationTime` instead of
   mutating `transactionStatus`, preserving the audit trail.
 
 ---

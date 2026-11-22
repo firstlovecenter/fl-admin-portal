@@ -11,7 +11,7 @@
  *
  * Covers:
  *   - checkIfLastServiceBanked — all three proof paths + negative
- *   - ManuallyConfirmOfferingPayment — auth scope + tellerStream church-level guard
+ *   - ManuallyConfirmOfferingPayment — role gate + scope; any church level (SYN-266)
  *   - SubmitBankingSlip — auth + Cypher WHERE guard
  *   - submitBankingSlip / manuallyConfirmOfferingPayment Cypher strings
  *
@@ -45,11 +45,18 @@ jest.mock('../utils/financial-utils', () => ({
 
 import bankingMutation, { checkIfLastServiceBanked } from './banking-resolver'
 import {
+  getServiceRecordChurches,
   submitBankingSlip,
   manuallyConfirmOfferingPayment as manuallyConfirmCypher,
 } from './banking-cypher'
 import type { Context } from '../utils/neo4j-types'
+import type { Role } from '../utils/types'
+import type { ServantTree } from '../utils/allowed-church-ids'
 import { isAuth } from '../utils/utils'
+import { assertScopeViaServiceRecord } from '../utils/scope-utils'
+import { permitConfirmOffering } from '../permissions'
+import { CONFIRM_OFFERING_ROLES } from '../../../../lib/permission-test-scenarios'
+import { GraphQLError } from 'graphql'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -100,6 +107,63 @@ beforeEach(() => {
     executionContext: { session: jest.fn().mockReturnValue(mockSession) },
   } as unknown as Context
 })
+
+// ---------------------------------------------------------------------------
+// ManuallyConfirmOfferingPayment fixtures (SYN-266)
+// ---------------------------------------------------------------------------
+
+// The record under test hangs off Bacenta 'bacenta-a', inside Stream A.
+const RECORD_CHURCH = 'bacenta-a'
+const STREAM_A_REACH = ['stream-a', 'council-a', 'gov-a', RECORD_CHURCH]
+
+const tree = (
+  type: ServantTree['type'],
+  level: ServantTree['level'],
+  reach: string[]
+): ServantTree => ({
+  type,
+  level,
+  churchId: reach[0],
+  churchName: reach[0],
+  reach,
+})
+
+const callerContext = (roles: string[], servantTrees: ServantTree[]) =>
+  ({
+    ...context,
+    jwt: { ...mockJwt, roles, servantTrees },
+  }) as unknown as Context
+
+const streamATeller = () =>
+  callerContext(
+    ['tellerStream'],
+    [tree('IS_TELLER_FOR', 'Stream', STREAM_A_REACH)]
+  )
+
+// executeRead / executeWrite run their callback against this fake tx, so a
+// test can see the Cypher and params each transaction was given.
+let txRun: jest.Mock
+
+const mockTransactions = () => {
+  txRun = jest.fn()
+  mockSession.executeRead.mockImplementation((work) => work({ run: txRun }))
+  mockSession.executeWrite.mockImplementation((work) => work({ run: txRun }))
+}
+
+// Church lookup -> previous-service check (none) -> the confirm write.
+const mockConfirmFlow = (
+  service: Record<string, unknown> = { id: 'sr_test' }
+) => {
+  mockTransactions()
+  txRun
+    .mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue([RECORD_CHURCH]) }],
+    })
+    .mockResolvedValueOnce(
+      makeMockQueryResult({ service: { properties: service } })
+    )
+  mockSession.run.mockResolvedValueOnce({ records: [] })
+}
 
 // ---------------------------------------------------------------------------
 // checkIfLastServiceBanked — SM2 proof presence
@@ -153,28 +217,48 @@ describe('SM2 — checkIfLastServiceBanked: proof presence', () => {
 // ManuallyConfirmOfferingPayment — auth
 // ---------------------------------------------------------------------------
 describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
-  const confirmArgs = { serviceRecordId: 'sr_test', bankingSlip: '' }
+  const confirmArgs = { serviceRecordId: 'sr_test' }
+  const { isAuth: realIsAuth } = jest.requireActual(
+    '../utils/utils'
+  ) as typeof import('../utils/utils')
 
-  it('SM2: isAuth is called with the fishers + teller roles', async () => {
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
-    })
-    mockSession.run
-      .mockResolvedValueOnce({ records: [] })
-      .mockResolvedValueOnce(
-        makeMockQueryResult({ service: { properties: { id: 'sr_test' } } })
-      )
-
+  // The role list the resolver hands to isAuth, read back from the mock so
+  // the assertions below follow the real gate rather than a copy of it.
+  const confirmGate = async (): Promise<Role[]> => {
+    mockConfirmFlow()
     await bankingMutation.ManuallyConfirmOfferingPayment(
       null,
       confirmArgs,
-      context
+      streamATeller()
     )
+    return (isAuth as jest.Mock).mock.calls[0][0]
+  }
 
-    expect(isAuth).toHaveBeenCalledWith(
-      expect.arrayContaining(['fishers']),
-      context.jwt?.roles
-    )
+  // SYN-266: Stream tellers, Stream admins and every admin above them.
+  it('SM2: isAuth gets permitConfirmOffering — Stream tellers and Stream-and-higher admins', async () => {
+    expect(await confirmGate()).toEqual(CONFIRM_OFFERING_ROLES)
+  })
+
+  // fishers maps to no servant edge, so it can never be bound to the
+  // record's church — it is not a confirming role.
+  it('SM2: the gate admits the confirming roles and refuses fishers, leaders and sub-Stream admins', async () => {
+    const gate = await confirmGate()
+
+    for (const role of CONFIRM_OFFERING_ROLES) {
+      expect(() => realIsAuth(gate, [role as Role])).not.toThrow()
+    }
+    for (const role of [
+      'fishers',
+      'leaderBacenta',
+      'leaderStream',
+      'adminGovernorship',
+      'adminCouncil',
+      'arrivalsCounterStream',
+    ]) {
+      expect(() => realIsAuth(gate, [role as Role])).toThrow(
+        'You are not permitted to run this mutation'
+      )
+    }
   })
 
   it('SM2: throws when isAuth rejects the caller (non-teller role)', async () => {
@@ -185,92 +269,228 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
     await expect(
       bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
     ).rejects.toThrow('Insufficient permissions')
+    // isAuth runs first: no scope check, no session, nothing written.
+    expect(assertScopeViaServiceRecord).not.toHaveBeenCalled()
+    expect(context.executionContext.session).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
-  it('SM2: tellerStream role is blocked when the church is not Stream/Campus/Oversight/Denomination', async () => {
-    const tellerContext = {
-      ...context,
-      jwt: { ...mockJwt, roles: ['tellerStream'] },
-    } as unknown as Context
+  it('SM2: runs the live scope check on the record', async () => {
+    mockConfirmFlow()
 
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Bacenta']) }],
-    })
+    await bankingMutation.ManuallyConfirmOfferingPayment(
+      null,
+      confirmArgs,
+      streamATeller()
+    )
+
+    expect(assertScopeViaServiceRecord).toHaveBeenCalledWith(
+      expect.anything(),
+      'sr_test'
+    )
+  })
+
+  it('SM2: an out-of-scope record is refused and nothing is written', async () => {
+    ;(assertScopeViaServiceRecord as jest.Mock).mockRejectedValueOnce(
+      new GraphQLError('You are not permitted to access this resource.', {
+        extensions: { code: 'FORBIDDEN', severity: 'USER_ERROR' },
+      })
+    )
 
     await expect(
       bankingMutation.ManuallyConfirmOfferingPayment(
         null,
         confirmArgs,
-        tellerContext
+        streamATeller()
       )
-    ).rejects.toThrow('not allowed to manually confirm')
+    ).rejects.toThrow('You are not permitted to access this resource.')
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
-  it('SM2: fishers role is also blocked when the church is not Stream+ (church-level guard applies to all callers)', async () => {
-    const fishersContext = {
-      ...context,
-      jwt: { ...mockJwt, roles: ['fishers'] },
-    } as unknown as Context
+  it("SM2: looks up the record's own church for the per-church role check", async () => {
+    mockConfirmFlow()
 
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Bacenta']) }],
-    })
+    await bankingMutation.ManuallyConfirmOfferingPayment(
+      null,
+      confirmArgs,
+      streamATeller()
+    )
+
+    expect(txRun).toHaveBeenNthCalledWith(
+      1,
+      getServiceRecordChurches,
+      confirmArgs
+    )
+  })
+
+  // SYN-266: the record's church level does not matter, only that the
+  // caller's teller/admin role covers its church.
+  it.each([
+    [
+      'a Stream teller',
+      'tellerStream',
+      'IS_TELLER_FOR',
+      'Stream',
+      STREAM_A_REACH,
+    ],
+    ['a Stream admin', 'adminStream', 'IS_ADMIN_FOR', 'Stream', STREAM_A_REACH],
+    [
+      'a Campus admin',
+      'adminCampus',
+      'IS_ADMIN_FOR',
+      'Campus',
+      ['campus-1', ...STREAM_A_REACH],
+    ],
+  ] as const)(
+    "SM2: %s confirms a Bacenta service inside their church's reach",
+    async (_who, role, edge, level, reach) => {
+      mockConfirmFlow()
+
+      await expect(
+        bankingMutation.ManuallyConfirmOfferingPayment(
+          null,
+          confirmArgs,
+          callerContext([role], [tree(edge, level, [...reach])])
+        )
+      ).resolves.toMatchObject({ id: 'sr_test' })
+      expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
+    }
+  )
+
+  // The IDOR this check closes: isAuth passes on tellerStream (held for
+  // Stream B) and the any-servant-edge scope check passes on LEADS of the
+  // record's own Bacenta in Stream A — but neither grants a confirming role
+  // AT that Bacenta.
+  it("SM2: a teller of another Stream who leads the record's Bacenta is refused and nothing is written", async () => {
+    mockConfirmFlow()
+
+    const error = await bankingMutation
+      .ManuallyConfirmOfferingPayment(
+        null,
+        confirmArgs,
+        callerContext(
+          ['tellerStream', 'leaderBacenta'],
+          [
+            tree('IS_TELLER_FOR', 'Stream', ['stream-b', 'council-b']),
+            tree('LEADS', 'Bacenta', [RECORD_CHURCH]),
+          ]
+        )
+      )
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect((error as GraphQLError).extensions.code).toBe('FORBIDDEN')
+    expect(mockSession.run).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SM2: a Council admin over the record is refused — Council admins do not confirm', async () => {
+    mockConfirmFlow()
 
     await expect(
       bankingMutation.ManuallyConfirmOfferingPayment(
         null,
         confirmArgs,
-        fishersContext
+        callerContext(
+          ['adminCouncil'],
+          [
+            tree('IS_ADMIN_FOR', 'Council', [
+              'council-a',
+              'gov-a',
+              RECORD_CHURCH,
+            ]),
+          ]
+        )
       )
-    ).rejects.toThrow('not allowed to manually confirm')
+    ).rejects.toThrow('You do not hold a required role at this church.')
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
-  it('SM2: tellerStream role IS allowed when the church is a Stream', async () => {
-    const tellerContext = {
-      ...context,
-      jwt: { ...mockJwt, roles: ['tellerStream'] },
-    } as unknown as Context
+  // SYN-220: one ServiceLog can be held by two churches. The role must cover
+  // every one of them, so neither side's teller confirms the other's money.
+  describe('a record whose ServiceLog two churches hold', () => {
+    const mockSharedLog = () => {
+      mockTransactions()
+      txRun
+        .mockResolvedValueOnce({
+          records: [
+            { get: jest.fn().mockReturnValue([RECORD_CHURCH, 'council-b']) },
+          ],
+        })
+        .mockResolvedValueOnce(
+          makeMockQueryResult({ service: { properties: { id: 'sr_test' } } })
+        )
+      mockSession.run.mockResolvedValueOnce({ records: [] })
+    }
 
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
+    it('SM2: is refused for a teller who covers only one of them, and nothing is written', async () => {
+      mockSharedLog()
+
+      await expect(
+        bankingMutation.ManuallyConfirmOfferingPayment(
+          null,
+          confirmArgs,
+          streamATeller()
+        )
+      ).rejects.toThrow('You do not hold a required role at this church.')
+      expect(mockSession.executeWrite).not.toHaveBeenCalled()
     })
-    mockSession.run
-      .mockResolvedValueOnce({ records: [] })
-      .mockResolvedValueOnce(
-        makeMockQueryResult({ service: { properties: { id: 'sr_test' } } })
-      )
+
+    it('SM2: is confirmed by an admin whose Campus covers both', async () => {
+      mockSharedLog()
+
+      await expect(
+        bankingMutation.ManuallyConfirmOfferingPayment(
+          null,
+          confirmArgs,
+          callerContext(
+            ['adminCampus'],
+            [
+              tree('IS_ADMIN_FOR', 'Campus', [
+                'campus-1',
+                ...STREAM_A_REACH,
+                'council-b',
+              ]),
+            ]
+          )
+        )
+      ).resolves.toMatchObject({ id: 'sr_test' })
+    })
+  })
+
+  it('SM2: a record no longer held by an active church is refused, and nothing is written', async () => {
+    mockTransactions()
+    txRun.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue([]) }],
+    })
+
+    const error = await bankingMutation
+      .ManuallyConfirmOfferingPayment(null, confirmArgs, streamATeller())
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect((error as GraphQLError).extensions.code).toBe('FORBIDDEN')
+    expect(mockSession.run).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SM2: a DB failure in the church lookup surfaces a curated retry message', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    mockTransactions()
+    txRun.mockRejectedValueOnce(new Error('Neo4j connection reset'))
 
     await expect(
       bankingMutation.ManuallyConfirmOfferingPayment(
         null,
         confirmArgs,
-        tellerContext
+        streamATeller()
       )
-    ).resolves.toMatchObject({ id: 'sr_test' })
-  })
-
-  it('SM2: fishers role IS allowed when the church is a Stream+', async () => {
-    const fishersContext = {
-      ...context,
-      jwt: { ...mockJwt, roles: ['fishers'] },
-    } as unknown as Context
-
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
-    })
-    mockSession.run
-      .mockResolvedValueOnce({ records: [] })
-      .mockResolvedValueOnce(
-        makeMockQueryResult({ service: { properties: { id: 'sr_test' } } })
-      )
-
-    await expect(
-      bankingMutation.ManuallyConfirmOfferingPayment(
-        null,
-        confirmArgs,
-        fishersContext
-      )
-    ).resolves.toMatchObject({ id: 'sr_test' })
+    ).rejects.toThrow(
+      'We could not confirm this offering payment. Please try again.'
+    )
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+    errorSpy.mockRestore()
   })
 })
 
@@ -278,57 +498,97 @@ describe('SM2 — ManuallyConfirmOfferingPayment: auth', () => {
 // ManuallyConfirmOfferingPayment — behavior
 // ---------------------------------------------------------------------------
 describe('SM2 — ManuallyConfirmOfferingPayment: behavior', () => {
-  const confirmArgs = { serviceRecordId: 'sr_test', bankingSlip: '' }
+  const confirmArgs = { serviceRecordId: 'sr_test' }
 
-  it('SM2: calls session.run for the manuallyConfirmOfferingPayment Cypher and returns the service record', async () => {
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
+  it('SM2: writes the manuallyConfirmOfferingPayment Cypher in a write transaction and returns the service record', async () => {
+    const teller = streamATeller()
+    mockConfirmFlow({
+      id: 'sr_test',
+      tellerConfirmationTime: '2024-01-07T10:00:00Z',
     })
-    mockSession.run
-      .mockResolvedValueOnce({ records: [] })
-      .mockResolvedValueOnce(
-        makeMockQueryResult({
-          service: {
-            properties: {
-              id: 'sr_test',
-              tellerConfirmationTime: '2024-01-07T10:00:00Z',
-            },
-          },
-        })
-      )
 
     const result = await bankingMutation.ManuallyConfirmOfferingPayment(
       null,
       confirmArgs,
-      context
+      teller
     )
 
     expect(result).toMatchObject({ id: 'sr_test' })
-    expect(mockSession.run).toHaveBeenCalledTimes(2)
+    expect(mockSession.run).toHaveBeenCalledTimes(1) // previous-service check
+    expect(mockSession.executeWrite).toHaveBeenCalledTimes(1)
+    expect(txRun).toHaveBeenLastCalledWith(manuallyConfirmCypher, {
+      ...confirmArgs,
+      jwt: teller.jwt,
+      bh_method: 'teller',
+      bh_toStatus: 'teller-confirmed',
+      // Role-neutral — admins confirm too.
+      bh_message: 'Offering manually confirmed',
+    })
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
   })
 
-  it('SM2: throws "already confirmed" when the SM2 atomic guard returns zero rows', async () => {
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
-    })
-    mockSession.run
-      .mockResolvedValueOnce({ records: [] }) // checkIfLastServiceBanked
-      .mockResolvedValueOnce({ records: [] }) // confirmOfferingPayment Cypher — zero rows = race lost
+  it('SM2: a lost race is an expected refusal — BAD_USER_INPUT, not a server error', async () => {
+    mockTransactions()
+    txRun
+      .mockResolvedValueOnce({
+        records: [{ get: jest.fn().mockReturnValue([RECORD_CHURCH]) }],
+      })
+      .mockResolvedValueOnce({ records: [] }) // zero rows = someone confirmed first
+    mockSession.run.mockResolvedValueOnce({ records: [] }) // checkIfLastServiceBanked
 
-    await expect(
-      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
-    ).rejects.toThrow(
-      'This offering has already been confirmed by another teller.'
+    const error = await bankingMutation
+      .ManuallyConfirmOfferingPayment(null, confirmArgs, streamATeller())
+      .catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(GraphQLError)
+    expect((error as GraphQLError).message).toBe(
+      'This offering has already been confirmed. Refresh to see the latest banking state.'
+    )
+    expect((error as GraphQLError).extensions.code).toBe('BAD_USER_INPUT')
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  // SYN-266: nothing in the write narrows by church level either — the
+  // record is matched by id alone, so every level's service can be confirmed.
+  it('SM2: the confirm Cypher matches the record by id with no church-level filter', () => {
+    expect(manuallyConfirmCypher).toMatch(
+      /MATCH \(service:ServiceRecord \{id: \$serviceRecordId\}\)/
+    )
+    expect(manuallyConfirmCypher).not.toMatch(
+      /:(Bacenta|Governorship|Council|Stream|Campus|Oversight|Denomination)\b/
     )
   })
 
-  // TODO (SM2): ManuallyConfirmOfferingPayment does not append a HistoryLog node.
-  // Current behaviour: sets tellerConfirmationTime + CONFIRMED_BANKING_FOR relationship only.
-  // The Jira ticket (SYN-67) flags a HistoryLog entry as desired; characterised here per ADR-013 §3.1.
-  // Phase 4 of the banking-flows audit adds this via BankingHistoryLog + appendBankingHistoryLog.
-  it.todo(
-    'SM2 TODO: ManuallyConfirmOfferingPayment appends a BankingHistoryLog entry naming the confirming teller (Phase 4)'
-  )
+  it('SM2: the confirm Cypher appends a BankingHistoryLog row naming the confirmer', () => {
+    expect(manuallyConfirmCypher).toMatch(
+      /CREATE \(service\)-\[:HAS_BANKING_HISTORY\]->\(bhlog:BankingHistoryLog/
+    )
+    expect(manuallyConfirmCypher).toMatch(
+      /CREATE \(author\)-\[:LOGGED_BANKING\]->\(bhlog\)/
+    )
+  })
+
+  it('SM2: the church lookup returns every spine church holding the record', () => {
+    expect(getServiceRecordChurches).toMatch(
+      /MATCH \(record:ServiceRecord \{id: \$serviceRecordId\}\)<-\[:HAS_SERVICE\]-\(:ServiceLog\)<-\[:HAS_HISTORY\]-\(church\)/
+    )
+    for (const level of [
+      'Bacenta',
+      'Governorship',
+      'Council',
+      'Stream',
+      'Campus',
+      'Oversight',
+      'Denomination',
+    ]) {
+      expect(getServiceRecordChurches).toContain(`church:${level}`)
+    }
+    expect(getServiceRecordChurches).toMatch(
+      /RETURN collect\(DISTINCT church\.id\) AS churchIds/
+    )
+    // A shared ServiceLog (SYN-220) must not be resolved by an arbitrary pick.
+    expect(getServiceRecordChurches).not.toMatch(/LIMIT/)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -377,18 +637,13 @@ describe('SYN-228 — previous-service banking rule is not masked', () => {
     serviceRecordId: 'sr_test',
     bankingSlip: 'https://res.cloudinary.com/slip.jpg',
   }
-  const confirmArgs = { serviceRecordId: 'sr_test', bankingSlip: '' }
+  const confirmArgs = { serviceRecordId: 'sr_test' }
   let errorSpy: jest.SpyInstance
 
   beforeEach(() => {
     errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
   afterEach(() => errorSpy.mockRestore())
-
-  const mockStreamChurch = () =>
-    mockSession.executeRead.mockResolvedValueOnce({
-      records: [{ get: jest.fn().mockReturnValue(['Stream', 'Bacenta']) }],
-    })
 
   it('SubmitBankingSlip: rejects with the outstanding-offering message, logs nothing, writes nothing', async () => {
     mockSession.run.mockResolvedValueOnce(
@@ -413,8 +668,15 @@ describe('SYN-228 — previous-service banking rule is not masked', () => {
     expect(errorSpy).toHaveBeenCalledTimes(1)
   })
 
+  const mockChurchLookup = () => {
+    mockTransactions()
+    txRun.mockResolvedValueOnce({
+      records: [{ get: jest.fn().mockReturnValue([RECORD_CHURCH]) }],
+    })
+  }
+
   it('ManuallyConfirmOfferingPayment: rejects with the outstanding-offering message, logs nothing, writes nothing', async () => {
-    mockStreamChurch()
+    mockChurchLookup()
     mockSession.run.mockResolvedValueOnce(
       makeLastServiceResult({ transactionStatus: null })
     )
@@ -422,20 +684,25 @@ describe('SYN-228 — previous-service banking rule is not masked', () => {
     const promise = bankingMutation.ManuallyConfirmOfferingPayment(
       null,
       confirmArgs,
-      context
+      streamATeller()
     )
     await expect(promise).rejects.toThrow('Please bank outstanding offering')
     await expect(promise).rejects.not.toThrow('We could not check')
     expect(errorSpy).not.toHaveBeenCalled()
     expect(mockSession.run).toHaveBeenCalledTimes(1)
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
   })
 
   it('ManuallyConfirmOfferingPayment: a DB failure in the check still surfaces a curated retry message', async () => {
-    mockStreamChurch()
+    mockChurchLookup()
     mockSession.run.mockRejectedValueOnce(new Error('Neo4j connection reset'))
 
     await expect(
-      bankingMutation.ManuallyConfirmOfferingPayment(null, confirmArgs, context)
+      bankingMutation.ManuallyConfirmOfferingPayment(
+        null,
+        confirmArgs,
+        streamATeller()
+      )
     ).rejects.toThrow(
       'We could not check the previous service banking. Please try again.'
     )

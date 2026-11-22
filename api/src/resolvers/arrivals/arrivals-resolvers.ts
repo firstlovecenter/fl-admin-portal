@@ -442,8 +442,11 @@ export const arrivalsMutation = {
     const preMobCheck = rearrangeCypherObject(
       await session.run(checkIfPreMobilisationFilled, args)
     )
+    // SYN-272: these three are refusals the leader can act on (already sent
+    // from another tab or device, window closed, no momo number yet), so
+    // BAD_USER_INPUT (WARN, SYN-253), not a plain Error.
     if (preMobCheck.status) {
-      throw new Error('You have already filled the pre-mobilisation form')
+      throw badRequest('You have already filled the pre-mobilisation form')
     }
 
     const stream = recordResponse.stream.properties
@@ -454,7 +457,7 @@ export const arrivalsMutation = {
     const today = new Date()
 
     if (today > mobilisationEndTime) {
-      throw new Error('It is now past the time for mobilisation. Thank you!')
+      throw badRequest('It is now past the time for mobilisation. Thank you!')
     }
 
     const checkBacentaMomo = rearrangeCypherObject(
@@ -466,7 +469,9 @@ export const arrivalsMutation = {
       (parseNeoNumber(checkBacentaMomo.sprinterTopUp) ||
         parseNeoNumber(checkBacentaMomo.urvanTopUp))
     ) {
-      throw new Error('You need a mobile money number before filling this form')
+      throw badRequest(
+        'You need a mobile money number before filling this form'
+      )
     }
 
     const response = rearrangeCypherObject(

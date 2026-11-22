@@ -7,7 +7,7 @@ collapse a step.
 ## W1 — Record a Bacenta service (and bank the offering)
 
 **Actors:** `leaderBacenta` (or `adminMinistry`), assisted by treasurers, then a
-`tellerStream` for confirmation.
+`tellerStream` or a Stream-and-higher admin for confirmation.
 
 **Pre-conditions:**
 - The Bacenta has a current leader (`HAS_HISTORY` → `ServiceLog` exists, or one is
@@ -46,8 +46,10 @@ collapse a step.
    - **Self-banking:** `BankServiceOffering` mutation initiates Paystack debit;
      `transactionStatus` flows `pending` → `success` (or `failed`, or `send OTP`).
    - **Manual:** `SubmitBankingSlip` mutation sets `bankingSlip`; later a
-     `tellerStream` calls `ManuallyConfirmOfferingPayment` to set
-     `tellerConfirmationTime` and `bankingConfirmer`.
+     `tellerStream` or a Stream-and-higher admin whose role covers the
+     service's church calls `ManuallyConfirmOfferingPayment` to set
+     `tellerConfirmationTime` and `bankingConfirmer`. Any church level's
+     service can be confirmed this way (SYN-266).
 
 **Post-conditions:**
 - Bacenta has a new `ServiceRecord` for the week.

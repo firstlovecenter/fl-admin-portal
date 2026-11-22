@@ -606,3 +606,33 @@ describe('createApolloClient — errorPolicy: all', () => {
     expect(result.errors?.[0]?.message).toBe('partial failure')
   })
 })
+
+// ---------------------------------------------------------------------------
+// DevTools (SYN-268)
+// ---------------------------------------------------------------------------
+
+describe('createApolloClient — devtools', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('keeps Apollo DevTools off in a production build, so the extension cannot introspect the API', () => {
+    vi.stubEnv('DEV', false)
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    expect(client.devtoolsConfig.enabled).toBe(false)
+  })
+
+  it('turns Apollo DevTools on in a local dev build', () => {
+    vi.stubEnv('DEV', true)
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+
+    expect(client.devtoolsConfig.enabled).toBe(true)
+  })
+})
