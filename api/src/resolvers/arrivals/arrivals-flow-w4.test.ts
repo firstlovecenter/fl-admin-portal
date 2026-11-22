@@ -240,6 +240,41 @@ describe('W4 — UploadMobilisationPicture (leaderBacenta)', () => {
     ).rejects.toThrow('You need a mobile money number before filling this form')
   })
 
+  // SYN-272 — these refusals are shown to the leader on purpose. They must
+  // reach Apollo as BAD_USER_INPUT so error-reference.ts logs them at WARN,
+  // not as INTERNAL_SERVER_ERROR tickets (SYN-253).
+  it.each([
+    [
+      'already filled today',
+      { preMobFilled: true },
+      'You have already filled the pre-mobilisation form',
+    ],
+    [
+      'past the mobilisation window',
+      { mobilisationEndTime: PAST_MOB_END_TIME },
+      'It is now past the time for mobilisation. Thank you!',
+    ],
+    [
+      'no momo number with a top-up due',
+      { momoNumber: null, sprinterTopUp: 30 },
+      'You need a mobile money number before filling this form',
+    ],
+  ])(
+    'W4: SYN-272 refusal (%s) is coded BAD_USER_INPUT',
+    async (_label, seed, message) => {
+      seedUploadMobPicture(seed)
+
+      const error = await arrivalsMutation
+        .UploadMobilisationPicture(null as never, uploadArgs, context)
+        .catch((err: unknown) => err)
+
+      expect(error).toMatchObject({
+        message,
+        extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+      })
+    }
+  )
+
   it('W4: passes when momoNumber is null but both top-ups are 0 (car-only bacentas with no top-up)', async () => {
     seedUploadMobPicture({ momoNumber: null, sprinterTopUp: 0, uvanTopUp: 0 })
 
