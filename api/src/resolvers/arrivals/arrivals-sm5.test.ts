@@ -386,6 +386,56 @@ describe('SM5 — submitted → counted: ConfirmVehicleByAdmin (arrivalsCounter)
       )
     ).rejects.toThrow('It is now past the time for arrivals. Thank you!')
   })
+
+  // SYN-277 — these refusals are shown to the counter on purpose. They must
+  // reach Apollo as BAD_USER_INPUT so error-reference.ts logs them at WARN,
+  // not as INTERNAL_SERVER_ERROR tickets (SYN-253).
+  it.each([
+    [
+      'past the arrival window',
+      {},
+      { arrivalEndTime: '2024-01-07T00:00:00.000Z' },
+      'It is now past the time for arrivals. Thank you!',
+    ],
+    [
+      'bussing record not for today',
+      {},
+      { isToday: false },
+      'This bussing record is not for today. You can only count vehicles for today.',
+    ],
+    [
+      'attendance out of range',
+      { attendance: -1 },
+      {},
+      'Attendance must be a whole number between 0 and 200.',
+    ],
+    [
+      'unknown vehicle label',
+      { vehicle: 'Bus' },
+      {},
+      'Vehicle must be Urvan, Sprinter, or Car.',
+    ],
+  ])(
+    'SM5: SYN-277 refusal (%s) is coded BAD_USER_INPUT',
+    async (_label, argOverrides, checkOverrides, message) => {
+      mockSession.run.mockResolvedValueOnce(checkResult(checkOverrides))
+
+      const error = await arrivalsMutation
+        .ConfirmVehicleByAdmin(
+          null as never,
+          { ...confirmArgs, ...argOverrides } as typeof confirmArgs,
+          counterContext()
+        )
+        .catch((err: unknown) => err)
+
+      expect(error).toMatchObject({
+        message,
+        extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+      })
+      // A refusal writes nothing: only the read-only window check may run.
+      expect(mockSession.run.mock.calls.length).toBeLessThanOrEqual(1)
+    }
+  )
 })
 
 // ===========================================================================
