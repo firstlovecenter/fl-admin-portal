@@ -91,7 +91,7 @@ import {
   setVehicleRecordTransactionSuccessful,
 } from './arrivals-cypher'
 import type { Context } from '../utils/neo4j-types'
-import { isAuth } from '../utils/utils'
+import { isAuth, throwToSentry } from '../utils/utils'
 import { sendBulkSMS } from '../utils/notify'
 import {
   permitArrivalsCounter,
@@ -505,6 +505,70 @@ describe('SM5 — submitted: RecordVehicleFromBacenta (leaderBacenta)', () => {
     )
     expect(recordVehicleFromBacenta).toMatch(/id: apoc\.create\.uuid\(\)/)
   })
+
+  // SYN-275 — these refusals are shown to the leader on purpose. They must
+  // reach Apollo as BAD_USER_INPUT so error-reference.ts logs them at WARN,
+  // not as INTERNAL_SERVER_ERROR tickets (SYN-253).
+  const PAST_ARRIVAL_END_TIME = '2024-01-07T00:00:00.000Z'
+  const seedArrivalWindow = (arrivalEndTime: string) =>
+    mockSession.run.mockResolvedValueOnce(
+      makeMockQueryResult({
+        stream: { properties: { arrivalEndTime } },
+        bacenta: { properties: { momoNumber: '0240000000', outbound: false } },
+      })
+    )
+
+  it('SM5: SYN-275 past the arrival window is refused BAD_USER_INPUT and no VehicleRecord is written', async () => {
+    seedArrivalWindow(PAST_ARRIVAL_END_TIME)
+    // Run the real throwToSentry so the catch-block rewrap is covered too:
+    // it must keep the code, or Apollo falls back to INTERNAL_SERVER_ERROR.
+    ;(throwToSentry as jest.Mock).mockImplementationOnce(
+      jest.requireActual('../utils/utils').throwToSentry
+    )
+
+    const error = await arrivalsMutation
+      .RecordVehicleFromBacenta(null as never, submitArgs, context)
+      .catch((err: unknown) => err)
+
+    expect(error).toMatchObject({
+      message:
+        'RecordVehicleFromBacenta failed: It is past the time to fill your forms. Thank you!',
+      extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+    })
+    expect(mockSession.run).toHaveBeenCalledTimes(1) // checkArrivalTimes only
+    expect(mockSession.close).toHaveBeenCalled()
+  })
+
+  it.each([
+    ['no picture', { picture: '  ' }, 'A vehicle picture is required.'],
+    [
+      'unknown vehicle',
+      { vehicle: 'Bus' },
+      'Vehicle must be Urvan, Sprinter, or Car.',
+    ],
+    [
+      'declaration out of range',
+      { leaderDeclaration: 0 },
+      'Leader declaration must be a whole number between 1 and 200.',
+    ],
+  ])(
+    'SM5: SYN-275 refusal (%s) is coded BAD_USER_INPUT before any query runs',
+    async (_label, override, message) => {
+      const error = await arrivalsMutation
+        .RecordVehicleFromBacenta(
+          null as never,
+          { ...submitArgs, ...override },
+          context
+        )
+        .catch((err: unknown) => err)
+
+      expect(error).toMatchObject({
+        message,
+        extensions: { code: 'BAD_USER_INPUT', severity: 'USER_ERROR' },
+      })
+      expect(mockSession.run).not.toHaveBeenCalled()
+    }
+  )
 })
 
 // ===========================================================================

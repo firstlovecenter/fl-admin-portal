@@ -525,18 +525,21 @@ export const arrivalsMutation = {
     isAuth(['leaderBacenta'], context.jwt?.roles)
     await assertChurchScope(context, args.bacentaId)
 
+    // SYN-275: these refusals (bad input, arrival window closed) are shown to
+    // the leader on purpose, so BAD_USER_INPUT (WARN, SYN-253), not a plain
+    // Error logged as INTERNAL_SERVER_ERROR. throwToSentry keeps the code.
     if (!args.picture?.trim()) {
-      throw new Error('A vehicle picture is required.')
+      throw badRequest('A vehicle picture is required.')
     }
     if (!['Urvan', 'Sprinter', 'Car'].includes(args.vehicle)) {
-      throw new Error('Vehicle must be Urvan, Sprinter, or Car.')
+      throw badRequest('Vehicle must be Urvan, Sprinter, or Car.')
     }
     if (
       !Number.isInteger(args.leaderDeclaration) ||
       args.leaderDeclaration < 1 ||
       args.leaderDeclaration > 200
     ) {
-      throw new Error(
+      throw badRequest(
         'Leader declaration must be a whole number between 1 and 200.'
       )
     }
@@ -557,7 +560,7 @@ export const arrivalsMutation = {
       const today = new Date()
 
       if (today > arrivalEndTime) {
-        throw new Error('It is past the time to fill your forms. Thank you!')
+        throw badRequest('It is past the time to fill your forms. Thank you!')
       }
 
       const response = rearrangeCypherObject(
