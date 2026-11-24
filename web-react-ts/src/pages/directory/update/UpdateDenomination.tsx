@@ -108,6 +108,8 @@ const UpdateDenomination = () => {
               err
             )
           }
+          setSubmitting(false)
+          return
         }
       }
 

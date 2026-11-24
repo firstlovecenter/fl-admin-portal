@@ -105,6 +105,8 @@ const UpdateOversight = () => {
           } else {
             throwToSentry('There was a problem changing the leader', err)
           }
+          setSubmitting(false)
+          return
         }
       }
 
