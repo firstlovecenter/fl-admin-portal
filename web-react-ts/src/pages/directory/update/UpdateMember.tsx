@@ -25,8 +25,6 @@ import MemberCollisionDialog, { MemberCollision } from './MemberCollisionDialog'
 
 type CollisionExtension = { collision?: MemberCollision }
 
-// Shared by the errorPolicy: 'all' result.errors path and the catch-block's
-// graphQLErrors path — both carry the collision the same way.
 const extractCollision = (
   errors: readonly { extensions?: unknown }[] | undefined
 ): MemberCollision | undefined =>
@@ -89,7 +87,8 @@ const UpdateMember = () => {
     context: CALLER_HANDLES_ERRORS_CONTEXT,
   })
   const [ReactivateMember, { loading: reactivating }] = useMutation(
-    REACTIVATE_MEMBER_TO_BACENTA
+    REACTIVATE_MEMBER_TO_BACENTA,
+    { context: CALLER_HANDLES_ERRORS_CONTEXT }
   )
 
   const onReactivate = async () => {
@@ -145,35 +144,9 @@ const UpdateMember = () => {
           bacenta: values.bacenta?.id,
         },
       })
-
-      if (memberChurch?.bacenta.id !== values.bacenta.id) {
-        await UpdateMemberBacenta({
-          variables: {
-            memberId: memberId,
-            bacentaId: values.bacenta?.id,
-            ids: [memberId, values.bacenta?.id, memberChurch?.bacenta.id],
-            historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.bacenta.name} Bacenta to ${values.bacenta?.name} Bacenta`,
-          },
-        })
-      }
-
-      if (values.basonta && memberChurch?.basonta?.id !== values.basonta) {
-        await UpdateMemberBasonta({
-          variables: {
-            memberId: memberId,
-            basontaId: values.basonta,
-          },
-        })
-      }
-
-      onSubmitProps.setSubmitting(false)
-      onSubmitProps.resetForm()
-      navigate('/member/displaydetails')
     } catch (error: any) {
       onSubmitProps.setSubmitting(false)
-
       const collisionInfo = extractCollision(error?.graphQLErrors)
-
       if (collisionInfo) {
         setCollision({
           ...collisionInfo,
@@ -182,9 +155,45 @@ const UpdateMember = () => {
         })
         return
       }
-
-      throwToSentry('There was an error updating the member profile\n', error)
+      displayError(t('directory.updateMember.updateProfileError'), error)
+      return
     }
+
+    if (memberChurch?.bacenta.id !== values.bacenta.id) {
+      try {
+        await UpdateMemberBacenta({
+          variables: {
+            memberId: memberId,
+            bacentaId: values.bacenta?.id,
+            ids: [memberId, values.bacenta?.id, memberChurch?.bacenta.id],
+            historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.bacenta.name} Bacenta to ${values.bacenta?.name} Bacenta`,
+          },
+        })
+      } catch (error: any) {
+        onSubmitProps.setSubmitting(false)
+        displayError(t('directory.updateMember.updateBacentaError'), error)
+        return
+      }
+    }
+
+    if (values.basonta && memberChurch?.basonta?.id !== values.basonta) {
+      try {
+        await UpdateMemberBasonta({
+          variables: {
+            memberId: memberId,
+            basontaId: values.basonta,
+          },
+        })
+      } catch (error: any) {
+        onSubmitProps.setSubmitting(false)
+        displayError(t('directory.updateMember.updateBasontaError'), error)
+        return
+      }
+    }
+
+    onSubmitProps.setSubmitting(false)
+    onSubmitProps.resetForm()
+    navigate('/member/displaydetails')
   }
 
   if (error) {
