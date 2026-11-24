@@ -31,6 +31,14 @@ import { MemberContext } from 'contexts/MemberContext'
 import RoleView from 'auth/RoleView'
 import SearchBacenta from 'components/formik/SearchBacenta'
 import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import { Input } from 'components/ui/input'
 import { Label } from 'components/ui/label'
 import {
@@ -42,11 +50,25 @@ import {
 } from 'components/ui/select'
 import { Skeleton } from 'components/ui/skeleton'
 import { cn } from 'components/lib/utils'
+import useModal from 'hooks/useModal'
 import usePopup from 'hooks/usePopup'
 import { CreateMemberFormOptions } from '../create/CreateMember'
 import MemberAvatarUpload from './MemberAvatarUpload'
 import MemberDeleteDialog from './MemberDeleteDialog'
 import MemberTitleDialog from './MemberTitleDialog'
+
+const DISPLAY_LABELS: Partial<Record<keyof CreateMemberFormOptions, string>> = {
+  firstName: 'First name',
+  middleName: 'Middle name',
+  lastName: 'Last name',
+  gender: 'Gender',
+  dob: 'Date of birth',
+  maritalStatus: 'Marital status',
+  phoneNumber: 'Phone',
+  whatsappNumber: 'WhatsApp',
+  email: 'Email',
+  occupation: 'Occupation',
+}
 
 type MemberFormProps = {
   initialValues: CreateMemberFormOptions
@@ -128,6 +150,7 @@ const MemberForm = ({
   const { campusId } = useContext(ChurchContext)
   const { isOpen, togglePopup } = usePopup()
   const [titleDialogOpen, setTitleDialogOpen] = useState(false)
+  const { show: confirmOpen, handleClose: closeConfirm, handleShow: openConfirm } = useModal()
 
   const { data: basontasData, loading: basontasLoading } = useQuery(
     GET_CAMPUS_BASONTAS,
@@ -629,26 +652,116 @@ const MemberForm = ({
                       <span className="text-destructive font-medium">*</span>{' '}
                       {t('directory.memberForm.requiredFieldsSuffix')}
                     </p>
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={formik.isSubmitting}
-                      className={cn(
-                        'min-h-[48px] w-full sm:w-auto px-8 gap-2',
-                        !formik.isValid && 'opacity-60'
-                      )}
-                    >
-                      {formik.isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          {t('directory.memberForm.submitting')}
-                        </>
-                      ) : update ? (
-                        t('directory.memberForm.saveChanges')
-                      ) : (
-                        t('directory.memberForm.registerMember')
-                      )}
-                    </Button>
+                    {update ? (
+                      <>
+                        <Dialog
+                          open={confirmOpen}
+                          onOpenChange={(open) => !open && closeConfirm()}
+                        >
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                {t('directory.memberForm.confirmTitle')}
+                              </DialogTitle>
+                              <DialogDescription>
+                                {t('shared.confirmDialog.reviewDetails')}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-3 py-1 text-sm">
+                              {(
+                                Object.keys(
+                                  DISPLAY_LABELS
+                                ) as (keyof CreateMemberFormOptions)[]
+                              )
+                                .filter(
+                                  (key) =>
+                                    String(formik.values[key] ?? '') !==
+                                    String(initialValues[key] ?? '')
+                                )
+                                .map((key) => (
+                                  <div
+                                    key={key}
+                                    className="flex items-center justify-between gap-2"
+                                  >
+                                    <span className="text-muted-foreground">
+                                      {DISPLAY_LABELS[key]}
+                                    </span>
+                                    <span className="font-medium text-foreground">
+                                      {String(formik.values[key] ?? '—')}
+                                    </span>
+                                  </div>
+                                ))}
+                              {formik.values.bacenta?.id !==
+                                initialValues.bacenta?.id && (
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-muted-foreground">
+                                    Bacenta
+                                  </span>
+                                  <span className="font-medium text-foreground">
+                                    {formik.values.bacenta?.name ?? '—'}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={closeConfirm}>
+                                {t('shared.actions.edit')}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="lg"
+                                disabled={formik.isSubmitting}
+                                className="gap-2"
+                                onClick={() => {
+                                  closeConfirm()
+                                  formik.handleSubmit()
+                                }}
+                              >
+                                {formik.isSubmitting ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    {t('directory.memberForm.submitting')}
+                                  </>
+                                ) : (
+                                  t('directory.memberForm.saveChanges')
+                                )}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                        <Button
+                          type="button"
+                          size="lg"
+                          onClick={openConfirm}
+                          disabled={!formik.isValid || formik.isSubmitting}
+                          className={cn(
+                            'min-h-[48px] w-full sm:w-auto px-8 gap-2',
+                            !formik.isValid && 'opacity-60'
+                          )}
+                        >
+                          {t('services.form.reviewAndSubmit')}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        type="submit"
+                        size="lg"
+                        disabled={formik.isSubmitting}
+                        className={cn(
+                          'min-h-[48px] w-full sm:w-auto px-8 gap-2',
+                          !formik.isValid && 'opacity-60'
+                        )}
+                      >
+                        {formik.isSubmitting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {t('directory.memberForm.submitting')}
+                          </>
+                        ) : (
+                          t('directory.memberForm.registerMember')
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -154,6 +154,7 @@ const UpdateMember = () => {
           setCollision({
             ...collisionInfo,
             targetBacentaId: values.bacenta?.id,
+            targetBacentaName: values.bacenta?.name,
           })
           return
         }
@@ -212,7 +213,11 @@ const UpdateMember = () => {
       const collisionInfo = extractCollision(error?.graphQLErrors)
 
       if (collisionInfo) {
-        setCollision({ ...collisionInfo, targetBacentaId: values.bacenta?.id })
+        setCollision({
+          ...collisionInfo,
+          targetBacentaId: values.bacenta?.id,
+          targetBacentaName: values.bacenta?.name,
+        })
         return
       }
 

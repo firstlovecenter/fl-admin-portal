@@ -11,6 +11,16 @@ import { Church } from 'global-types'
 import { throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
 import SubmitButton from 'components/formik/SubmitButton'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import useModal from 'hooks/useModal'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { formatChurchLevel } from 'lib/scope-display'
 import { RECORD_CANCELLED_SERVICE } from './RecordServiceMutations'
@@ -36,6 +46,7 @@ const CancelledServiceForm = ({
   const navigate = useNavigate()
 
   const [RecordCancelledService] = useMutation(RECORD_CANCELLED_SERVICE)
+  const { show, handleClose, handleShow } = useModal()
 
   const today = new Date()
   const mondayThisWeek = getMondayThisWeek(today)
@@ -146,9 +157,65 @@ const CancelledServiceForm = ({
                       </div>
                     </div>
                   </div>
-                  <SubmitButton formik={formik}>
-                    {t('services.cancelled.submit')}
-                  </SubmitButton>
+                  <Dialog
+                    open={show}
+                    onOpenChange={(open) => !open && handleClose()}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {t('services.cancelled.confirmTitle')}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {t('shared.confirmDialog.reviewDetails')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-1 text-sm">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-muted-foreground">
+                            {t('services.form.church')}
+                          </span>
+                          <span className="font-medium text-foreground">
+                            {church?.name} ·{' '}
+                            {formatChurchLevel(church?.__typename, t)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-muted-foreground">
+                            {t('services.form.dateOfService')}
+                          </span>
+                          <span className="font-medium tabular-nums text-foreground">
+                            {formik.values.serviceDate}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-muted-foreground">
+                            {t('services.cancelled.reasonLabel')}
+                          </span>
+                          <span className="font-medium text-foreground">
+                            {formik.values.noServiceReason}
+                          </span>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={handleClose}>
+                          {t('shared.actions.edit')}
+                        </Button>
+                        <SubmitButton
+                          onClick={formik.handleSubmit}
+                          formik={formik}
+                        />
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={handleShow}
+                    disabled={!formik.isValid || formik.isSubmitting}
+                  >
+                    {t('services.form.reviewAndSubmit')}
+                  </Button>
                 </div>
               </div>
             </Form>

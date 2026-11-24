@@ -95,6 +95,9 @@
       "goToDashboard": "Go back to the dashboard",
       "call": "Call"
     },
+    "confirmDialog": {
+      "reviewDetails": "Review the details below before submitting."
+    },
     "loading": "Loading…",
     "form": {
       "submit": "Submit",
@@ -594,7 +597,9 @@
       "vehicleTopUpAmount": "Vehicle Top Up Amount*",
       "areTheyBussingBack": "Are They Bussing Back?",
       "momoNumberRequired": "Momo Number*",
-      "momoNameRequired": "Momo Name*"
+      "momoNameRequired": "Momo Name*",
+      "confirmTitle": "Review Record",
+      "confirmMobilisationTitle": "Review Mobilisation"
     },
     "dashboard": {
       "selectAdmin": "Please select an Admin from the dropdown",
@@ -647,11 +652,14 @@
       "setTodayAsSwell": "Set Today as Swell",
       "setSwellDescription": "This will mark today as a Swell / special weekend. This action applies to the entire campus.",
       "setAsSwell": "Set as Swell",
+      "swellDate": "Swell Date",
       "setCodeOfDay": "Set Code of the Day",
       "setCodeDescription": "Override today's Code of the Day. The new value replaces whatever was set this morning until the next daily run.",
       "code": "Code",
       "codePlaceholder": "e.g. Anointing",
       "saveCode": "Save Code",
+      "confirmCodeTitle": "Confirm Code of the Day",
+      "confirmCodeDescription": "The code will be set to the value shown below. This takes effect immediately.",
       "updatedJustNow": "just now",
       "updatedSecondsAgo_one": "{{count}} second ago",
       "updatedSecondsAgo_other": "{{count}} seconds ago",
@@ -839,7 +847,8 @@
       "arrivalWindowHint": "Arrival counters can confirm and pay for buses only between these two times. Late buses fall outside payment.",
       "appliesEverySunday": "Times apply to {{stream}} every Sunday until changed.",
       "editDescription": "Update the mobilisation and arrival windows for {{stream}}.",
-      "thisStream": "this stream"
+      "thisStream": "this stream",
+      "confirmTitle": "Confirm Arrival Times"
     }
   },
   "directory": {
@@ -1120,7 +1129,8 @@
       "requiredFieldsSuffix": "are required.",
       "submitting": "Submitting…",
       "saveChanges": "Save Changes",
-      "registerMember": "Register Member"
+      "registerMember": "Register Member",
+      "confirmTitle": "Review Changes"
     },
     "memberDisplay": {
       "noteRequired": "Note is required",
@@ -1948,7 +1958,10 @@
       "familyPictureRequired": "Please submit a picture of your service",
       "minTreasurers": "You must have at least two treasurers",
       "pickName": "Please pick a name from the dropdown",
-      "duplicateTreasurer": "You cannot choose the same treasurer twice!"
+      "duplicateTreasurer": "You cannot choose the same treasurer twice!",
+      "reviewAndSubmit": "Review & Submit",
+      "confirmTitle": "Review Submission",
+      "church": "Church"
     },
     "cancelled": {
       "title": "Cancelled",
@@ -1962,7 +1975,8 @@
       "noServiceDescription": "Use this form when no service took place. The reason will be saved to the church's history.",
       "submit": "Submit Cancellation",
       "reasonRequired": "You must give a reason",
-      "submitError": "There was a problem submitting your form"
+      "submitError": "There was a problem submitting your form",
+      "confirmTitle": "Review Cancellation"
     },
     "details": {
       "meetingDetails": "Meeting Details",
