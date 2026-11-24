@@ -71,11 +71,34 @@ describe('local server bootstrap', () => {
     expect(config.formatError).toBe(formatError)
   })
 
+  it('keeps schema suggestions in development (SYN-280)', () => {
+    // Mocked secrets say development: suggestions stay on for local work.
+    expect(config.introspection).toBe(true)
+    expect(config.hideSchemaDetailsFromClientErrors).toBe(false)
+  })
+
   it('registers the error reference plugin', () => {
     const { errorReferencePlugin } = jest.requireActual(
       './resolvers/utils/error-reference'
     )
 
     expect(config.plugins).toContain(errorReferencePlugin)
+  })
+})
+
+describe('local server bootstrap outside development (SYN-177, SYN-280)', () => {
+  it('disables introspection and hides schema suggestions', async () => {
+    jest.resetModules()
+    require('./resolvers/secrets').loadSecrets.mockResolvedValueOnce({
+      ENVIRONMENT: 'production',
+      JWT_SECRET: 'test-secret',
+    })
+    require('./index')
+    await flushStartup()
+    const { ApolloServer } = require('@apollo/server')
+    const [[config]] = ApolloServer.mock.calls
+
+    expect(config.introspection).toBe(false)
+    expect(config.hideSchemaDetailsFromClientErrors).toBe(true)
   })
 })

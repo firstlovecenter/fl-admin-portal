@@ -202,6 +202,16 @@ describe('graphql handler — CORS preflight, DEVELOPMENT branch (SECRETS warm)'
     expect(config.formatError).toBe(formatError)
   })
 
+  it('keeps schema suggestions in development (SYN-280)', () => {
+    const { ApolloServer } = require('@apollo/server')
+
+    const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
+
+    // Mocked secrets say development: suggestions stay on for local work.
+    expect(config.introspection).toBe(true)
+    expect(config.hideSchemaDetailsFromClientErrors).toBe(false)
+  })
+
   it('does not pass the v5-deprecated status400ForVariableCoercionErrors option (SYN-223)', () => {
     // Apollo Server v5 warns on cold start whenever this key is present in the
     // config — even set to `true`, which is now the default.
@@ -309,6 +319,33 @@ describe('graphql handler — CORS preflight, DEVELOPMENT branch (SECRETS warm)'
     expect(res.headers['Access-Control-Allow-Origin']).toBe(
       'http://127.0.0.1:3000'
     )
+  })
+})
+
+describe('graphql handler — production Apollo config (SYN-177, SYN-280)', () => {
+  it('disables introspection and hides schema suggestions outside development', async () => {
+    jest.resetModules()
+    require('./resolvers/secrets').loadSecrets.mockResolvedValueOnce({
+      ENVIRONMENT: 'production',
+      NEO4J_URI: 'bolt://localhost:7687/',
+      NEO4J_USER: 'neo4j',
+      NEO4J_PASSWORD: 'password',
+      JWT_SECRET: 'test-secret',
+    })
+    const { handler } = require('./graphql')
+    const { ApolloServer } = require('@apollo/server')
+
+    await handler(
+      {
+        httpMethod: 'POST',
+        headers: { origin: 'https://synago.firstlovecenter.com' },
+      },
+      makeContext()
+    )
+
+    const [config] = ApolloServer.mock.calls[ApolloServer.mock.calls.length - 1]
+    expect(config.introspection).toBe(false)
+    expect(config.hideSchemaDetailsFromClientErrors).toBe(true)
   })
 })
 
