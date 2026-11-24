@@ -82,8 +82,12 @@ const UpdateMember = () => {
       { query: DISPLAY_MEMBER_CHURCH, variables: { id: memberId } },
     ],
   })
-  const [UpdateMemberBacenta] = useMutation(UPDATE_MEMBER_BACENTA)
-  const [UpdateMemberBasonta] = useMutation(UPDATE_MEMBER_BASONTA)
+  const [UpdateMemberBacenta] = useMutation(UPDATE_MEMBER_BACENTA, {
+    context: CALLER_HANDLES_ERRORS_CONTEXT,
+  })
+  const [UpdateMemberBasonta] = useMutation(UPDATE_MEMBER_BASONTA, {
+    context: CALLER_HANDLES_ERRORS_CONTEXT,
+  })
   const [ReactivateMember, { loading: reactivating }] = useMutation(
     REACTIVATE_MEMBER_TO_BACENTA
   )
@@ -123,7 +127,7 @@ const UpdateMember = () => {
     onSubmitProps.setSubmitting(true)
 
     try {
-      const updateResult = await UpdateMember({
+      await UpdateMember({
         variables: {
           id: memberId,
           firstName: values.firstName.trim(),
@@ -142,32 +146,8 @@ const UpdateMember = () => {
         },
       })
 
-      // errorPolicy: 'all' (SYN-178) puts GraphQL errors in `.errors` rather
-      // than rejecting the promise — see SYN-205: without this check, a
-      // collision (or any other GraphQL error) was silently treated as a
-      // success.
-      if (updateResult.errors?.length) {
-        onSubmitProps.setSubmitting(false)
-
-        const collisionInfo = extractCollision(updateResult.errors)
-        if (collisionInfo) {
-          setCollision({
-            ...collisionInfo,
-            targetBacentaId: values.bacenta?.id,
-            targetBacentaName: values.bacenta?.name,
-          })
-          return
-        }
-
-        displayError(
-          t('directory.updateMember.updateProfileError'),
-          new Error(updateResult.errors[0].message)
-        )
-        return
-      }
-
       if (memberChurch?.bacenta.id !== values.bacenta.id) {
-        const bacentaResult = await UpdateMemberBacenta({
+        await UpdateMemberBacenta({
           variables: {
             memberId: memberId,
             bacentaId: values.bacenta?.id,
@@ -175,33 +155,15 @@ const UpdateMember = () => {
             historyRecord: `${member.firstName} ${member.lastName} moved from ${memberChurch?.bacenta.name} Bacenta to ${values.bacenta?.name} Bacenta`,
           },
         })
-
-        if (bacentaResult.errors?.length) {
-          onSubmitProps.setSubmitting(false)
-          displayError(
-            t('directory.updateMember.updateBacentaError'),
-            new Error(bacentaResult.errors[0].message)
-          )
-          return
-        }
       }
 
       if (values.basonta && memberChurch?.basonta?.id !== values.basonta) {
-        const basontaResult = await UpdateMemberBasonta({
+        await UpdateMemberBasonta({
           variables: {
             memberId: memberId,
             basontaId: values.basonta,
           },
         })
-
-        if (basontaResult.errors?.length) {
-          onSubmitProps.setSubmitting(false)
-          displayError(
-            t('directory.updateMember.updateBasontaError'),
-            new Error(basontaResult.errors[0].message)
-          )
-          return
-        }
       }
 
       onSubmitProps.setSubmitting(false)
