@@ -42,7 +42,7 @@ import { useTranslation } from 'react-i18next'
 type FormOptions = {
   momoNumber: string
   momoName: string
-  vehicleTopUp: number
+  vehicleTopUp: number | ''
   outbound: string
 }
 
@@ -62,10 +62,12 @@ const FormPayVehicleRecord = () => {
   const bacenta = data?.bacentas[0]
   const isRecordFromToday = !!vehicle?.createdAt && isToday(vehicle.createdAt)
 
+  // SYN-283: a record can have no top-up or momo details yet; seed '' rather
+  // than null so the inputs stay controlled (Yup still requires all three).
   const initialValues: FormOptions = {
-    momoName: vehicle?.momoName,
-    momoNumber: vehicle?.momoNumber,
-    vehicleTopUp: vehicle?.vehicleTopUp,
+    momoName: vehicle?.momoName ?? '',
+    momoNumber: vehicle?.momoNumber ?? '',
+    vehicleTopUp: vehicle?.vehicleTopUp ?? '',
     outbound: convertOutboundToString(bacenta?.outbound) ?? 'In Only',
   }
 
@@ -225,7 +227,7 @@ const FormPayVehicleRecord = () => {
               <Input
                 name="vehicleTopUp"
                 label={t('arrivals.form.vehicleTopUpAmount')}
-                placeholder={vehicle?.vehicleTopUp.toString()}
+                placeholder={vehicle?.vehicleTopUp?.toString()}
               />
               <Card className="my-3 border-[hsl(var(--warning))]/60">
                 <CardContent className="p-4">
@@ -239,12 +241,12 @@ const FormPayVehicleRecord = () => {
               <Input
                 name="momoNumber"
                 label={t('arrivals.form.momoNumberRequired')}
-                placeholder={vehicle?.momoNumber.toString()}
+                placeholder={vehicle?.momoNumber?.toString()}
               />
               <Input
                 name="momoName"
                 label={t('arrivals.form.momoNameRequired')}
-                placeholder={vehicle?.momoName.toString()}
+                placeholder={vehicle?.momoName?.toString()}
               />
 
               <Card className="mt-4 text-center">
