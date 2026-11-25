@@ -1,6 +1,8 @@
 const neo4j = require('neo4j-driver')
 const { default: axios } = require('axios')
-const { getSecrets } = require('../den-office-monthly-report/gsecrets.js')
+// SYN-286: use this folder's own copy — each background folder ships as its
+// own Lambda zip, so a cross-folder require is missing at cold start.
+const { getSecrets } = require('./gsecrets.js')
 const { writeToGsheet, clearGSheet } = require('./utils/writeToGSheet.js')
 const { newMembersList } = require('./query-exec/newMembersList.js')
 const { notifyBaseURL } = require('./utils/constants.js')
