@@ -145,23 +145,41 @@ describe('background function folders are self-contained (SYN-288)', () => {
 
 describe('accra-new-members handler', () => {
   it('loads secrets through its own gsecrets.js and completes', async () => {
+    const { default: axios } = require('axios')
     const { getSecrets } = require('./gsecrets.js')
+    const { clearGSheet, writeToGsheet } = require('./utils/writeToGSheet.js')
     const { handler } = require('./index.js')
 
     const result = await handler({}, {})
 
     expect(getSecrets).toHaveBeenCalledTimes(1)
     expect(result.statusCode).toBe(200)
+
+    // SYN-286: completing means the sheet is rewritten and the SMS goes out
+    // with the loaded notify key.
+    expect(clearGSheet).toHaveBeenCalledWith('New Members')
+    expect(writeToGsheet).toHaveBeenCalledWith(
+      [['Stream']],
+      'New Members',
+      'A1:L'
+    )
+    const smsCall = axios.mock.calls
+      .map(([config]) => config)
+      .find((config) => config.url === '/send-sms')
+    expect(smsCall.headers['x-secret-key']).toBe('test-notify-key')
   })
 
   it('returns a 500 instead of throwing when secrets cannot be loaded', async () => {
     const { getSecrets } = require('./gsecrets.js')
     getSecrets.mockRejectedValueOnce(new Error('secrets unavailable'))
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    const { writeToGsheet } = require('./utils/writeToGSheet.js')
     const { handler } = require('./index.js')
 
     const result = await handler({}, {})
 
     expect(result.statusCode).toBe(500)
     expect(JSON.parse(result.body).error).toBe('secrets unavailable')
+    expect(writeToGsheet).not.toHaveBeenCalled()
   })
 })
