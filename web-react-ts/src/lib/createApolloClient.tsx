@@ -216,7 +216,10 @@ export function createApolloClient({
         errorPolicy,
       },
       mutate: {
-        errorPolicy,
+        // Save handlers await mutations inside try/catch. Resolving a rejected
+        // write as partial success skips those catches and can reset a form,
+        // show success, or start follow-up writes after the first write failed.
+        errorPolicy: 'none',
       },
     },
   })

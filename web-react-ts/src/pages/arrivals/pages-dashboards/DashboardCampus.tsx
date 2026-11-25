@@ -103,6 +103,7 @@ const CampusDashboard = () => {
   const [adminDialogOpen, setAdminDialogOpen] = useState(false)
   const [swellDialogOpen, setSwellDialogOpen] = useState(false)
   const [codeDialogOpen, setCodeDialogOpen] = useState(false)
+  const [codeConfirmOpen, setCodeConfirmOpen] = useState(false)
   const [codeValue, setCodeValue] = useState('')
   const today = new Date().toISOString().slice(0, 10)
   const effectiveDate = arrivalDate || today
@@ -643,6 +644,16 @@ const CampusDashboard = () => {
                     {t('arrivals.dashboard.setSwellDescription')}
                   </DialogDescription>
                 </DialogHeader>
+                <div className="rounded-lg border border-warning/30 bg-warning/5 px-4 py-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">
+                      {t('arrivals.dashboard.swellDate')}
+                    </span>
+                    <span className="font-medium tabular-nums text-foreground">
+                      {effectiveDate}
+                    </span>
+                  </div>
+                </div>
                 <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                   <Button
                     type="button"
@@ -667,7 +678,7 @@ const CampusDashboard = () => {
               </DialogContent>
             </Dialog>
 
-            {/* ── Set Code of the Day dialog ── */}
+            {/* ── Set Code of the Day — entry dialog ── */}
             <Dialog open={codeDialogOpen} onOpenChange={setCodeDialogOpen}>
               <DialogContent className="sm:max-w-sm">
                 <DialogHeader>
@@ -702,8 +713,63 @@ const CampusDashboard = () => {
                   </Button>
                   <Button
                     type="button"
+                    disabled={!codeValue.trim()}
+                    onClick={() => {
+                      setCodeDialogOpen(false)
+                      setCodeConfirmOpen(true)
+                    }}
+                  >
+                    {t('services.form.reviewAndSubmit')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* ── Set Code of the Day — confirm dialog ── */}
+            <Dialog
+              open={codeConfirmOpen}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setCodeConfirmOpen(false)
+                  setCodeDialogOpen(true)
+                }
+              }}
+            >
+              <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>
+                    {t('arrivals.dashboard.confirmCodeTitle')}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {t('shared.confirmDialog.reviewDetails')}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="rounded-lg border border-arrivals/30 bg-arrivals/5 px-4 py-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">
+                      {t('arrivals.dashboard.code')}
+                    </span>
+                    <span className="font-mono text-lg font-bold tabular-nums tracking-widest text-foreground">
+                      {codeValue}
+                    </span>
+                  </div>
+                </div>
+                <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={codeLoading}
+                    onClick={() => {
+                      setCodeConfirmOpen(false)
+                      setCodeDialogOpen(true)
+                    }}
+                  >
+                    {t('shared.actions.edit')}
+                  </Button>
+                  <Button
+                    type="button"
                     onClick={handleSetCodeOfTheDay}
-                    disabled={codeLoading || !codeValue.trim()}
+                    disabled={codeLoading}
                     className="gap-2"
                   >
                     {codeLoading && <Loader2 className="size-4 animate-spin" />}

@@ -15,10 +15,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from 'components/ui/dialog'
 import { Skeleton } from 'components/ui/skeleton'
+import useModal from 'hooks/useModal'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { displayError } from 'utils/errorHandler'
 import { BACENTA_ARRIVALS } from '../arrivalsQueries'
@@ -47,6 +49,7 @@ const FormMobilisationSubmission = () => {
     variables: { id: bacentaId, date: today, bussingDate: today },
   })
   const [UploadMobilisationPicture] = useMutation(UPLOAD_MOBILISATION_PICTURE)
+  const { show, handleClose, handleShow } = useModal()
 
   const bacenta: BacentaWithArrivals | undefined = data?.bacentas[0]
   const codeOfTheDay = bacenta?.arrivalsCodeOfTheDay
@@ -183,7 +186,54 @@ const FormMobilisationSubmission = () => {
                         aria-describedby="ImageUpload"
                       />
 
-                      <SubmitButton formik={formik} />
+                      <Dialog
+                        open={show}
+                        onOpenChange={(open) => !open && handleClose()}
+                      >
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>
+                              {t('arrivals.form.confirmMobilisationTitle')}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-3 py-1 text-sm">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {'Bacenta'}
+                              </span>
+                              <span className="font-medium text-foreground">
+                                {bacenta?.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t('arrivals.bussing.dateOfService')}
+                              </span>
+                              <span className="font-medium tabular-nums text-foreground">
+                                {formik.values.serviceDate}
+                              </span>
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={handleClose}>
+                              {t('shared.actions.edit')}
+                            </Button>
+                            <SubmitButton
+                              onClick={formik.handleSubmit}
+                              formik={formik}
+                            />
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Button
+                        type="button"
+                        className="w-full"
+                        onClick={handleShow}
+                        disabled={!formik.isValid || formik.isSubmitting}
+                      >
+                        {t('services.form.reviewAndSubmit')}
+                      </Button>
                     </Form>
                   </CardContent>
                 </Card>

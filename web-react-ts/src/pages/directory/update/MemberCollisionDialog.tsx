@@ -19,6 +19,7 @@ export type MemberCollision = {
   bacentaName: string | null
   /** Bacenta of the member being edited — where a reactivated member is moved. */
   targetBacentaId?: string
+  targetBacentaName?: string
 }
 
 type MemberCollisionDialogProps = {
@@ -61,6 +62,14 @@ const MemberCollisionDialog = ({
                 })}{' '}
                 <strong>{who}</strong>
                 {t('directory.memberCollisionDialog.deactivatedDescriptionSuffix')}
+                {collision.targetBacentaName && (
+                  <>
+                    {' '}
+                    {t('directory.memberCollisionDialog.reactivateTargetBacenta')}{' '}
+                    <strong>{collision.targetBacentaName}</strong>{' '}
+                    {t('shared.churchLevel.Bacenta')}.
+                  </>
+                )}
               </>
             ) : (
               <>
