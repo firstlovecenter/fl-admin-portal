@@ -111,6 +111,84 @@ beforeEach(() => {
   } as unknown as Context
 })
 
+describe('CreateMember session cleanup', () => {
+  const args = {
+    email: 'new@example.test',
+    whatsappNumber: '0244000000',
+    bacenta: 'bacenta_1',
+  } as unknown as Member
+
+  it('closes the session after registering a new member', async () => {
+    mockSession.executeRead
+      .mockResolvedValueOnce(mockQueryResult({ count: 0 }))
+      .mockResolvedValueOnce(mockQueryResult({ predicate: false }))
+    await directoryMutation.CreateMember(null, args, context)
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes the session after reactivating an inactive member', async () => {
+    mockSession.executeRead.mockResolvedValueOnce(
+      mockQueryResult({ count: 1, id: 'inactive_member' })
+    )
+    await directoryMutation.CreateMember(null, args, context)
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes the session when duplicate contact details are rejected', async () => {
+    mockSession.executeRead
+      .mockResolvedValueOnce(mockQueryResult({ count: 0 }))
+      .mockResolvedValueOnce(
+        mockQueryResult({
+          predicate: true,
+          member: {
+            properties: {
+              email: args.email,
+              firstName: 'Ama',
+              lastName: 'Mensah',
+            },
+          },
+        })
+      )
+    await expect(
+      directoryMutation.CreateMember(null, args, context)
+    ).rejects.toThrow('There is a member')
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('closes the session when the database write fails', async () => {
+    mockSession.executeRead
+      .mockResolvedValueOnce(mockQueryResult({ count: 0 }))
+      .mockResolvedValueOnce(mockQueryResult({ predicate: false }))
+    mockSession.executeWrite.mockRejectedValueOnce(new Error('write failed'))
+    await expect(
+      directoryMutation.CreateMember(null, args, context)
+    ).rejects.toThrow('write failed')
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('UpdateMemberBacenta session cleanup', () => {
+  const moveArgs = { memberId: 'member_1', bacentaId: 'bacenta_1' }
+  const memberProps = { id: 'member_1', firstName: 'Ama' }
+
+  it('closes the session after moving the member', async () => {
+    mockSession.executeWrite.mockResolvedValueOnce({
+      records: [{ get: () => ({ properties: memberProps }) }],
+    })
+    await directoryMutation.UpdateMemberBacenta(null, moveArgs, context)
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes the session when the database write fails', async () => {
+    mockSession.executeWrite.mockRejectedValueOnce(new Error('write failed'))
+    await expect(
+      directoryMutation.UpdateMemberBacenta(null, moveArgs, context)
+    ).rejects.toThrow('write failed')
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('SYN-207 — UpdateMemberDetails: assertScopeViaMember gating', () => {
   it('SYN-207: calls assertScopeViaMember with args.id before writing', async () => {
     await directoryMutation.UpdateMemberDetails(null, updateArgs, context)

@@ -16,6 +16,16 @@ import Input from 'components/formik/Input'
 import Select from 'components/formik/Select'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
 import ImageUpload from 'components/formik/ImageUpload'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import useModal from 'hooks/useModal'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { BacentaWithArrivals } from '../arrivals-types'
 import { useTranslation } from 'react-i18next'
@@ -45,6 +55,7 @@ const FormAddVehicleRecord = () => {
     picture: '',
   }
 
+  const { show, handleClose, handleShow } = useModal()
   const [RecordVehicleFromBacenta] = useMutation(RECORD_BUSSING_FROM_BACENTA)
   const validationSchema = Yup.object({
     leaderDeclaration: Yup.number()
@@ -192,7 +203,76 @@ const FormAddVehicleRecord = () => {
                     <p className="text-center text-xs italic leading-relaxed text-muted-foreground">
                       {t('arrivals.form.declaration')}
                     </p>
-                    <SubmitButton formik={formik} />
+
+                    <Dialog
+                      open={show}
+                      onOpenChange={(open) => !open && handleClose()}
+                    >
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            {t('arrivals.form.confirmTitle')}
+                          </DialogTitle>
+                          <DialogDescription>
+                            {t('shared.confirmDialog.reviewDetails')}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-3 py-1 text-sm">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">
+                              {t('arrivals.bussing.bacentaName', {
+                                name: '',
+                              }).trim() || 'Bacenta'}
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {bacenta?.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">
+                              {t('arrivals.form.serviceDate')}
+                            </span>
+                            <span className="font-medium tabular-nums text-foreground">
+                              {serviceDate}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">
+                              {t('arrivals.form.vehicleType')}
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {formik.values.vehicle}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">
+                              {t('arrivals.payment.attendance')}
+                            </span>
+                            <span className="font-medium tabular-nums text-foreground">
+                              {formik.values.leaderDeclaration}
+                            </span>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={handleClose}>
+                            {t('shared.actions.edit')}
+                          </Button>
+                          <SubmitButton
+                            onClick={formik.handleSubmit}
+                            formik={formik}
+                          />
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button
+                      type="button"
+                      className="w-full"
+                      onClick={handleShow}
+                      disabled={!formik.isValid || formik.isSubmitting}
+                    >
+                      {t('services.form.reviewAndSubmit')}
+                    </Button>
                   </div>
                 </div>
               </Form>

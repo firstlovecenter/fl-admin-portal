@@ -11,9 +11,12 @@
  *
  * Locks in the Apollo Client link-chain behaviour: auth header, retry
  * policy (5xx retried, 4xx not retried), error-link surface (one toast
- * per query — error link sits outside the retry boundary), and
- * errorPolicy: 'all'. These tests guard against silent regressions in
- * src/lib/createApolloClient.tsx during future link-config changes.
+ * per query — error link sits outside the retry boundary),
+ * errorPolicy: 'all' for queries/watchQueries, and errorPolicy: 'none'
+ * for mutations (so GraphQL errors reject the promise rather than resolving
+ * it silently — see the "failed directory writes" suite below). These tests
+ * guard against silent regressions in src/lib/createApolloClient.tsx
+ * during future link-config changes.
  *
  * Stack: Vitest + MSW (per ADR-013). MSW intercepts fetch and lets us
  * return deterministic 5xx / 4xx / partial-success responses without a
@@ -44,6 +47,8 @@ import { gql } from '@apollo/client'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 import { toast } from 'sonner'
+import { CREATE_MEMBER_MUTATION } from 'pages/directory/create/CreateMutations'
+import { MAKE_BACENTA_LEADER } from 'pages/directory/update/ChangeLeaderMutations'
 import {
   CALLER_HANDLES_ERRORS_CONTEXT,
   createApolloClient,
@@ -296,7 +301,7 @@ describe('createApolloClient — error link', () => {
       .catch(() => undefined)
 
     expect(toast.error).toHaveBeenCalledTimes(1)
-   // SYN-178 — the user-facing toast title is generic; the raw GraphQL
+    // SYN-178 — the user-facing toast title is generic; the raw GraphQL
     // message ('boom') must NOT leak into it. It survives only inside the
     // stable dedupe `id` (an internal seam, never rendered) and the dev
     // console. Asserting the generic title + description pins that contract.
@@ -604,6 +609,105 @@ describe('createApolloClient — errorPolicy: all', () => {
     expect(result.data).toEqual({ ping: 'pong' })
     expect(result.errors).toBeDefined()
     expect(result.errors?.[0]?.message).toBe('partial failure')
+  })
+})
+
+describe('createApolloClient — failed directory writes', () => {
+  it('rejects a refused registration so the form does not reset or navigate as if it saved', async () => {
+    server.use(
+      http.post(GRAPHQL_URL, () =>
+        HttpResponse.json({
+          data: null,
+          errors: [
+            {
+              message: 'A member already has this WhatsApp number',
+              extensions: { code: 'BAD_USER_INPUT', errorRef: 'TESTREF1' },
+            },
+          ],
+        })
+      )
+    )
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+    const success = vi.fn()
+    await expect(
+      client
+        .mutate({
+          mutation: CREATE_MEMBER_MUTATION,
+          variables: {
+            firstName: 'Ama',
+            lastName: 'Mensah',
+            phoneNumber: '0244000000',
+            whatsappNumber: '0244000000',
+            dob: '2000-01-01',
+            maritalStatus: 'Single',
+            gender: 'Female',
+            bacenta: 'bacenta-1',
+            visitationArea: 'Accra',
+            pictureUrl: 'photo.jpg',
+          },
+        })
+        .then(success)
+    ).rejects.toMatchObject({
+      graphQLErrors: [
+        expect.objectContaining({
+          extensions: expect.objectContaining({
+            code: 'BAD_USER_INPUT',
+            errorRef: 'TESTREF1',
+          }),
+        }),
+      ],
+    })
+    expect(success).not.toHaveBeenCalled()
+    client.stop()
+  })
+
+  it('rejects a leader-change response with partial data and errors instead of reporting success', async () => {
+    server.use(
+      http.post(GRAPHQL_URL, () =>
+        HttpResponse.json({
+          data: {
+            RemoveBacentaLeader: null,
+            MakeBacentaLeader: {
+              id: 'new-leader',
+              firstName: 'New',
+              lastName: 'Leader',
+              leadsBacenta: [],
+            },
+          },
+          errors: [
+            {
+              message: 'The previous leader could not be removed',
+              path: ['RemoveBacentaLeader'],
+              extensions: { code: 'BAD_USER_INPUT' },
+            },
+          ],
+        })
+      )
+    )
+    const client = createApolloClient({
+      getAccessTokenSilently: tokenResolver('tok'),
+      uri: GRAPHQL_URL,
+    })
+    const success = vi.fn()
+    await expect(
+      client
+        .mutate({
+          mutation: MAKE_BACENTA_LEADER,
+          variables: {
+            bacentaId: 'bacenta-1',
+            oldLeaderId: 'old-leader',
+            newLeaderId: 'new-leader',
+          },
+        })
+        .then(success)
+    ).rejects.toMatchObject({
+      graphQLErrors: [expect.objectContaining({ path: ['RemoveBacentaLeader'] })],
+    })
+    expect(success).not.toHaveBeenCalled()
+    client.stop()
   })
 })
 

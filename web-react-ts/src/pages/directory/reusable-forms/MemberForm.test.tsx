@@ -118,14 +118,16 @@ describe('MemberForm i18n', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the English update-mode heading and Save Changes button', async () => {
+  it('renders the English update-mode heading and Review & Submit button', async () => {
     renderForm(true)
 
     expect(
       await screen.findByRole('heading', { name: 'Edit Member' })
     ).toBeInTheDocument()
+    // 'Save Changes' is now inside the confirmation dialog (closed by default);
+    // the visible submit trigger is 'Review & Submit'.
     expect(
-      screen.getByRole('button', { name: 'Save Changes' })
+      screen.getByRole('button', { name: 'Review & Submit' })
     ).toBeInTheDocument()
   })
 

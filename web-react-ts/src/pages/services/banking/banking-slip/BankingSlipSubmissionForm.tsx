@@ -11,11 +11,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from 'components/ui/alert-dialog'
+import { Button } from 'components/ui/button'
 import { Card, CardContent } from 'components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { MemberContext } from 'contexts/MemberContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { Form, Formik, FormikHelpers } from 'formik'
+import useModal from 'hooks/useModal'
 import usePopup from 'hooks/usePopup'
 import { getHumanReadableDate } from 'lib/date-utils'
 import { useContext, useState } from 'react'
@@ -68,6 +78,7 @@ const BankingSlipSubmissionForm = ({
   const { currentUser } = useContext(MemberContext)
   const navigate = useNavigate()
   const { togglePopup, isOpen } = usePopup()
+  const { show: confirmOpen, handleShow: openConfirm, handleClose: closeConfirm } = useModal()
   const [errorMessage, setErrorMessage] = useState('')
   const currency = currentUser.currency
 
@@ -189,7 +200,81 @@ const BankingSlipSubmissionForm = ({
                     />
                   </CardContent>
                 </Card>
-                <SubmitButton formik={formik} />
+
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={!formik.isValid || formik.isSubmitting}
+                  onClick={openConfirm}
+                >
+                  {t('services.form.reviewAndSubmit')}
+                </Button>
+
+                {/* ── Confirmation dialog ── */}
+                <Dialog
+                  open={confirmOpen}
+                  onOpenChange={(open) => !open && closeConfirm()}
+                >
+                  <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {t('services.form.confirmTitle')}
+                      </DialogTitle>
+                      <DialogDescription>
+                        {t('shared.confirmDialog.reviewDetails')}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 py-1 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground">
+                          {t('services.form.church')}
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {church?.name}
+                        </span>
+                      </div>
+                      {serviceRecord && (
+                        <>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">
+                              {serviceDateLabel}
+                            </span>
+                            <span className="font-medium tabular-nums text-foreground">
+                              {getHumanReadableDate(
+                                serviceRecord.serviceDate.date,
+                                true
+                              )}
+                            </span>
+                          </div>
+                          {serviceRecord.cash != null && (
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t(
+                                  'services.banking.bankingSlip.expectedIncome'
+                                )}
+                              </span>
+                              <span className="font-mono font-medium tabular-nums text-foreground">
+                                {serviceRecord.cash} {currency}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={closeConfirm}>
+                        {t('shared.actions.edit')}
+                      </Button>
+                      <SubmitButton
+                        onClick={() => {
+                          closeConfirm()
+                          formik.handleSubmit()
+                        }}
+                        formik={formik}
+                      />
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </Form>
             )}
           </Formik>

@@ -51,7 +51,8 @@ const resolvers = {
 
 // Wired like both bootstraps: the real formatError runs before the plugin, and
 // `introspection: false` mirrors production (SYN-177).
-const buildServer = (introspection = true) =>
+// `hideSchemaDetailsFromClientErrors` mirrors production too (SYN-280).
+const buildServer = (introspection = true, hideSchemaDetails = false) =>
   new ApolloServer({
     typeDefs,
     resolvers,
@@ -59,12 +60,19 @@ const buildServer = (introspection = true) =>
     plugins: [errorReferencePlugin],
     includeStacktraceInErrorResponses: false,
     introspection,
+    hideSchemaDetailsFromClientErrors: hideSchemaDetails,
   })
 
-const run = async (query: string, contextValue = {}, introspection = true) => {
-  const server = buildServer(introspection)
+const run = async (
+  query: string,
+  contextValue = {},
+  introspection = true,
+  { operationName = 'Probe' as string | null, hideSchemaDetails = false } = {}
+) => {
+  const server = buildServer(introspection, hideSchemaDetails)
   const response = await server.executeOperation(
-    { query, operationName: 'Probe' },
+    // null sends no operation name, like the probes in SYN-280.
+    { query, operationName: operationName ?? undefined },
     { contextValue }
   )
   await server.stop()
@@ -154,12 +162,39 @@ describe('logLevelForError (SYN-268)', () => {
     ).toBe('warn')
   })
 
-  it('keeps any other validation failure at error', () => {
+  it('keeps any other validation failure on a named operation at error', () => {
     expect(
-      logLevelForError({
-        message: 'Cannot query field "gone" on type "Query".',
-        extensions: { code: 'GRAPHQL_VALIDATION_FAILED' },
-      })
+      logLevelForError(
+        {
+          message: 'Cannot query field "gone" on type "Query".',
+          extensions: { code: 'GRAPHQL_VALIDATION_FAILED' },
+        },
+        'getMembers'
+      )
+    ).toBe('error')
+  })
+
+  it.each([undefined, null, ''])(
+    'SYN-280: logs a validation failure on an unnamed (%p) operation at warn',
+    (operationName) => {
+      expect(
+        logLevelForError(
+          {
+            message: 'Cannot query field "gone" on type "Query".',
+            extensions: { code: 'GRAPHQL_VALIDATION_FAILED' },
+          },
+          operationName
+        )
+      ).toBe('warn')
+    }
+  )
+
+  it('SYN-280: keeps a real failure on an unnamed operation at error', () => {
+    expect(
+      logLevelForError(
+        { message: 'x', extensions: { code: 'INTERNAL_SERVER_ERROR' } },
+        undefined
+      )
     ).toBe('error')
   })
 
@@ -235,6 +270,51 @@ describe('errorReferencePlugin', () => {
     )
     expect(warnLog).not.toHaveBeenCalled()
     expect(errorLog).toHaveBeenCalledTimes(1)
+  })
+
+  // SYN-280 — the ticket's shape: an unnamed operation, sent without a
+  // token, asking for a field that does not exist. Not our client (it names
+  // every operation), so it must not land on the ERROR line.
+  it('SYN-280: logs an unnamed query against a missing field once at warn, not error', async () => {
+    const result = await run('{ gone }', {}, false, {
+      operationName: null,
+    })
+
+    expect(result.errors?.[0].extensions?.code).toBe(
+      'GRAPHQL_VALIDATION_FAILED'
+    )
+    expect(errorLog).not.toHaveBeenCalled()
+    expect(warnLog).toHaveBeenCalledTimes(1)
+    expect(warnLog.mock.calls[0][0]).toContain(
+      'op=<anonymous> user=anonymous code=GRAPHQL_VALIDATION_FAILED'
+    )
+  })
+
+  it('SYN-280: keeps a real failure in an unnamed query at error', async () => {
+    await run('{ crashed }', {}, true, { operationName: null })
+
+    expect(warnLog).not.toHaveBeenCalled()
+    expect(errorLog).toHaveBeenCalledTimes(1)
+    expect(errorLog.mock.calls[0][0]).toContain('code=INTERNAL_SERVER_ERROR')
+  })
+
+  it('SYN-280: production hides the "Did you mean" field suggestions', async () => {
+    const shown = await run('{ incom }', {}, false, {
+      operationName: null,
+    })
+    const hidden = await run('{ incom }', {}, false, {
+      operationName: null,
+      hideSchemaDetails: true,
+    })
+
+    expect(shown.errors?.[0].message).toContain('Did you mean')
+    expect(hidden.errors?.[0].message).toBe(
+      'Cannot query field "incom" on type "Query".'
+    )
+    expect(hidden.errors?.[0].extensions?.code).toBe(
+      'GRAPHQL_VALIDATION_FAILED'
+    )
+    expect(warnLog.mock.calls.at(-1)?.[0]).not.toContain('Did you mean')
   })
 
   it('creates an 8 character uppercase hex reference', () => {
