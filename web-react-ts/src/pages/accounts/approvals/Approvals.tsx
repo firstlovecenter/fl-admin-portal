@@ -36,6 +36,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from 'components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
 import { CheckCircle2, Inbox, Loader2, XCircle } from 'lucide-react'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import useBulkSelect from 'hooks/useBulkSelect'
@@ -65,6 +73,9 @@ const Approvals = () => {
   // server, but the FE should still gate the affordance per-card so
   // the user gets correct visual feedback.
   const [decliningIds, setDecliningIds] = useState<Set<string>>(new Set())
+  const [confirmingApproveId, setConfirmingApproveId] = useState<string | null>(
+    null
+  )
   const isDeclining = (id: string) => decliningIds.has(id)
   const markDeclining = (id: string, on: boolean) =>
     setDecliningIds((prev) => {
@@ -111,8 +122,7 @@ const Approvals = () => {
 
   const allTransactionIds = useMemo(
     () => councilsWithPending.flatMap((c) => c.transactions.map((t) => t.id)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [totalPending]
+    [councilsWithPending]
   )
 
   const { selectedIds, toggle, selectAll, clear, isSelected, count, isAllSelected } =
@@ -375,63 +385,182 @@ const Approvals = () => {
                                 onSubmit={onApprove}
                               >
                                 {(formik) => (
-                                  <Form className="space-y-4">
-                                    <Input
-                                      name="charge"
-                                      label={t('accounts.approvals.chargeLabel')}
-                                      placeholder={t(
-                                        'accounts.approvals.chargePlaceholder'
-                                      )}
-                                      type="number"
-                                      inputMode="decimal"
-                                    />
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                                      <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="lg"
-                                        className="h-12 w-full gap-2 px-6 sm:w-auto sm:min-w-40"
-                                        disabled={isDeclining(transaction.id)}
-                                        onClick={async () => {
-                                          try {
-                                            markDeclining(transaction.id, true)
-                                            await declineExpense({
-                                              variables: {
-                                                transactionId: transaction.id,
-                                              },
-                                            })
-                                            await refetch()
-                                          } catch (err) {
-                                            throwToSentry(
-                                              'There was an error declining the transaction',
-                                              err
-                                            )
-                                          } finally {
-                                            markDeclining(transaction.id, false)
-                                          }
-                                        }}
-                                      >
-                                        {isDeclining(transaction.id) ? (
-                                          <>
-                                            <Loader2 className="size-4 animate-spin" />
-                                            {t('accounts.approvals.declining')}
-                                          </>
-                                        ) : (
-                                          <>
-                                            <XCircle className="size-5" />
-                                            {t('accounts.approvals.decline')}
-                                          </>
+                                  <>
+                                    <Form className="space-y-4">
+                                      <Input
+                                        name="charge"
+                                        label={t(
+                                          'accounts.approvals.chargeLabel'
                                         )}
-                                      </Button>
-                                      <SubmitButton
-                                        formik={formik}
-                                        className="h-12 w-full gap-2 px-6 sm:w-auto sm:min-w-40"
-                                      >
-                                        <CheckCircle2 className="size-5" />
-                                        {t('accounts.approvals.approve')}
-                                      </SubmitButton>
-                                    </div>
-                                  </Form>
+                                        placeholder={t(
+                                          'accounts.approvals.chargePlaceholder'
+                                        )}
+                                        type="number"
+                                        inputMode="decimal"
+                                      />
+                                      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                                        <Button
+                                          type="button"
+                                          variant="destructive"
+                                          size="lg"
+                                          className="h-12 w-full gap-2 px-6 sm:w-auto sm:min-w-40"
+                                          disabled={isDeclining(transaction.id)}
+                                          onClick={async () => {
+                                            try {
+                                              markDeclining(transaction.id, true)
+                                              await declineExpense({
+                                                variables: {
+                                                  transactionId: transaction.id,
+                                                },
+                                              })
+                                              await refetch()
+                                            } catch (err) {
+                                              throwToSentry(
+                                                'There was an error declining the transaction',
+                                                err
+                                              )
+                                            } finally {
+                                              markDeclining(
+                                                transaction.id,
+                                                false
+                                              )
+                                            }
+                                          }}
+                                        >
+                                          {isDeclining(transaction.id) ? (
+                                            <>
+                                              <Loader2 className="size-4 animate-spin" />
+                                              {t('accounts.approvals.declining')}
+                                            </>
+                                          ) : (
+                                            <>
+                                              <XCircle className="size-5" />
+                                              {t('accounts.approvals.decline')}
+                                            </>
+                                          )}
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          size="lg"
+                                          className="h-12 w-full gap-2 px-6 sm:w-auto sm:min-w-40"
+                                          disabled={
+                                            !formik.isValid ||
+                                            formik.isSubmitting ||
+                                            isDeclining(transaction.id)
+                                          }
+                                          onClick={async () => {
+                                            const errors =
+                                              await formik.validateForm()
+                                            if (
+                                              Object.keys(errors).length === 0
+                                            ) {
+                                              setConfirmingApproveId(
+                                                transaction.id
+                                              )
+                                            } else {
+                                              formik.setTouched(
+                                                Object.keys(errors).reduce(
+                                                  (acc, key) => ({
+                                                    ...acc,
+                                                    [key]: true,
+                                                  }),
+                                                  {}
+                                                )
+                                              )
+                                            }
+                                          }}
+                                        >
+                                          <CheckCircle2 className="size-5" />
+                                          {t('accounts.approvals.approve')}
+                                        </Button>
+                                      </div>
+                                    </Form>
+
+                                    {/* Per-card approve confirmation */}
+                                    <Dialog
+                                      open={
+                                        confirmingApproveId === transaction.id
+                                      }
+                                      onOpenChange={(open) =>
+                                        !open && setConfirmingApproveId(null)
+                                      }
+                                    >
+                                      <DialogContent className="sm:max-w-sm">
+                                        <DialogHeader>
+                                          <DialogTitle>
+                                            {t(
+                                              'accounts.approvals.confirmApproveTitle'
+                                            )}
+                                          </DialogTitle>
+                                          <DialogDescription>
+                                            {translateCategoryLabel(
+                                              t,
+                                              transaction.category
+                                            )}
+                                          </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-3 py-1 text-sm">
+                                          <div className="flex items-baseline justify-between gap-3">
+                                            <span className="text-muted-foreground">
+                                              {t('accounts.common.amount')}
+                                            </span>
+                                            <span className="text-xl font-semibold tabular-nums text-foreground">
+                                              {formatAmount(
+                                                transaction.amount,
+                                                currency
+                                              )}
+                                            </span>
+                                          </div>
+                                          {formik.values.charge && (
+                                            <div className="flex items-center justify-between gap-3">
+                                              <span className="text-muted-foreground">
+                                                {t(
+                                                  'accounts.approvals.chargeLabel'
+                                                )}
+                                              </span>
+                                              <span className="font-medium tabular-nums text-foreground">
+                                                {formatAmount(
+                                                  parseFloat(
+                                                    formik.values.charge
+                                                  ),
+                                                  currency
+                                                )}
+                                              </span>
+                                            </div>
+                                          )}
+                                          <div className="flex items-center justify-between gap-3">
+                                            <span className="text-muted-foreground">
+                                              {t('accounts.common.description')}
+                                            </span>
+                                            <span className="max-w-[55%] text-right text-xs font-medium text-foreground">
+                                              {transaction.description}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <DialogFooter>
+                                          <Button
+                                            variant="outline"
+                                            onClick={() =>
+                                              setConfirmingApproveId(null)
+                                            }
+                                          >
+                                            {t('shared.actions.cancel')}
+                                          </Button>
+                                          <SubmitButton
+                                            formik={formik}
+                                            onClick={() => {
+                                              setConfirmingApproveId(null)
+                                              formik.handleSubmit()
+                                            }}
+                                            className="gap-2"
+                                          >
+                                            <CheckCircle2 className="size-4" />
+                                            {t('accounts.approvals.approve')}
+                                          </SubmitButton>
+                                        </DialogFooter>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </>
                                 )}
                               </Formik>
                             </CardContent>

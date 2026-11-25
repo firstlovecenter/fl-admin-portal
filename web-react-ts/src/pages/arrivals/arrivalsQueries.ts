@@ -544,7 +544,7 @@ export const DISPLAY_VEHICLE_PAYMENT_RECORDS = gql`
 
       leaderDeclaration
       attendance
-      vehicleCost
+      vehicleTopUp
       picture
       momoNumber
       momoName

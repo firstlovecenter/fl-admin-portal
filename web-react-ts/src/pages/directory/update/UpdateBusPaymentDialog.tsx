@@ -74,6 +74,7 @@ const UpdateBusPaymentDialog = ({
   const { currentUser } = useContext(MemberContext)
   const { isAuthorised } = useAuth()
   const [otp, setOtp] = useState(() => randomOTPGenerator())
+  const [reviewOpen, setReviewOpen] = useState(false)
   const [verifyOpen, setVerifyOpen] = useState(false)
   const [pendingMomo, setPendingMomo] = useState<PendingMomo | null>(null)
   const [verificationCode, setVerificationCode] = useState('')
@@ -239,83 +240,185 @@ const UpdateBusPaymentDialog = ({
               validateOnMount
             >
               {(formik) => (
-                <Form className="space-y-4">
-                  <RoleView roles={permitBacentaBussingAdmin()}>
-                    <div className="space-y-4">
-                      <Input
-                        name="urvanTopUp"
-                        type="number"
-                        inputMode="decimal"
-                        label={t('directory.updateBusPaymentDialog.urvanTopUpLabel')}
-                        placeholder={t(
-                          'directory.updateBusPaymentDialog.amountPlaceholder',
-                          { currency: currentUser.currency }
-                        )}
-                      />
-                      <Input
-                        name="sprinterTopUp"
-                        type="number"
-                        inputMode="decimal"
-                        label={t(
-                          'directory.updateBusPaymentDialog.sprinterTopUpLabel'
-                        )}
-                        placeholder={t(
-                          'directory.updateBusPaymentDialog.amountPlaceholder',
-                          { currency: currentUser.currency }
-                        )}
-                      />
-                      <div className="rounded-lg border border-warning/40 bg-warning/5 p-4">
-                        <RadioButtons
-                          name="outbound"
-                          label={t(
-                            'directory.updateBusPaymentDialog.bussingBackLabel'
+                <>
+                  <Form className="space-y-4">
+                    <RoleView roles={permitBacentaBussingAdmin()}>
+                      <div className="space-y-4">
+                        <Input
+                          name="urvanTopUp"
+                          type="number"
+                          inputMode="decimal"
+                          label={t('directory.updateBusPaymentDialog.urvanTopUpLabel')}
+                          placeholder={t(
+                            'directory.updateBusPaymentDialog.amountPlaceholder',
+                            { currency: currentUser.currency }
                           )}
-                          options={OUTBOUND_OPTIONS}
+                        />
+                        <Input
+                          name="sprinterTopUp"
+                          type="number"
+                          inputMode="decimal"
+                          label={t(
+                            'directory.updateBusPaymentDialog.sprinterTopUpLabel'
+                          )}
+                          placeholder={t(
+                            'directory.updateBusPaymentDialog.amountPlaceholder',
+                            { currency: currentUser.currency }
+                          )}
+                        />
+                        <div className="rounded-lg border border-warning/40 bg-warning/5 p-4">
+                          <RadioButtons
+                            name="outbound"
+                            label={t(
+                              'directory.updateBusPaymentDialog.bussingBackLabel'
+                            )}
+                            options={OUTBOUND_OPTIONS}
+                          />
+                        </div>
+                      </div>
+                    </RoleView>
+
+                    <RoleView
+                      roles={['leaderBacenta']}
+                      verifyId={bacenta?.leader?.id}
+                    >
+                      <div className="space-y-4">
+                        <Select
+                          name="mobileNetwork"
+                          label={t(
+                            'directory.updateBusPaymentDialog.mobileNetworkLabel'
+                          )}
+                          options={MOBILE_NETWORK_OPTIONS}
+                        />
+                        <Input
+                          name="momoNumber"
+                          type="tel"
+                          inputMode="numeric"
+                          label={t('directory.updateBusPaymentDialog.momoNumberLabel')}
+                          placeholder={t(
+                            'directory.updateBusPaymentDialog.momoNumberPlaceholder'
+                          )}
+                        />
+                        <Input
+                          name="momoName"
+                          label={t('directory.updateBusPaymentDialog.momoNameLabel')}
                         />
                       </div>
-                    </div>
-                  </RoleView>
+                    </RoleView>
 
-                  <RoleView
-                    roles={['leaderBacenta']}
-                    verifyId={bacenta?.leader?.id}
+                    <DialogFooter className="pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={formik.isSubmitting}
+                      >
+                        {t('directory.common.cancel')}
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={!formik.isValid || formik.isSubmitting}
+                        onClick={() => setReviewOpen(true)}
+                      >
+                        {t('services.form.reviewAndSubmit')}
+                      </Button>
+                    </DialogFooter>
+                  </Form>
+
+                  {/* ── Review before submit ── */}
+                  <Dialog
+                    open={reviewOpen}
+                    onOpenChange={(o) => !o && setReviewOpen(false)}
                   >
-                    <div className="space-y-4">
-                      <Select
-                        name="mobileNetwork"
-                        label={t(
-                          'directory.updateBusPaymentDialog.mobileNetworkLabel'
+                    <DialogContent className="sm:max-w-sm">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {t('services.form.confirmTitle')}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {t('shared.confirmDialog.reviewDetails')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-1 text-sm">
+                        {isAuthorised(permitBacentaBussingAdmin()) && (
+                          <>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t(
+                                  'directory.updateBusPaymentDialog.urvanTopUpLabel'
+                                )}
+                              </span>
+                              <span className="font-medium tabular-nums text-foreground">
+                                {formik.values.urvanTopUp || '0'}{' '}
+                                {currentUser.currency}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t(
+                                  'directory.updateBusPaymentDialog.sprinterTopUpLabel'
+                                )}
+                              </span>
+                              <span className="font-medium tabular-nums text-foreground">
+                                {formik.values.sprinterTopUp || '0'}{' '}
+                                {currentUser.currency}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t(
+                                  'directory.updateBusPaymentDialog.bussingBackLabel'
+                                )}
+                              </span>
+                              <span className="font-medium text-foreground">
+                                {formik.values.outbound}
+                              </span>
+                            </div>
+                          </>
                         )}
-                        options={MOBILE_NETWORK_OPTIONS}
-                      />
-                      <Input
-                        name="momoNumber"
-                        type="tel"
-                        inputMode="numeric"
-                        label={t('directory.updateBusPaymentDialog.momoNumberLabel')}
-                        placeholder={t(
-                          'directory.updateBusPaymentDialog.momoNumberPlaceholder'
+                        {formik.values.momoNumber && (
+                          <>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t(
+                                  'directory.updateBusPaymentDialog.momoNumberLabel'
+                                )}
+                              </span>
+                              <span className="font-mono font-medium tabular-nums text-foreground">
+                                {formik.values.momoNumber}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-muted-foreground">
+                                {t(
+                                  'directory.updateBusPaymentDialog.momoNameLabel'
+                                )}
+                              </span>
+                              <span className="font-medium text-foreground">
+                                {formik.values.momoName}
+                              </span>
+                            </div>
+                          </>
                         )}
-                      />
-                      <Input
-                        name="momoName"
-                        label={t('directory.updateBusPaymentDialog.momoNameLabel')}
-                      />
-                    </div>
-                  </RoleView>
-
-                  <DialogFooter className="pt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => onOpenChange(false)}
-                      disabled={formik.isSubmitting}
-                    >
-                      {t('directory.common.cancel')}
-                    </Button>
-                    <SubmitButton formik={formik} />
-                  </DialogFooter>
-                </Form>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setReviewOpen(false)}
+                        >
+                          {t('shared.actions.edit')}
+                        </Button>
+                        <SubmitButton
+                          onClick={() => {
+                            setReviewOpen(false)
+                            formik.handleSubmit()
+                          }}
+                          formik={formik}
+                        />
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
             </Formik>
           )}

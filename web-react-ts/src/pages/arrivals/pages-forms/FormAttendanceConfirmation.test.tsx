@@ -11,6 +11,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import i18n from 'lib/i18n'
@@ -75,15 +76,22 @@ const renderForm = () =>
     </MemoryRouter>
   )
 
-const submitAttendance = (attendance: string) => {
-  fireEvent.change(screen.getByLabelText(/Attendance \(from Picture\)/), {
-    target: { value: attendance },
-  })
+// The form submits in two steps (confirmation preview, PR #669): "Review &
+// Submit" opens a dialog, and only its Submit button sends ConfirmVehicleByAdmin.
+// "Review & Submit" stays disabled while the form is invalid, so an
+// out-of-range count is stopped there. Its message shows once the counter
+// leaves the field (Formik only shows errors on touched fields).
+const fillAttendance = (attendance: string) => {
+  const attendanceInput = screen.getByLabelText(/Attendance \(from Picture\)/)
+  fireEvent.change(attendanceInput, { target: { value: attendance } })
+  fireEvent.blur(attendanceInput)
   fireEvent.change(screen.getByLabelText(i18n.t('arrivals.common.comments')), {
     target: { value: 'Counted from the picture' },
   })
-  fireEvent.click(screen.getByRole('button', { name: /submit/i }))
 }
+
+const reviewButton = () =>
+  screen.getByRole('button', { name: /review.*submit/i })
 
 beforeEach(async () => {
   await i18n.changeLanguage('en')
@@ -100,27 +108,40 @@ afterEach(() => {
 describe('FormAttendanceConfirmation — attendance range (SYN-276)', () => {
   it('refuses an attendance over 200 on the form and never calls the API', async () => {
     renderForm()
-    submitAttendance('250')
+    fillAttendance('250')
 
     expect(
       await screen.findByText('Attendance cannot exceed 200')
     ).toBeInTheDocument()
+    await waitFor(() => expect(reviewButton()).toBeDisabled())
+    fireEvent.click(reviewButton())
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(confirmVehicle).not.toHaveBeenCalled()
   })
 
   it('refuses a negative attendance on the form and never calls the API', async () => {
     renderForm()
-    submitAttendance('-3')
+    fillAttendance('-3')
 
     expect(
       await screen.findByText('Please enter a valid number')
     ).toBeInTheDocument()
+    await waitFor(() => expect(reviewButton()).toBeDisabled())
+    fireEvent.click(reviewButton())
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(confirmVehicle).not.toHaveBeenCalled()
   })
 
   it('submits an attendance of exactly 200', async () => {
     renderForm()
-    submitAttendance('200')
+    fillAttendance('200')
+
+    await waitFor(() => expect(reviewButton()).toBeEnabled())
+    fireEvent.click(reviewButton())
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /^submit$/i }))
 
     await waitFor(() => expect(confirmVehicle).toHaveBeenCalledTimes(1))
     expect(confirmVehicle.mock.calls[0][0].variables).toMatchObject({

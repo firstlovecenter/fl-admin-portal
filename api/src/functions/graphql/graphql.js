@@ -120,6 +120,11 @@ const initializeServer = async () => {
       // (not process.env.NODE_ENV, which may be unset in the Lambda) so raw
       // stack traces / Neo4j error text never reach clients in production.
       includeStacktraceInErrorResponses: isDevelopment,
+      // SYN-280 — strip graphql-js's "Did you mean ...?" field suggestions
+      // outside development. With introspection off (SYN-177) they were the
+      // remaining way to enumerate the schema: unnamed probe queries guessed
+      // field names and read the suggestions back. Same ENVIRONMENT signal.
+      hideSchemaDetailsFromClientErrors: !isDevelopment,
       // SYN-177 — depth guard on the auto-generated schema; blocks pathological
       // deep-traversal queries before execution in every environment.
       validationRules: [depthLimit()],

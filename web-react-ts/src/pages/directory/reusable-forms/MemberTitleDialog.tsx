@@ -90,6 +90,9 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
   )
   const [RemoveMemberTitle] = useMutation(REMOVE_MEMBER_TITLE)
   const [removingTitle, setRemovingTitle] = useState<TitleKey | null>(null)
+  const [confirmRemoveTitle, setConfirmRemoveTitle] = useState<TitleKey | null>(
+    null
+  )
 
   const member = data?.members[0]
   const saved = parseData(data)
@@ -178,6 +181,7 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
   ]
 
   return (
+    <>
     <Dialog
       open={open}
       onOpenChange={(o) => {
@@ -220,7 +224,7 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => onRemove(title)}
+                          onClick={() => setConfirmRemoveTitle(title)}
                           disabled={isRemoving || formik.isSubmitting}
                           className="mt-1 h-7 gap-1 px-1 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
@@ -267,6 +271,55 @@ const MemberTitleDialog = ({ open, onClose }: MemberTitleDialogProps) => {
         )}
       </DialogContent>
     </Dialog>
+
+    {/* ── Confirm Remove Title ── */}
+    <Dialog
+      open={!!confirmRemoveTitle}
+      onOpenChange={(o) => !o && setConfirmRemoveTitle(null)}
+    >
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-destructive">
+            {t('directory.memberTitle.confirmRemoveTitle')}
+          </DialogTitle>
+          <DialogDescription>
+            {t('directory.memberTitle.confirmRemoveDescription', {
+              title: confirmRemoveTitle,
+              name: member?.fullName ?? member?.firstName,
+            })}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setConfirmRemoveTitle(null)}
+          >
+            {t('shared.actions.cancel')}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={!!removingTitle}
+            className="gap-2"
+            onClick={() => {
+              if (!confirmRemoveTitle) return
+              const titleToRemove = confirmRemoveTitle
+              setConfirmRemoveTitle(null)
+              onRemove(titleToRemove)
+            }}
+          >
+            {removingTitle ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : null}
+            {t('directory.memberTitle.confirmRemoveButton', {
+              title: confirmRemoveTitle,
+            })}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
 

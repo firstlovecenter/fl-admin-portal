@@ -82,7 +82,10 @@ function SearchCombobox<T>({
                 name={name}
                 placeholder={placeholder}
                 value={value}
-                onValueChange={onValueChange}
+                onValueChange={(nextValue) => {
+                  setOpen(true)
+                  onValueChange(nextValue)
+                }}
                 onFocus={() => setOpen(true)}
                 disabled={disabled}
                 autoComplete="off"

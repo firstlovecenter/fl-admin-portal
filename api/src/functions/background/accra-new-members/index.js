@@ -1,6 +1,8 @@
 const neo4j = require('neo4j-driver')
 const { default: axios } = require('axios')
-const { getSecrets } = require('../den-office-monthly-report/gsecrets.js')
+// SYN-288: own copy only — the deploy workflow zips each background folder in
+// isolation, so a `../<other-job>/` require fails Lambda init.
+const { getSecrets } = require('./gsecrets.js')
 const { writeToGsheet, clearGSheet } = require('./utils/writeToGSheet.js')
 const { newMembersList } = require('./query-exec/newMembersList.js')
 const { notifyBaseURL } = require('./utils/constants.js')

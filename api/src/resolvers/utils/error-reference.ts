@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto'
 import type { ApolloServerPlugin, BaseContext } from '@apollo/server'
 import {
+  ApolloServerErrorCode,
   ApolloServerValidationErrorCode,
   unwrapResolverError,
 } from '@apollo/server/errors'
@@ -38,14 +39,27 @@ export const logLevelForCode = (code: unknown): 'warn' | 'error' =>
 
 // SYN-268 — production refuses introspection on purpose (SYN-177), so log that
 // refusal at WARN, keyed on Apollo's validationErrorCode, not the message text.
-// Other GRAPHQL_VALIDATION_FAILED stay at ERROR: they signal client/schema drift.
+// SYN-280 — our web client names every operation, so a validation failure on
+// an UNNAMED one is hand-written or probe traffic → WARN. Keyed on the missing
+// `operationName`, not the message, so drift from our own app stays at ERROR.
+// A log-level split, not a security control: a probe can name itself.
 export const logLevelForError = (
-  error: GraphQLFormattedError
-): 'warn' | 'error' =>
-  error.extensions?.validationErrorCode ===
-  ApolloServerValidationErrorCode.INTROSPECTION_DISABLED
-    ? 'warn'
-    : logLevelForCode(error.extensions?.code)
+  error: GraphQLFormattedError,
+  operationName?: string | null
+): 'warn' | 'error' => {
+  const code = error.extensions?.code
+  if (
+    error.extensions?.validationErrorCode ===
+    ApolloServerValidationErrorCode.INTROSPECTION_DISABLED
+  )
+    return 'warn'
+  if (
+    code === ApolloServerErrorCode.GRAPHQL_VALIDATION_FAILED &&
+    !operationName
+  )
+    return 'warn'
+  return logLevelForCode(code)
+}
 
 // SYN-258 — @neo4j/graphql's @authentication / @authorization refusals carry
 // no `extensions.code`, so Apollo stamped them INTERNAL_SERVER_ERROR and an
@@ -105,7 +119,7 @@ export const errorReferencePlugin: ApolloServerPlugin<BaseContext> = {
             const code = error.extensions?.code ?? 'UNKNOWN'
             const path = error.path?.join('.') ?? '<none>'
             // eslint-disable-next-line no-console
-            console[logLevelForError(error)](
+            console[logLevelForError(error, request.operationName)](
               `[GraphQL] ✖ ref=${errorRef} op=${opName} user=${userId} code=${code} path=${sanitiseForLog(path)} — ${sanitiseForLog(error.message)}`
             )
           }

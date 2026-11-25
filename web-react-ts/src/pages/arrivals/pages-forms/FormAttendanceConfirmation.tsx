@@ -1,8 +1,5 @@
 import { useMutation, useQuery } from '@apollo/client'
 import ApolloWrapper from 'components/base-component/ApolloWrapper'
-import { HeadingPrimary } from 'components/HeadingPrimary/HeadingPrimary'
-import HeadingSecondary from 'components/HeadingSecondary'
-import PlaceholderCustom from 'components/Placeholder'
 import { ChurchContext } from 'contexts/ChurchContext'
 import { ServiceContext } from 'contexts/ServiceContext'
 import { Formik, Form, FormikHelpers } from 'formik'
@@ -10,7 +7,7 @@ import * as Yup from 'yup'
 import { useContext } from 'react'
 import { useNavigate } from 'react-router'
 import { isToday } from 'lib/date-utils'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ArrowRight } from 'lucide-react'
 import SubmitButton from 'components/formik/SubmitButton'
 import { alertMsg, throwToSentry } from 'global-utils'
 import Input from 'components/formik/Input'
@@ -18,12 +15,23 @@ import Textarea from 'components/formik/Textarea'
 import CloudinaryImage from 'components/CloudinaryImage'
 import Select from 'components/formik/Select'
 import { Alert, AlertDescription } from 'components/ui/alert'
+import { Button } from 'components/ui/button'
 import { Card, CardContent, CardFooter } from 'components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import { Skeleton } from 'components/ui/skeleton'
+import { StickyPageHeader } from 'components/shell/StickyPageHeader'
+import useModal from 'hooks/useModal'
 import { DISPLAY_VEHICLE_RECORDS } from '../arrivalsQueries'
 import { CONFIRM_VEHICLE_BY_ADMIN } from '../arrivalsMutation'
 import { BacentaWithArrivals, VehicleRecord } from '../arrivals-types'
 import { VEHICLE_OPTIONS_WITH_CAR } from '../arrivals-utils'
-import '../Arrivals.css'
 import { useTranslation } from 'react-i18next'
 
 type FormOptions = {
@@ -42,6 +50,7 @@ const FormAttendanceConfirmation = () => {
     variables: { vehicleRecordId, bacentaId },
   })
   const [ConfirmVehicleByAdmin] = useMutation(CONFIRM_VEHICLE_BY_ADMIN)
+  const { show, handleClose, handleShow } = useModal()
 
   const vehicle: VehicleRecord = data?.vehicleRecords[0]
   const bacenta: BacentaWithArrivals = data?.bacentas[0]
@@ -115,20 +124,27 @@ const FormAttendanceConfirmation = () => {
 
   return (
     <ApolloWrapper data={data} loading={loading} error={error}>
-      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4">
-        <PlaceholderCustom as="h3" loading={loading}>
-          <HeadingPrimary>
+      <div className="min-h-svh bg-background pb-[env(safe-area-inset-bottom)]">
+        <StickyPageHeader>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {t('arrivals.form.vehicleAttendance')}
-          </HeadingPrimary>
-        </PlaceholderCustom>
-        <PlaceholderCustom as="h6" loading={loading}>
-          <HeadingSecondary>{`${bacenta?.name} ${bacenta?.__typename}`}</HeadingSecondary>
-          <p>
-            {t('arrivals.form.pictureSubmittedBy', {
-              name: vehicle?.created_by.fullName,
-            })}
-          </p>
-        </PlaceholderCustom>
+          </h1>
+          {loading ? (
+            <Skeleton className="h-5 w-48" />
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {bacenta?.name} {bacenta?.__typename}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t('arrivals.form.pictureSubmittedBy', {
+                  name: vehicle?.created_by.fullName,
+                })}
+              </p>
+            </>
+          )}
+        </StickyPageHeader>
+      <div className="mx-auto w-full max-w-screen-md space-y-4 px-4 py-5">
 
         {!loading && vehicle && !isRecordFromToday && (
           <Alert variant="destructive">
@@ -142,7 +158,7 @@ const FormAttendanceConfirmation = () => {
         <Card>
           <CardContent className="space-y-2 p-4">
             <CloudinaryImage
-              className="confirmation-picture"
+              className="w-full rounded-lg object-cover"
               src={vehicle?.picture}
               size="respond"
             />
@@ -182,12 +198,87 @@ const FormAttendanceConfirmation = () => {
                   {t('arrivals.form.approveVehicleTopUp')}
                 </CardContent>
                 <CardFooter className="justify-center p-4 pt-0">
-                  <SubmitButton formik={formik} disabled={!isRecordFromToday} />
+                  <Dialog
+                    open={show}
+                    onOpenChange={(open) => !open && handleClose()}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {t('arrivals.form.confirmAttendanceTitle')}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {t('shared.confirmDialog.reviewDetails')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-1 text-sm">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-muted-foreground">
+                            {t('arrivals.form.claimedAttendance')}
+                          </span>
+                          <div className="flex items-center gap-2 font-medium tabular-nums text-foreground">
+                            <span>{vehicle?.leaderDeclaration ?? 0}</span>
+                            {String(formik.values.attendance) !==
+                              String(vehicle?.leaderDeclaration) && (
+                              <>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-warning">
+                                  {formik.values.attendance}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {formik.values.vehicle !== vehicle?.vehicle && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">
+                              {t('arrivals.form.vehicleType')}
+                            </span>
+                            <div className="flex items-center gap-2 font-medium text-foreground">
+                              <span>{vehicle?.vehicle}</span>
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-warning">
+                                {formik.values.vehicle}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {formik.values.comments && (
+                          <div className="flex flex-col gap-1">
+                            <span className="text-muted-foreground">
+                              {t('arrivals.common.comments')}
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {formik.values.comments}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={handleClose}>
+                          {t('shared.actions.edit')}
+                        </Button>
+                        <SubmitButton
+                          onClick={formik.handleSubmit}
+                          formik={formik}
+                          disabled={!isRecordFromToday}
+                        />
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  <Button
+                    type="button"
+                    onClick={handleShow}
+                    disabled={!formik.isValid || formik.isSubmitting || !isRecordFromToday}
+                  >
+                    {t('services.form.reviewAndSubmit')}
+                  </Button>
                 </CardFooter>
               </Card>
             </Form>
           )}
         </Formik>
+      </div>
       </div>
     </ApolloWrapper>
   )
