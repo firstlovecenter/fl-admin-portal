@@ -1158,7 +1158,10 @@ type VehicleRecord @node @mutation(operations: []) {
   momoName: String
   mobileNetwork: String
   vehicleTopUp: Float
-  vehicleCost: Float!
+  # SYN-283: nullable — the bussing flow no longer captures a cost (SYN-165 WS3),
+  # so most records have none. Not backfilled with 0: that would read as a real
+  # cost in the arrivals payment sheet.
+  vehicleCost: Float
 
   counted_by: Member @relationship(type: "COUNTED_BY", direction: OUT)
 
