@@ -81,6 +81,18 @@ If `plan` shows **changes** (not just imports), reconcile before applying:
   function changed since this was generated; update [`locals.tf`](locals.tf) to
   match, then re-plan. (`environment` is under `ignore_changes`, so env-var
   changes alone won't show.)
+- **`aws_amplify_app.portal` `custom_rule` change** — expected, and
+  intentional (SYN-289). It replaces the live `/<*>` → `/index.html`
+  `404-200` fallback with the SPA regex `200` rewrite, so deep links return
+  HTTP 200 instead of 301 → 404. It affects every host on the app (admin.,
+  synago., dev-synago., staging-synago.). Production change: get JD's OK
+  before applying. Then verify:
+  `curl -sI https://admin.firstlovecenter.com/arrivals/bacenta` → `200` with
+  `x-robots-tag: noindex, nofollow` and no `location:` header, and
+  `curl -sI https://admin.firstlovecenter.com/assets/does-not-exist.js` → `404`.
+  The matching `X-Robots-Tag: noindex, nofollow` header ships from
+  [`/customHttp.yml`](../../customHttp.yml) on the next Amplify build, not
+  from Terraform.
 - **`destroy`** — never apply a destroy during adoption. It means an `import`
   block is missing or a resource address is wrong.
 
