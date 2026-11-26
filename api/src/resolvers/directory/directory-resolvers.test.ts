@@ -20,6 +20,8 @@
  *   npm test -- directory-resolvers --testNamePattern="SYN-207:"
  */
 
+import fs from 'fs'
+import path from 'path'
 import { GraphQLError } from 'graphql'
 import directoryMutation from './directory-resolvers'
 import {
@@ -27,6 +29,7 @@ import {
   checkMemberHasNoActiveRelationships,
   makeMemberInactive,
   removeDuplicateMember,
+  setMemberStickyNote,
 } from '../cypher/resolver-cypher'
 import type { Context } from '../utils/neo4j-types'
 import type { Member } from '../utils/types'
@@ -989,4 +992,120 @@ describe('SYN-253 — directory refusals are BAD_USER_INPUT with unchanged messa
       expect(mockSession.executeWrite).not.toHaveBeenCalled()
     }
   )
+})
+
+// ---------------------------------------------------------------------------
+// SYN-290 — SetMemberStickyNote: a refusal, never a null non-null field
+// ---------------------------------------------------------------------------
+describe('SYN-290 — SetMemberStickyNote: scope-gated custom resolver', () => {
+  const noteArgs = { memberId: 'member_target_1', stickyNote: 'Call on Sunday' }
+
+  beforeEach(() => {
+    mockSession.executeWrite = jest.fn().mockResolvedValue({
+      records: [
+        {
+          get: () => ({
+            properties: { id: 'member_target_1', stickyNote: 'Call on Sunday' },
+          }),
+        },
+      ],
+    })
+  })
+
+  it('SYN-290: runs isAuth(permitLeaderAdmin(Bacenta)) before the scope check', async () => {
+    await directoryMutation.SetMemberStickyNote(null as any, noteArgs, context)
+
+    expect(isAuth).toHaveBeenCalledWith(
+      permitLeaderAdmin('Bacenta'),
+      mockJwt.roles
+    )
+    expect(assertScopeViaMember).toHaveBeenCalledWith(
+      context,
+      'member_target_1'
+    )
+    expect((isAuth as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(
+      (assertScopeViaMember as jest.Mock).mock.invocationCallOrder[0]
+    )
+  })
+
+  it('SYN-290: writes the note keyed on memberId and returns the member', async () => {
+    const result = await directoryMutation.SetMemberStickyNote(
+      null as any,
+      noteArgs,
+      context
+    )
+
+    expect(result).toEqual({
+      id: 'member_target_1',
+      stickyNote: 'Call on Sunday',
+    })
+    const run = jest.fn().mockResolvedValue({ records: [] })
+    await mockSession.executeWrite.mock.calls[0][0]({ run })
+    expect(run).toHaveBeenCalledWith(setMemberStickyNote, {
+      id: 'member_target_1',
+      stickyNote: 'Call on Sunday',
+    })
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('SYN-290: an out-of-scope member is refused with FORBIDDEN before any session opens', async () => {
+    const forbidden = new GraphQLError('not permitted', {
+      extensions: { code: 'FORBIDDEN' },
+    })
+    ;(assertScopeViaMember as jest.Mock).mockRejectedValueOnce(forbidden)
+
+    await expect(
+      directoryMutation.SetMemberStickyNote(null as any, noteArgs, context)
+    ).rejects.toMatchObject({ extensions: { code: 'FORBIDDEN' } })
+    expect(context.executionContext.session).not.toHaveBeenCalled()
+    expect(mockSession.executeWrite).not.toHaveBeenCalled()
+  })
+
+  it('SYN-290: a write that matches no member throws BAD_USER_INPUT instead of returning null', async () => {
+    mockSession.executeWrite.mockResolvedValueOnce({ records: [] })
+
+    const call = directoryMutation.SetMemberStickyNote(
+      null as any,
+      { memberId: 'member_target_1', stickyNote: '' },
+      context
+    )
+    await expect(call).rejects.toMatchObject({
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('SYN-290: an unexpected write failure goes through throwToSentry', async () => {
+    const dbError = new Error('Neo4j unavailable')
+    mockSession.executeWrite.mockRejectedValueOnce(dbError)
+
+    const error = await directoryMutation
+      .SetMemberStickyNote(null as any, noteArgs, context)
+      .catch((e: unknown) => e)
+
+    expect((error as Error).message).toBe(
+      'Error saving sticky note: Neo4j unavailable'
+    )
+    expect((error as Error & { cause?: unknown }).cause).toBe(dbError)
+    expect(mockSession.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('SYN-290: the SDL field has no @cypher block, so the resolver above serves it', () => {
+    const sdl = fs.readFileSync(
+      path.join(__dirname, '../../schema/directory-history.graphql'),
+      'utf8'
+    )
+    // The field runs from its declaration to the next blank line.
+    const fieldStart = sdl.indexOf('SetMemberStickyNote(')
+    expect(fieldStart).toBeGreaterThan(-1)
+    const fieldEnd = sdl.indexOf('\n\n', fieldStart)
+    expect(fieldEnd).toBeGreaterThan(fieldStart)
+    const field = sdl.slice(fieldStart, fieldEnd)
+
+    expect(field).toContain(
+      'SetMemberStickyNote(memberId: ID!, stickyNote: String!): Member!'
+    )
+    expect(field).not.toContain('@cypher')
+    expect(field).not.toContain('allowedChurchIds')
+  })
 })

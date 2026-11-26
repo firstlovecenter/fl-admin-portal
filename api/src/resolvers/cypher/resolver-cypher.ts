@@ -13,6 +13,14 @@ export const updateMemberBacenta = `
   RETURN member
   `
 
+// SYN-290: runs only after assertScopeViaMember, so the scope filter the old
+// SDL @cypher carried is not repeated here.
+export const setMemberStickyNote = `
+  MATCH (member:Active:Member {id: $id})
+  SET member.stickyNote = $stickyNote
+  RETURN member
+`
+
 export const matchMemberQuery = `
 
 MATCH (member:Member {id: $id})
