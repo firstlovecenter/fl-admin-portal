@@ -1,0 +1,21 @@
+# Amplify Hosting custom headers. Amplify reads this file from the repo root on
+# every build, so a redeploy cannot drop the headers.
+#
+# Why this file and not amplify.yml (SYN-289): Amplify no longer applies
+# `customHeaders` from the build spec (amplify.yml). The SYN-179 block there
+# never reached the live hosts. This file also OVERRIDES anything set under
+# Hosting → Custom headers in the Amplify console.
+#
+# X-Robots-Tag keeps the internal portal out of search results (admin.,
+# synago., dev-synago., staging-synago. — they all share this app). Google kept
+# indexing deep links behind the login and reporting them as "Not found (404)".
+# robots.txt must stay permissive (web-react-ts/public/robots.txt). A crawler
+# that is blocked from fetching a page never sees its noindex.
+#
+# If more blocks are added here, repeat X-Robots-Tag in each one. When a path
+# matches several patterns, Amplify reportedly applies only one block.
+customHeaders:
+  - pattern: '**'
+    headers:
+      - key: 'X-Robots-Tag'
+        value: 'noindex, nofollow'
