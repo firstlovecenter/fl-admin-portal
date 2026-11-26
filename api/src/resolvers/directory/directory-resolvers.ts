@@ -22,6 +22,7 @@ import {
   activateInactiveMember,
   removeDuplicateMember,
   updateMemberBacenta,
+  setMemberStickyNote,
   createBacenta,
   createGovernorship,
   createCouncil,
@@ -291,6 +292,46 @@ const directoryMutation = {
       const updatedMember = moveRes.records[0]?.get('member').properties
 
       return updatedMember
+    } finally {
+      await session.close()
+    }
+  },
+  SetMemberStickyNote: async (
+    object: Member,
+    args: { memberId: string; stickyNote: string },
+    context: Context
+  ) => {
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+
+    // SYN-290: refuse out-of-scope callers with FORBIDDEN before writing, not
+    // by filtering inside the write — a write that matches nothing returns
+    // null for this non-null field and surfaces as INTERNAL_SERVER_ERROR.
+    await assertScopeViaMember(context, args.memberId)
+
+    const session = context.executionContext.session()
+
+    try {
+      const noteRes = await session.executeWrite((tx) =>
+        tx.run(setMemberStickyNote, {
+          id: args.memberId,
+          stickyNote: args.stickyNote,
+        })
+      )
+
+      const updatedMember = noteRes.records[0]?.get('member').properties
+
+      // Only reachable if the member was deactivated between the scope check
+      // and the write; a user error, not a server fault.
+      if (!updatedMember) {
+        throw badRequest(
+          'This member is no longer active, so the sticky note was not saved'
+        )
+      }
+
+      return updatedMember
+    } catch (error: any) {
+      if (isClassifiedError(error)) throw error
+      return throwToSentry('Error saving sticky note', error)
     } finally {
       await session.close()
     }
