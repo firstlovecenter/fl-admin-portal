@@ -146,6 +146,11 @@ const startServer = async () => {
     // outside development. Secure default: anything not explicitly development
     // is treated as production.
     includeStacktraceInErrorResponses: isDevelopment,
+    // SYN-280 — strip graphql-js's "Did you mean ...?" field suggestions
+    // outside development. With introspection off (SYN-177) they were the
+    // remaining way to enumerate the schema: unnamed probe queries guessed
+    // field names and read the suggestions back. Same ENVIRONMENT signal.
+    hideSchemaDetailsFromClientErrors: !isDevelopment,
     // SYN-177 — depth guard on the auto-generated schema. Runs in every
     // environment; blocks pathological deep-traversal queries before execution.
     validationRules: [depthLimit()],

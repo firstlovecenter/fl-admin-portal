@@ -22,6 +22,7 @@ import {
   activateInactiveMember,
   removeDuplicateMember,
   updateMemberBacenta,
+  setMemberStickyNote,
   createBacenta,
   createGovernorship,
   createCouncil,
@@ -64,26 +65,76 @@ const directoryMutation = {
     await assertChurchScope(context, args.bacenta)
 
     const session = context.executionContext.session()
-    const email = args?.email?.trim().toLowerCase() || null
-    const inactiveMemberResponse = rearrangeCypherObject(
-      await session.executeRead((tx) =>
-        tx.run(cypher.checkInactiveMember, {
+    try {
+      const email = args?.email?.trim().toLowerCase() || null
+      const inactiveMemberResponse = rearrangeCypherObject(
+        await session.executeRead((tx) =>
+          tx.run(cypher.checkInactiveMember, {
+            email,
+            whatsappNumber: args?.whatsappNumber ?? null,
+          })
+        )
+      )
+
+      if (inactiveMemberResponse.count > 0) {
+        const activateInactiveMemberResponse = await session.executeWrite(
+          (tx) =>
+            tx.run(activateInactiveMember, {
+              id: inactiveMemberResponse.id,
+              firstName: args?.firstName ?? '',
+              middleName: args?.middleName ?? '',
+              lastName: args?.lastName ?? '',
+              phoneNumber: args?.phoneNumber ?? '',
+              dob: args?.dob ?? '',
+              maritalStatus: args?.maritalStatus ?? '',
+              occupation: args?.occupation ?? '',
+              bacenta: args?.bacenta ?? '',
+              basonta: args?.basonta ?? '',
+              visitationArea: args?.visitationArea ?? '',
+              pictureUrl: args?.pictureUrl ?? '',
+              userId: context.jwt?.userId,
+            })
+        )
+
+        const member = rearrangeCypherObject(activateInactiveMemberResponse)
+        return member
+      }
+
+      const memberResponse = await session.executeRead((tx) =>
+        tx.run(cypher.checkMemberEmailExists, {
           email,
           whatsappNumber: args?.whatsappNumber ?? null,
         })
       )
-    )
+      const memberCheck = rearrangeCypherObject(memberResponse, true)[0]
+      const duplicateMember = memberCheck.member?.properties
 
-    if (inactiveMemberResponse.count > 0) {
-      const activateInactiveMemberResponse = await session.executeWrite((tx) =>
-        tx.run(activateInactiveMember, {
-          id: inactiveMemberResponse.id,
+      if (memberCheck.predicate) {
+        if (duplicateMember.email === email) {
+          const errorMsg = `There is a member with this email "${duplicateMember.email}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
+
+          // SYN-253: refusals are BAD_USER_INPUT so they log at WARN. The old
+          // error.name ('DuplicateEmail') never reached the client.
+          throw badRequest(errorMsg)
+        }
+
+        if (duplicateMember.whatsappNumber === args.whatsappNumber) {
+          const errorMsg = `There is a member with this whatsapp number "${duplicateMember.whatsappNumber}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
+          throw badRequest(errorMsg)
+        }
+      }
+
+      const createMemberResponse = await session.executeWrite((tx) =>
+        tx.run(createMember, {
           firstName: args?.firstName ?? '',
-          middleName: args?.middleName ?? '',
+          middleName: args?.middleName ?? null,
           lastName: args?.lastName ?? '',
+          email,
           phoneNumber: args?.phoneNumber ?? '',
+          whatsappNumber: args?.whatsappNumber ?? '',
           dob: args?.dob ?? '',
           maritalStatus: args?.maritalStatus ?? '',
+          gender: args?.gender ?? '',
           occupation: args?.occupation ?? '',
           bacenta: args?.bacenta ?? '',
           basonta: args?.basonta ?? '',
@@ -93,58 +144,12 @@ const directoryMutation = {
         })
       )
 
-      const member = rearrangeCypherObject(activateInactiveMemberResponse)
+      const member = rearrangeCypherObject(createMemberResponse)
+
       return member
+    } finally {
+      await session.close()
     }
-
-    const memberResponse = await session.executeRead((tx) =>
-      tx.run(cypher.checkMemberEmailExists, {
-        email,
-        whatsappNumber: args?.whatsappNumber ?? null,
-      })
-    )
-    const memberCheck = rearrangeCypherObject(memberResponse, true)[0]
-    const duplicateMember = memberCheck.member?.properties
-
-    if (memberCheck.predicate) {
-      if (duplicateMember.email === email) {
-        const errorMsg = `There is a member with this email "${duplicateMember.email}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
-
-        // SYN-253: refusals are BAD_USER_INPUT so they log at WARN. The old
-        // error.name ('DuplicateEmail') never reached the client.
-        throw badRequest(errorMsg)
-      }
-
-      if (duplicateMember.whatsappNumber === args.whatsappNumber) {
-        const errorMsg = `There is a member with this whatsapp number "${duplicateMember.whatsappNumber}" called ${duplicateMember.firstName} ${duplicateMember.lastName}`
-        throw badRequest(errorMsg)
-      }
-    }
-
-    const createMemberResponse = await session.executeWrite((tx) =>
-      tx.run(createMember, {
-        firstName: args?.firstName ?? '',
-        middleName: args?.middleName ?? null,
-        lastName: args?.lastName ?? '',
-        email,
-        phoneNumber: args?.phoneNumber ?? '',
-        whatsappNumber: args?.whatsappNumber ?? '',
-        dob: args?.dob ?? '',
-        maritalStatus: args?.maritalStatus ?? '',
-        gender: args?.gender ?? '',
-        occupation: args?.occupation ?? '',
-        bacenta: args?.bacenta ?? '',
-        basonta: args?.basonta ?? '',
-        visitationArea: args?.visitationArea ?? '',
-        pictureUrl: args?.pictureUrl ?? '',
-        userId: context.jwt?.userId,
-      })
-    )
-
-    const member = rearrangeCypherObject(createMemberResponse)
-    await session.close()
-
-    return member
   },
   UpdateMemberDetails: async (object: any, args: Member, context: Context) => {
     isAuth(permitLeaderAdmin('Bacenta'), context?.jwt?.roles)
@@ -276,16 +281,60 @@ const directoryMutation = {
 
     const session = context.executionContext.session()
 
-    const moveRes = await session.executeWrite((tx) =>
-      tx.run(updateMemberBacenta, {
-        id: args.memberId,
-        bacentaId: args.bacentaId,
-      })
-    )
+    try {
+      const moveRes = await session.executeWrite((tx) =>
+        tx.run(updateMemberBacenta, {
+          id: args.memberId,
+          bacentaId: args.bacentaId,
+        })
+      )
 
-    const updatedMember = moveRes.records[0]?.get('member').properties
+      const updatedMember = moveRes.records[0]?.get('member').properties
 
-    return updatedMember
+      return updatedMember
+    } finally {
+      await session.close()
+    }
+  },
+  SetMemberStickyNote: async (
+    object: Member,
+    args: { memberId: string; stickyNote: string },
+    context: Context
+  ) => {
+    isAuth(permitLeaderAdmin('Bacenta'), context.jwt?.roles)
+
+    // SYN-290: refuse out-of-scope callers with FORBIDDEN before writing, not
+    // by filtering inside the write — a write that matches nothing returns
+    // null for this non-null field and surfaces as INTERNAL_SERVER_ERROR.
+    await assertScopeViaMember(context, args.memberId)
+
+    const session = context.executionContext.session()
+
+    try {
+      const noteRes = await session.executeWrite((tx) =>
+        tx.run(setMemberStickyNote, {
+          id: args.memberId,
+          stickyNote: args.stickyNote,
+        })
+      )
+
+      const updatedMember = noteRes.records[0]?.get('member').properties
+
+      // Only reachable if the member was deactivated between the scope check
+      // and the write; a user error, not a server fault.
+      if (!updatedMember) {
+        throw badRequest(
+          'This member is no longer active, so the sticky note was not saved'
+        )
+      }
+
+      return updatedMember
+    } catch (error: any) {
+      if (isClassifiedError(error)) throw error
+      return throwToSentry('Error saving sticky note', error)
+    } finally {
+      await session.close()
+    }
   },
   MakeMemberInactive: async (
     object: any,

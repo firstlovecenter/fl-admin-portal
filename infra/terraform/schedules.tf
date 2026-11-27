@@ -122,24 +122,6 @@ resource "aws_scheduler_schedule" "service_graph_aggregator" {
   }
 }
 
-resource "aws_scheduler_schedule" "services_not_banked" {
-  name                         = "fl-synago-services-not-banked"
-  group_name                   = "default"
-  state                        = "ENABLED"
-  description                  = "Update the google sheet that has the data for the services not banked"
-  schedule_expression          = "cron(30 23 ? * MON *)"
-  schedule_expression_timezone = "Africa/Accra"
-
-  flexible_time_window {
-    mode = "OFF"
-  }
-
-  target {
-    arn      = aws_lambda_function.this["fl-synago-services-not-banked"].arn
-    role_arn = var.scheduler_role_arn
-  }
-}
-
 resource "aws_scheduler_schedule" "code_of_the_day" {
   name                         = "set_fl-synago-code-of-the-day"
   group_name                   = "default"

@@ -121,6 +121,7 @@ const ArrivalTimes = () => {
   const timeSlots = useMemo(() => buildTimeSlots(t), [t])
   const { streamId } = useContext(ChurchContext)
   const [editOpen, setEditOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const { data, loading, error, refetch } = useQuery(GET_ARRIVAL_TIMES, {
     variables: { id: streamId },
@@ -164,6 +165,7 @@ const ArrivalTimes = () => {
       })
       await refetch()
       toast.success(t('arrivals.times.updatedToast'))
+      setConfirmOpen(false)
       setEditOpen(false)
     } catch (err) {
       throwToSentry(t('arrivals.times.updateError'), err)
@@ -339,29 +341,81 @@ const ArrivalTimes = () => {
               onSubmit={onSubmit}
             >
               {(formik) => (
-                <Form className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {timeSlots.map((slot) => (
-                      <FormikInput
-                        key={slot.key}
-                        type="time"
-                        name={slot.key}
-                        label={slot.label}
-                        placeholder={t('arrivals.times.pickATime')}
-                      />
-                    ))}
-                  </div>
-                  <DialogFooter className="pt-2">
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">
-                        {t('shared.actions.cancel')}
+                <>
+                  <Form className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {timeSlots.map((slot) => (
+                        <FormikInput
+                          key={slot.key}
+                          type="time"
+                          name={slot.key}
+                          label={slot.label}
+                          placeholder={t('arrivals.times.pickATime')}
+                        />
+                      ))}
+                    </div>
+                    <DialogFooter className="pt-2">
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                          {t('shared.actions.cancel')}
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        disabled={!formik.isValid || formik.isSubmitting}
+                        onClick={() => setConfirmOpen(true)}
+                      >
+                        {t('services.form.reviewAndSubmit')}
                       </Button>
-                    </DialogClose>
-                    <SubmitButton formik={formik}>
-                      {t('arrivals.times.saveTimes')}
-                    </SubmitButton>
-                  </DialogFooter>
-                </Form>
+                    </DialogFooter>
+                  </Form>
+
+                  {/* Confirmation dialog — shows the 4 times before saving */}
+                  <Dialog
+                    open={confirmOpen}
+                    onOpenChange={(open) => !open && setConfirmOpen(false)}
+                  >
+                    <DialogContent className="sm:max-w-sm">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {t('arrivals.times.confirmTitle')}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {t('shared.confirmDialog.reviewDetails')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-1 text-sm">
+                        {timeSlots.map((slot) => (
+                          <div
+                            key={slot.key}
+                            className="flex items-center justify-between gap-2"
+                          >
+                            <span className="text-muted-foreground">
+                              {slot.label}
+                            </span>
+                            <span className="font-mono font-medium tabular-nums text-foreground">
+                              {formik.values[slot.key] || '—'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setConfirmOpen(false)}
+                        >
+                          {t('shared.actions.edit')}
+                        </Button>
+                        <SubmitButton
+                          formik={formik}
+                          onClick={formik.handleSubmit}
+                        >
+                          {t('arrivals.times.saveTimes')}
+                        </SubmitButton>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
             </Formik>
           )}
