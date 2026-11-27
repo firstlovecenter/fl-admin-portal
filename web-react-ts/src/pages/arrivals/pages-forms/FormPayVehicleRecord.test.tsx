@@ -19,6 +19,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { FieldNode, OperationDefinitionNode } from 'graphql'
@@ -205,12 +206,21 @@ describe('FormPayVehicleRecord (SYN-283)', () => {
 })
 
 describe('FormPayVehicleRecord submit with the new initial values (SYN-283)', () => {
-  const submit = () =>
-    fireEvent.click(screen.getByRole('button', { name: /submit/i }))
+  // SYN-291: since PR #669, "Review & Submit" only opens a confirmation
+  // dialog; the dialog's own Submit button is what calls formik.handleSubmit.
+  const submit = async () => {
+    fireEvent.click(screen.getByRole('button', { name: /review & submit/i }))
+    const dialog = await screen.findByRole('dialog', {
+      name: /review submission/i,
+    })
+    // Opening the dialog alone must not send money.
+    expect(sendVehicleSupport).not.toHaveBeenCalled()
+    fireEvent.click(within(dialog).getByRole('button', { name: /^submit$/i }))
+  }
 
   it('does not send a payment when the record has no top-up or momo details', async () => {
     renderPage(bareVehicle)
-    submit()
+    await submit()
 
     await waitFor(() =>
       expect(screen.getAllByText(/required/i).length).toBeGreaterThanOrEqual(3)
@@ -225,7 +235,7 @@ describe('FormPayVehicleRecord submit with the new initial values (SYN-283)', ()
       momoNumber: '0240000000',
       momoName: 'Test Payee',
     })
-    submit()
+    await submit()
 
     await waitFor(() => expect(sendVehicleSupport).toHaveBeenCalledTimes(1))
     expect(sendVehicleSupport.mock.calls[0][0].variables).toMatchObject({

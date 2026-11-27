@@ -14,15 +14,25 @@
  * - `useAuth` from `contexts/AuthContext` is mocked because the `Input`
  *   component calls it to decide whether to render a loading placeholder.
  * - `useNavigate` is mocked so post-submit navigation can be asserted.
- * - The Formik `validateOnMount` prop means the submit button renders as
- *   visually dimmed (opacity-65 class) when the form is invalid, but it is
- *   NOT `disabled`. Formik only disables via `isSubmitting`. Validation errors
- *   are surfaced per-field on submit.
+ * - Since PR #669 the page-level button is "Review & Submit": with Formik's
+ *   `validateOnMount` it is `disabled` while the form is invalid, and it only
+ *   opens a confirmation dialog. The mutation fires from the dialog's own
+ *   SubmitButton, which Formik disables only via `isSubmitting` (SYN-291), so
+ *   every submit-path test goes through `confirmAndSubmit` below. Validation
+ *   errors are surfaced per-field on a submit attempt.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import React from 'react'
-import { render, screen, cleanup, waitFor, act } from '@testing-library/react'
+import {
+  render,
+  screen,
+  cleanup,
+  waitFor,
+  act,
+  within,
+  fireEvent,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { MockedProvider } from '@apollo/client/testing'
@@ -247,6 +257,21 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByTestId('image-upload-familyPicture'))
 }
 
+/**
+ * Open the #669 confirmation dialog via "Review & Submit" and click the
+ * dialog's Submit button, which is what calls formik.handleSubmit. Returns
+ * that Submit button so callers can inspect its in-flight state.
+ */
+async function confirmAndSubmit(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: /review & submit/i }))
+  const dialog = await screen.findByRole('dialog', {
+    name: /review submission/i,
+  })
+  const submitBtn = within(dialog).getByRole('button', { name: /^submit$/i })
+  await user.click(submitBtn)
+  return submitBtn
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -265,8 +290,18 @@ describe('ServiceForm', () => {
     renderServiceForm(mutation)
     const user = userEvent.setup()
 
-    const submitBtn = screen.getByRole('button', { name: /submit/i })
-    await user.click(submitBtn)
+    // The empty form is invalid on mount, so "Review & Submit" is disabled
+    // and the confirmation dialog (which holds the real Submit) can't open.
+    const reviewBtn = screen.getByRole('button', { name: /review & submit/i })
+    await waitFor(() => expect(reviewBtn).toBeDisabled())
+    await user.click(reviewBtn)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    // A Formik submit attempt (what the dialog's Submit triggers) still
+    // touches every field and surfaces the per-field Yup messages.
+    const form = reviewBtn.closest('form')
+    expect(form).not.toBeNull()
+    fireEvent.submit(form as HTMLFormElement)
 
     // Formik surfaces errors per-field after submit attempt
     await waitFor(() => {
@@ -318,7 +353,11 @@ describe('ServiceForm', () => {
       ).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    // Negative income keeps the form invalid, so the review dialog is gated.
+    const reviewBtn = screen.getByRole('button', { name: /review & submit/i })
+    await waitFor(() => expect(reviewBtn).toBeDisabled())
+    await user.click(reviewBtn)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
     await waitFor(() => {
       expect(mutation).not.toHaveBeenCalled()
@@ -335,7 +374,7 @@ describe('ServiceForm', () => {
 
     await fillValidForm(user)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await confirmAndSubmit(user)
 
     await waitFor(() => {
       expect(mutation).toHaveBeenCalledTimes(1)
@@ -368,7 +407,7 @@ describe('ServiceForm', () => {
     const user = userEvent.setup()
 
     await fillValidForm(user)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await confirmAndSubmit(user)
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/council/service-details')
@@ -384,7 +423,7 @@ describe('ServiceForm', () => {
     const user = userEvent.setup()
 
     await fillValidForm(user)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await confirmAndSubmit(user)
 
     await waitFor(() => {
       expect(mockThrowToSentry).toHaveBeenCalled()
@@ -401,7 +440,7 @@ describe('ServiceForm', () => {
     const user = userEvent.setup()
 
     await fillValidForm(user)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await confirmAndSubmit(user)
 
     await waitFor(() => {
       expect(mockThrowToSentry).toHaveBeenCalled()
@@ -425,10 +464,8 @@ describe('ServiceForm', () => {
 
     await fillValidForm(user)
 
-    const submitBtn = screen.getByRole('button', { name: /submit/i })
-
-    // Click submit — the mutation is now in-flight
-    await user.click(submitBtn)
+    // Confirm through the dialog — the mutation is now in-flight
+    const submitBtn = await confirmAndSubmit(user)
 
     await waitFor(() => {
       // SubmitButton sets disabled={formik.isSubmitting}
@@ -485,7 +522,7 @@ describe('ServiceForm', () => {
     await user.click(screen.getByTestId('image-upload-treasurerSelfie'))
     await user.click(screen.getByTestId('image-upload-familyPicture'))
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await confirmAndSubmit(user)
 
     await waitFor(() => {
       expect(mockThrowToSentry).toHaveBeenCalledWith(
