@@ -95,6 +95,9 @@
       "goToDashboard": "Volver al panel",
       "call": "Llamar"
     },
+    "confirmDialog": {
+      "reviewDetails": "Revise los detalles a continuación antes de enviar."
+    },
     "loading": "Cargando…",
     "form": {
       "submit": "Enviar",
@@ -594,7 +597,9 @@
       "vehicleTopUpAmount": "Importe de recarga del vehículo*",
       "areTheyBussingBack": "¿Regresan en transporte?",
       "momoNumberRequired": "Número MoMo*",
-      "momoNameRequired": "Nombre MoMo*"
+      "momoNameRequired": "Nombre MoMo*",
+      "confirmTitle": "Revisar registro",
+      "confirmMobilisationTitle": "Revisar movilización"
     },
     "dashboard": {
       "selectAdmin": "Selecciona un administrador de la lista desplegable",
@@ -647,11 +652,14 @@
       "setTodayAsSwell": "Establecer hoy como alta afluencia",
       "setSwellDescription": "Esto marcará hoy como un fin de semana de alta afluencia o especial. La acción se aplica a todo el Campus.",
       "setAsSwell": "Establecer como alta afluencia",
+      "swellDate": "Fecha de alta afluencia",
       "setCodeOfDay": "Establecer código del día",
       "setCodeDescription": "Anula el código del día de hoy. El nuevo valor reemplaza lo establecido esta mañana hasta la próxima ejecución diaria.",
       "code": "Código",
       "codePlaceholder": "p. ej. Unción",
       "saveCode": "Guardar código",
+      "confirmCodeTitle": "Confirmar código del día",
+      "confirmCodeDescription": "El código se establecerá en el valor que se muestra a continuación. El cambio se aplica de inmediato.",
       "updatedJustNow": "ahora mismo",
       "updatedSecondsAgo_one": "hace {{count}} segundo",
       "updatedSecondsAgo_other": "hace {{count}} segundos",
@@ -839,7 +847,8 @@
       "arrivalWindowHint": "Los contadores de llegada solo pueden confirmar y pagar buses entre estas dos horas. Los buses tardíos quedan fuera del pago.",
       "appliesEverySunday": "Los horarios se aplican a {{stream}} todos los domingos hasta que se cambien.",
       "editDescription": "Actualice las ventanas de movilización y llegada de {{stream}}.",
-      "thisStream": "esta vía"
+      "thisStream": "esta vía",
+      "confirmTitle": "Confirmar horarios de llegada"
     }
   },
   "directory": {
@@ -1120,7 +1129,8 @@
       "requiredFieldsSuffix": "son obligatorios.",
       "submitting": "Enviando…",
       "saveChanges": "Guardar cambios",
-      "registerMember": "Registrar miembro"
+      "registerMember": "Registrar miembro",
+      "confirmTitle": "Revisar cambios"
     },
     "memberDisplay": {
       "noteRequired": "La nota es obligatoria",
@@ -1948,7 +1958,10 @@
       "familyPictureRequired": "Envía una foto de tu servicio",
       "minTreasurers": "Debes tener al menos dos tesoreros",
       "pickName": "Elige un nombre del menú desplegable",
-      "duplicateTreasurer": "¡No puedes elegir el mismo tesorero dos veces!"
+      "duplicateTreasurer": "¡No puedes elegir el mismo tesorero dos veces!",
+      "reviewAndSubmit": "Revisar y enviar",
+      "confirmTitle": "Revisar envío",
+      "church": "Iglesia"
     },
     "cancelled": {
       "title": "Cancelado",
@@ -1962,7 +1975,8 @@
       "noServiceDescription": "Usa este formulario cuando no hubo servicio. El motivo se guardará en el historial de la iglesia.",
       "submit": "Enviar cancelación",
       "reasonRequired": "Debes dar una razón",
-      "submitError": "Hubo un problema al enviar el formulario"
+      "submitError": "Hubo un problema al enviar el formulario",
+      "confirmTitle": "Revisar cancelación"
     },
     "details": {
       "meetingDetails": "Detalles de la reunión",

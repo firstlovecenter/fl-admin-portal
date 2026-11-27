@@ -95,6 +95,9 @@
       "goToDashboard": "Zurück zum Dashboard",
       "call": "Anrufen"
     },
+    "confirmDialog": {
+      "reviewDetails": "Prüfen Sie die folgenden Angaben vor dem Absenden."
+    },
     "loading": "Wird geladen…",
     "form": {
       "submit": "Senden",
@@ -594,7 +597,9 @@
       "vehicleTopUpAmount": "Fahrzeugzuschussbetrag*",
       "areTheyBussingBack": "Kommen sie mit dem Transport zurück?",
       "momoNumberRequired": "MoMo-Nummer*",
-      "momoNameRequired": "MoMo-Name*"
+      "momoNameRequired": "MoMo-Name*",
+      "confirmTitle": "Eintrag prüfen",
+      "confirmMobilisationTitle": "Mobilisierung prüfen"
     },
     "dashboard": {
       "selectAdmin": "Bitte wählen Sie einen Administrator aus der Liste aus",
@@ -647,11 +652,14 @@
       "setTodayAsSwell": "Heute als hohe Beteiligung festlegen",
       "setSwellDescription": "Dadurch wird heute als Wochenende mit hoher Beteiligung oder besonderes Wochenende markiert. Die Aktion gilt für den gesamten Campus.",
       "setAsSwell": "Als hohe Beteiligung festlegen",
+      "swellDate": "Datum mit hoher Beteiligung",
       "setCodeOfDay": "Code des Tages festlegen",
       "setCodeDescription": "Überschreiben Sie den heutigen Code des Tages. Der neue Wert ersetzt den heute Morgen gesetzten Wert bis zum nächsten täglichen Lauf.",
       "code": "Code",
       "codePlaceholder": "z. B. Salbung",
       "saveCode": "Code speichern",
+      "confirmCodeTitle": "Code des Tages bestätigen",
+      "confirmCodeDescription": "Der Code wird auf den unten angezeigten Wert gesetzt. Die Änderung gilt sofort.",
       "updatedJustNow": "gerade eben",
       "updatedSecondsAgo_one": "vor {{count}} Sekunde",
       "updatedSecondsAgo_other": "vor {{count}} Sekunden",
@@ -839,7 +847,8 @@
       "arrivalWindowHint": "Ankunftszähler können Busse nur zwischen diesen beiden Zeiten bestätigen und bezahlen. Verspätete Busse fallen aus der Zahlung heraus.",
       "appliesEverySunday": "Die Zeiten gelten für {{stream}} jeden Sonntag, bis sie geändert werden.",
       "editDescription": "Aktualisieren Sie die Mobilisierungs- und Ankunftsfenster für {{stream}}.",
-      "thisStream": "diesen Zweig"
+      "thisStream": "diesen Zweig",
+      "confirmTitle": "Ankunftszeiten bestätigen"
     }
   },
   "directory": {
@@ -1120,7 +1129,8 @@
       "requiredFieldsSuffix": "markierte Felder sind erforderlich.",
       "submitting": "Wird gesendet…",
       "saveChanges": "Änderungen speichern",
-      "registerMember": "Mitglied registrieren"
+      "registerMember": "Mitglied registrieren",
+      "confirmTitle": "Änderungen prüfen"
     },
     "memberDisplay": {
       "noteRequired": "Die Notiz ist erforderlich",
@@ -1948,7 +1958,10 @@
       "familyPictureRequired": "Bitte ein Foto deines Gottesdienstes einreichen",
       "minTreasurers": "Du brauchst mindestens zwei Schatzmeister",
       "pickName": "Bitte einen Namen aus der Liste wählen",
-      "duplicateTreasurer": "Du kannst denselben Schatzmeister nicht zweimal wählen!"
+      "duplicateTreasurer": "Du kannst denselben Schatzmeister nicht zweimal wählen!",
+      "reviewAndSubmit": "Prüfen & Absenden",
+      "confirmTitle": "Eingabe prüfen",
+      "church": "Gemeinde"
     },
     "cancelled": {
       "title": "Abgesagt",
@@ -1962,7 +1975,8 @@
       "noServiceDescription": "Verwende dieses Formular, wenn kein Gottesdienst stattfand. Der Grund wird in der Gemeindehistorie gespeichert.",
       "submit": "Absage absenden",
       "reasonRequired": "Du musst einen Grund angeben",
-      "submitError": "Beim Absenden des Formulars ist ein Problem aufgetreten"
+      "submitError": "Beim Absenden des Formulars ist ein Problem aufgetreten",
+      "confirmTitle": "Absage prüfen"
     },
     "details": {
       "meetingDetails": "Versammlungsdetails",
