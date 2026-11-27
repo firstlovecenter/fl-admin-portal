@@ -41,10 +41,6 @@ import {
   id = "fl-synago-code-of-the-day"
 }
 import {
-  to = aws_lambda_function.this["fl-synago-services-not-banked"]
-  id = "fl-synago-services-not-banked"
-}
-import {
   to = aws_lambda_function.this["fl-synago-payment-webhook"]
   id = "fl-synago-payment-webhook"
 }
@@ -286,10 +282,6 @@ import {
 import {
   to = aws_scheduler_schedule.service_graph_aggregator
   id = "default/fl-synago-service-graph-aggregator"
-}
-import {
-  to = aws_scheduler_schedule.services_not_banked
-  id = "default/fl-synago-services-not-banked"
 }
 import {
   to = aws_scheduler_schedule.code_of_the_day

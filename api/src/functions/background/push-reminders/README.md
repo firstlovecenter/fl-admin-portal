@@ -124,7 +124,7 @@ the next one.
 | Job | Targets | Reuses |
 | --- | --- | --- |
 | `service` | Bacentas whose own `MEETS_ON → ServiceDay` is **today** with no filled/cancelled ServiceRecord this Tue–Sun week | `formDefaultersThisWeek` idiom (services.graphql) |
-| `banking` | Bacentas with a filled record in the trailing 6 days, `income > 0`, not banked by any rail (`bankingSlip` / `transactionStatus` success **or pending** / `tellerConfirmationTime`) | `services-not-banked` predicate |
+| `banking` | Bacentas with a filled record in the trailing 6 days, `income > 0`, not banked by any rail (`bankingSlip` / `transactionStatus` success **or pending** / `tellerConfirmationTime`) | `bankingDefaultersThisWeek` checks (services.graphql) |
 | `defaulters` | Governorship / Council / Stream nodes with ≥1 **form** or **banking** defaulter Bacenta in their subtree this Tue–Sun week. Recipients = every leader (`LEADS`) + admin (`IS_ADMIN_FOR`) of that node (default-ON `notifyDefaulters`). One summary push per node. | form: `formDefaultersThisWeekCount` gate (services.graphql); banking: `CHILD_BACENTA_BUCKETS` (defaulters-cypher.ts download) |
 | `bussing` | Per Stream and window: `mob-60` → Bacentas with **no BussingRecord today** (`bacentasNoActivity` idiom); `arr-60/30/5/end` → Bacentas **on the way** (record exists, a `VehicleRecord.arrivalTime` is null — `bacentasOnTheWay` idiom) | arrivals.graphql Stream fields; times stitched to today like `arrivalEndTimeCalculator` |
 

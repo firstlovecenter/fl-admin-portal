@@ -14,9 +14,9 @@ state to reality with **zero** changes.
 | Group | Resources |
 | --- | --- |
 | Amplify | 1 app (`fl-admin-portal`), 4 branches, 1 domain association |
-| Lambda | 14 functions (4 GraphQL incl. dev/staging + 10 background) + 1 Function URL |
+| Lambda | 13 functions (4 GraphQL incl. dev/staging + 9 background) + 1 Function URL |
 | API Gateway | 3 HTTP APIs (`api-synago`, dev, staging) + integrations/routes/stages |
-| Scheduler | 9 EventBridge schedules |
+| Scheduler | 8 EventBridge schedules |
 | S3 | `fl-admin-apps`, `fl-admin-apps-dev`, `fl-synago-react` |
 | IAM | `fl-lambda-functions`, `fl-synago-graphql-role-1fc95k40` + policies |
 | Secrets | `prod|dev|staging/fl-admin-portal` (**referenced via data source, not managed**) |
@@ -56,7 +56,9 @@ cd infra/terraform
 #    Terraform >= 1.5 (for import blocks).
 terraform init
 
-# 2. Dry-run the adopt. Expect: "88 to import, 0 to add, 0 to change, 0 to destroy"
+# 2. Dry-run the adopt. Expect: "86 to import, 0 to add, 0 to change, 0 to destroy",
+#    apart from the expected changes under "Reading a non-clean plan" below.
+#    After a first adoption (step 3), also follow the SYN-279 `destroy` note there.
 terraform plan
 
 # 3. Adopt into state
@@ -93,8 +95,46 @@ If `plan` shows **changes** (not just imports), reconcile before applying:
   The matching `X-Robots-Tag: noindex, nofollow` header ships from
   [`/customHttp.yml`](../../customHttp.yml) on the next Amplify build, not
   from Terraform.
-- **`destroy`** — never apply a destroy during adoption. It means an `import`
-  block is missing or a resource address is wrong.
+- **`destroy` of `fl-synago-services-not-banked`** (the Lambda and its
+  schedule) — expected, and intentional (SYN-279). The weekly "Services Not
+  Banked" Google Sheet job is retired (its spreadsheet no longer exists), so
+  neither is declared here any more, and this destroy is how they leave
+  production. Nothing is deleted by hand. Production change: get JD's OK,
+  and apply it only once this change is on `main`. Until then a `main`
+  deploy still tries to update the function, and fails once it is gone.
+  - If your state already holds them, run `terraform plan -out=retire.tfplan`.
+    Expect `0 to add, 0 to change, 2 to destroy`, the two being
+    `aws_lambda_function.this["fl-synago-services-not-banked"]` and
+    `aws_scheduler_schedule.services_not_banked`. If anything else shows,
+    settle it under its own note first, then plan again: a saved plan keeps
+    whatever it was made with. Apply only a `retire.tfplan` that reads exactly
+    that, with `terraform apply retire.tfplan`. Terraform removes the schedule
+    before the function it targets.
+  - If your state never adopted them, `plan` does not list them at all,
+    because Terraform only destroys what its state holds. Finish the normal
+    adoption first (Usage steps 2–3). Then, from `infra/terraform` on a clean
+    tree, put back only SYN-279's Terraform removal and adopt just those two:
+
+    ```bash
+    C=$(git log -1 --format=%H -S services_not_banked -- :/infra/terraform/schedules.tf)
+    git diff "$C^" "$C" -- :/infra/terraform/locals.tf \
+      :/infra/terraform/schedules.tf :/infra/terraform/imports.tf | git apply -R
+    terraform plan -target=aws_scheduler_schedule.services_not_banked -out=adopt.tfplan
+    ```
+
+    If `C` is empty, this checkout does not contain SYN-279: stop. If
+    `git apply` fails because a later commit touched the same lines, copy the
+    Lambda entry, the schedule and their two `import` blocks back by hand from
+    `git show "$C^:infra/terraform/<file>"`. The plan must read
+    `2 to import, 0 to add, 0 to change, 0 to destroy`. Apply it with
+    `terraform apply adopt.tfplan`, restore the files with
+    `git checkout -- :/infra/terraform`, then follow the step above.
+  - The function's CloudWatch log group,
+    `/aws/lambda/fl-synago-services-not-banked`, is not managed here and
+    keeps the old logs after the destroy. Deleting it or shortening its
+    retention is JD's call.
+- **Any other `destroy`** — never apply a destroy during adoption. It means an
+  `import` block is missing or a resource address is wrong.
 
 ## File map
 
@@ -103,9 +143,9 @@ If `plan` shows **changes** (not just imports), reconcile before applying:
 | `versions.tf` / `providers.tf` / `backend.tf` | Provider + state setup |
 | `variables.tf` / `data.tf` / `locals.tf` | Inputs, secret data sources, resource maps |
 | `iam.tf` | The two Lambda execution roles + policies |
-| `lambda.tf` | 14 functions + dev Function URL |
+| `lambda.tf` | 13 functions + dev Function URL |
 | `apigateway.tf` | 3 HTTP APIs + integrations/routes/stages + invoke permissions |
-| `schedules.tf` | 9 EventBridge schedules |
+| `schedules.tf` | 8 EventBridge schedules |
 | `amplify.tf` | App + branches + domain |
 | `s3.tf` | 3 buckets + policy/PAB/encryption/CORS |
 | `imports.tf` | All `import {}` blocks |
