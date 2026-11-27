@@ -18,11 +18,29 @@ resource "aws_amplify_app" "portal" {
   enable_branch_auto_build    = false
   enable_branch_auto_deletion = true
 
-  # SPA fallback rewrite (live custom rule).
+  # SPA rewrite (SYN-289). Extensionless paths (app routes such as
+  # /arrivals/bacenta) are served /index.html with HTTP 200 at the edge.
+  #
+  # This replaces the old `/<*>` → /index.html "404-200" fallback. Under it,
+  # Amplify's edge first 301'd /arrivals → /arrivals/ and then answered the
+  # trailing-slash URL with index.html but status 404. Users never noticed,
+  # because the SPA router took over, but Google and uptime monitors saw 404 on
+  # every deep link.
+  #
+  # Paths whose extension is listed below are NOT rewritten. A 200 rewrite
+  # applies even when the file exists, so this list MUST cover every static
+  # file type the build ships (web-react-ts/public + dist). Otherwise e.g.
+  # /site.webmanifest would come back as HTML. In return, a missing asset
+  # (/assets/nope.js) still returns a real 404.
+  # web-react-ts/src/hosting/spa-rewrite.test.ts guards the list against public/.
+  #
+  # Amplify-managed CloudFront cannot take a CloudFront Function or a response
+  # headers policy. That is why this lives here, and why the noindex header
+  # lives in /customHttp.yml.
   custom_rule {
-    source = "/<*>"
+    source = "</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp|webmanifest|html|xml)$)([^.]+$)/>"
     target = "/index.html"
-    status = "404-200"
+    status = "200"
   }
 
   lifecycle {

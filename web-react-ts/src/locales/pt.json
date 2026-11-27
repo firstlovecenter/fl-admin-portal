@@ -95,6 +95,9 @@
       "goToDashboard": "Voltar ao painel",
       "call": "Ligar"
     },
+    "confirmDialog": {
+      "reviewDetails": "Revise os detalhes abaixo antes de enviar."
+    },
     "loading": "A carregar…",
     "form": {
       "submit": "Enviar",
@@ -594,7 +597,9 @@
       "vehicleTopUpAmount": "Valor do complemento do veículo*",
       "areTheyBussingBack": "Eles voltam de transporte?",
       "momoNumberRequired": "Número MoMo*",
-      "momoNameRequired": "Nome MoMo*"
+      "momoNameRequired": "Nome MoMo*",
+      "confirmTitle": "Revisar registo",
+      "confirmMobilisationTitle": "Revisar mobilização"
     },
     "dashboard": {
       "selectAdmin": "Selecione um administrador na lista",
@@ -647,11 +652,14 @@
       "setTodayAsSwell": "Definir hoje como grande afluência",
       "setSwellDescription": "Isto marcará hoje como um fim de semana de grande afluência ou especial. A ação aplica-se a todo o Campus.",
       "setAsSwell": "Definir como grande afluência",
+      "swellDate": "Data de grande afluência",
       "setCodeOfDay": "Definir código do dia",
       "setCodeDescription": "Substitua o código do dia de hoje. O novo valor substitui o que foi definido esta manhã até à próxima execução diária.",
       "code": "Código",
       "codePlaceholder": "ex. Unção",
       "saveCode": "Guardar código",
+      "confirmCodeTitle": "Confirmar código do dia",
+      "confirmCodeDescription": "O código será definido com o valor mostrado abaixo. A alteração entra em vigor imediatamente.",
       "updatedJustNow": "agora mesmo",
       "updatedSecondsAgo_one": "há {{count}} segundo",
       "updatedSecondsAgo_other": "há {{count}} segundos",
@@ -839,7 +847,8 @@
       "arrivalWindowHint": "Os contadores de chegada só podem confirmar e pagar autocarros entre estas duas horas. Autocarros atrasados ficam fora do pagamento.",
       "appliesEverySunday": "Os horários aplicam-se a {{stream}} todos os domingos até serem alterados.",
       "editDescription": "Atualize as janelas de mobilização e chegada de {{stream}}.",
-      "thisStream": "esta via"
+      "thisStream": "esta via",
+      "confirmTitle": "Confirmar horários de chegada"
     }
   },
   "directory": {
@@ -1120,7 +1129,8 @@
       "requiredFieldsSuffix": "são obrigatórios.",
       "submitting": "Enviando…",
       "saveChanges": "Salvar alterações",
-      "registerMember": "Registrar membro"
+      "registerMember": "Registrar membro",
+      "confirmTitle": "Revisar alterações"
     },
     "memberDisplay": {
       "noteRequired": "A nota é obrigatória",
@@ -1948,7 +1958,10 @@
       "familyPictureRequired": "Envie uma foto do seu serviço",
       "minTreasurers": "Você deve ter pelo menos dois tesoureiros",
       "pickName": "Escolha um nome na lista",
-      "duplicateTreasurer": "Você não pode escolher o mesmo tesoureiro duas vezes!"
+      "duplicateTreasurer": "Você não pode escolher o mesmo tesoureiro duas vezes!",
+      "reviewAndSubmit": "Revisar e enviar",
+      "confirmTitle": "Revisar envio",
+      "church": "Igreja"
     },
     "cancelled": {
       "title": "Cancelado",
@@ -1962,7 +1975,8 @@
       "noServiceDescription": "Use este formulário quando não houve serviço. O motivo será salvo no histórico da igreja.",
       "submit": "Enviar cancelamento",
       "reasonRequired": "Você deve informar um motivo",
-      "submitError": "Houve um problema ao enviar o formulário"
+      "submitError": "Houve um problema ao enviar o formulário",
+      "confirmTitle": "Revisar cancelamento"
     },
     "details": {
       "meetingDetails": "Detalhes da reunião",

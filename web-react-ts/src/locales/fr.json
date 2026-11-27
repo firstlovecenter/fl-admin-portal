@@ -95,6 +95,9 @@
       "goToDashboard": "Retour au tableau de bord",
       "call": "Appeler"
     },
+    "confirmDialog": {
+      "reviewDetails": "Vérifiez les informations ci-dessous avant de soumettre."
+    },
     "loading": "Chargement…",
     "form": {
       "submit": "Envoyer",
@@ -594,7 +597,9 @@
       "vehicleTopUpAmount": "Montant du complément du véhicule*",
       "areTheyBussingBack": "Reviennent-ils par transport ?",
       "momoNumberRequired": "Numéro MoMo*",
-      "momoNameRequired": "Nom MoMo*"
+      "momoNameRequired": "Nom MoMo*",
+      "confirmTitle": "Vérifier l’enregistrement",
+      "confirmMobilisationTitle": "Vérifier la mobilisation"
     },
     "dashboard": {
       "selectAdmin": "Veuillez sélectionner un administrateur dans la liste déroulante",
@@ -647,11 +652,14 @@
       "setTodayAsSwell": "Définir aujourd’hui comme affluence",
       "setSwellDescription": "Cette action marquera aujourd’hui comme un week-end d’affluence ou spécial. Elle s’applique à tout le Campus.",
       "setAsSwell": "Définir comme affluence",
+      "swellDate": "Date d’affluence",
       "setCodeOfDay": "Définir le code du jour",
       "setCodeDescription": "Remplacez le code du jour. La nouvelle valeur remplace celle définie ce matin jusqu’à la prochaine exécution quotidienne.",
       "code": "Code",
       "codePlaceholder": "ex. Onction",
       "saveCode": "Enregistrer le code",
+      "confirmCodeTitle": "Confirmer le code du jour",
+      "confirmCodeDescription": "Le code sera défini sur la valeur indiquée ci-dessous. La modification prend effet immédiatement.",
       "updatedJustNow": "à l’instant",
       "updatedSecondsAgo_one": "il y a {{count}} seconde",
       "updatedSecondsAgo_other": "il y a {{count}} secondes",
@@ -839,7 +847,8 @@
       "arrivalWindowHint": "Les compteurs d'arrivée ne peuvent confirmer et payer les bus qu'entre ces deux heures. Les bus en retard sortent du paiement.",
       "appliesEverySunday": "Les heures s’appliquent à {{stream}} tous les dimanches jusqu’à modification.",
       "editDescription": "Mettez à jour les fenêtres de mobilisation et d’arrivée pour {{stream}}.",
-      "thisStream": "cette filière"
+      "thisStream": "cette filière",
+      "confirmTitle": "Confirmer les heures d’arrivée"
     }
   },
   "directory": {
@@ -1120,7 +1129,8 @@
       "requiredFieldsSuffix": "sont obligatoires.",
       "submitting": "Envoi en cours…",
       "saveChanges": "Enregistrer les modifications",
-      "registerMember": "Inscrire le membre"
+      "registerMember": "Inscrire le membre",
+      "confirmTitle": "Vérifier les modifications"
     },
     "memberDisplay": {
       "noteRequired": "La note est obligatoire",
@@ -1948,7 +1958,10 @@
       "familyPictureRequired": "Veuillez soumettre une photo de votre service",
       "minTreasurers": "Vous devez avoir au moins deux trésoriers",
       "pickName": "Veuillez choisir un nom dans la liste",
-      "duplicateTreasurer": "Vous ne pouvez pas choisir le même trésorier deux fois !"
+      "duplicateTreasurer": "Vous ne pouvez pas choisir le même trésorier deux fois !",
+      "reviewAndSubmit": "Vérifier et soumettre",
+      "confirmTitle": "Vérifier la soumission",
+      "church": "Église"
     },
     "cancelled": {
       "title": "Annulé",
@@ -1962,7 +1975,8 @@
       "noServiceDescription": "Utilisez ce formulaire lorsqu'aucun service n'a eu lieu. La raison sera enregistrée dans l'historique de l'église.",
       "submit": "Soumettre l'annulation",
       "reasonRequired": "Vous devez indiquer une raison",
-      "submitError": "Un problème est survenu lors de la soumission"
+      "submitError": "Un problème est survenu lors de la soumission",
+      "confirmTitle": "Vérifier l'annulation"
     },
     "details": {
       "meetingDetails": "Détails de la réunion",

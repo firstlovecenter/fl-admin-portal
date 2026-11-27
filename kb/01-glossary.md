@@ -76,8 +76,9 @@ or rename them when writing code (e.g. it is `Bacenta`, not `Bacentas`; `Bussing
 - **Anagkazo banking** — the special banking flow for the Anagkazo school /
   treasury (`api/src/resolvers/anagkazo/treasury-resolvers`).
 - **Defaulter** — a church that has not banked a previous service or has not filled
-  this week's service form. Tracked under `pages/services/defaulters/` and the
-  background `services-not-banked` job.
+  this week's service form. Tracked under `pages/services/defaulters/`; the
+  `banking` push reminder nudges Bacenta leaders who have not banked
+  (`api/src/functions/background/push-reminders`).
 - **Code of the day** — a daily rotating PIN used for arrivals payments
   (`api/src/functions/background/code-of-the-day`,
   `BacentaWithArrivals.arrivalsCodeOfTheDay`).

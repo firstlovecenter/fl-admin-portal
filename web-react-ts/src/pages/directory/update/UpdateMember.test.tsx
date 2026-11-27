@@ -1,38 +1,23 @@
 /**
- * UpdateMember.test.tsx — SYN-205
+ * UpdateMember.test.tsx — SYN-205 / SYN-208
  *
- * Bug: submitting an email-address change on a member's profile silently
- * "succeeded" client-side (form closed, navigated away) even when the
- * backend rejected the write for a duplicate email/whatsapp collision.
+ * Tests for UpdateMember's error-handling contract:
+ * - Collision (duplicate email/whatsapp) → <MemberCollisionDialog>, no navigate
+ * - Non-collision GraphQL error from profile update → toast via displayError, no navigate
+ * - Bacenta-move failure → toast via displayError, no navigate
+ * - Success → resetForm + navigate('/member/displaydetails')
+ * - UPDATE_MEMBER_MUTATION is issued with CALLER_HANDLES_ERRORS_CONTEXT (SYN-208)
  *
- * Root cause: the Apollo Client used by this app is configured with
- * `errorPolicy: 'all'` (see createApolloClient.tsx, SYN-178) so that GraphQL
- * errors are attached to `result.errors` instead of rejecting the mutation
- * promise. `onSubmit` only had a `try/catch` around `await UpdateMember(...)`
- * to detect the collision and route to <MemberCollisionDialog>. Since the
- * promise never rejected, that catch block never ran — the code fell
- * straight through to the "success" path (bacenta/basonta follow-up
- * mutations, resetForm, navigate away) while nothing had actually been
- * saved.
- *
- * Fix: `onSubmit` now inspects `updateResult.errors` explicitly. A
- * collision routes to <MemberCollisionDialog> exactly like the (still
- * present, now effectively a fallback) catch block did before; a
- * non-collision GraphQL error surfaces a toast via displayError and stops
- * before the follow-up mutations/navigation run.
- *
- * These tests render the real <UpdateMember /> against a MockedProvider
- * with `errorPolicy: 'all'` on the mutate default (matching prod config)
- * so they fail against the pre-fix code and pass against the fix.
+ * Production config: `mutate.errorPolicy: 'none'` (createApolloClient.tsx) —
+ * mutations throw ApolloError on GraphQL errors; each mutation in onSubmit
+ * has its own catch that routes to collision dialog or displayError.
  *
  * `lib/i18n` is imported for its side effect (calling `i18n.init()`) —
- * UpdateMember.tsx and MemberCollisionDialog.tsx now call `useTranslation()`
- * (i18n pass on directory/update/*), and react-i18next's `t()` silently
- * returns the raw key string instead of throwing when the i18next singleton
- * was never initialized in this file's module graph. Without this import,
- * every toast/dialog assertion below sees literal keys like
- * "directory.updateMember.updateProfileError" instead of the translated
- * English text.
+ * UpdateMember.tsx and MemberCollisionDialog.tsx call `useTranslation()`,
+ * and react-i18next's `t()` silently returns the raw key string when the
+ * i18next singleton was never initialized. Without this import every
+ * toast/dialog assertion sees literal keys like
+ * "directory.updateMember.updateProfileError" instead of English text.
  */
 
 import React from 'react'
@@ -229,7 +214,7 @@ const bacentaSearchMockWithOther = {
 }
 
 // The member moves Grace -> Hope, so onSubmit runs UpdateMemberBacenta; this
-// mock makes that follow-up mutation fail under errorPolicy: 'all'.
+// mock makes that follow-up mutation throw (errorPolicy: 'none').
 const bacentaMoveErrorMock = {
   request: {
     query: UPDATE_MEMBER_BACENTA,
@@ -359,10 +344,10 @@ const renderUpdateMember = (
                 : undefined
             }
             defaultOptions={{
-              // Mirrors prod's createApolloClient defaultOptions.mutate:
-              // GraphQL errors land in `result.errors`, they do not reject
-              // the mutate() promise.
-              mutate: { errorPolicy: 'all' },
+              // Mirrors prod's createApolloClient defaultOptions: mutations
+              // throw ApolloError on GraphQL errors (errorPolicy: 'none');
+              // queries/watchQueries resolve partial data (errorPolicy: 'all').
+              mutate: { errorPolicy: 'none' },
               watchQuery: { errorPolicy: 'all' },
               query: { errorPolicy: 'all' },
             }}
@@ -395,8 +380,14 @@ const selectBacentaFromDropdown = async (bacentaName = 'Grace Bacenta') => {
 
 const submitForm = async () => {
   const user = userEvent.setup()
-  const submitButton = await screen.findByRole('button', { name: /save/i })
-  await user.click(submitButton)
+  // In update mode MemberForm shows "Review & Submit" which opens a
+  // confirmation dialog; the actual save fires on "Save Changes" inside it.
+  const reviewButton = await screen.findByRole('button', {
+    name: /review.*submit/i,
+  })
+  await user.click(reviewButton)
+  const saveButton = await screen.findByRole('button', { name: /save changes/i })
+  await user.click(saveButton)
 }
 
 // SYN-226: each case is a full render -> debounced search -> type -> submit
@@ -413,12 +404,8 @@ describe('UpdateMember — SYN-205 email-collision handling', { timeout: 30000 }
       basontasMock,
       memberBacentaSearchMock,
       collisionUpdateMock(variables),
-      // UpdateMember's useMutation always sets refetchQueries for these two
-      // queries. Since errorPolicy: 'all' means mutate() resolves (rather
-      // than rejects) even on a collision error, Apollo still runs the
-      // refetch — so a second copy of each read is needed here too.
-      memberBioMock,
-      memberChurchMock,
+      // With errorPolicy: 'none', the mutation throws on a collision error so
+      // Apollo does NOT fire refetchQueries — no extra copies needed here.
     ])
 
     await screen.findByDisplayValue('ama@example.com')
@@ -457,8 +444,6 @@ describe('UpdateMember — SYN-205 email-collision handling', { timeout: 30000 }
         basontasMock,
         memberBacentaSearchMock,
         collisionUpdateMock(variables),
-        memberBioMock,
-        memberChurchMock,
       ],
       (operationName, context) => {
         contexts[operationName] = context

@@ -152,7 +152,6 @@ Lambdas (also runnable as CLI scripts under `api/src/scripts/`):
   Sunday or the report date, depending on fellowship-mode (see recent commits
   d3d2db0f, 9ff6832d).
 - `den-office-monthly-report` — monthly PDF for the denomination office.
-- `services-not-banked` — defaulter notifications.
 - `code-of-the-day` — daily code rotation.
 - `service-graph-aggregator` / `bacenta-graph-aggregator` — aggregate
   service / bussing data upward through the hierarchy. Must be **idempotent**:

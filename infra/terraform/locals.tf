@@ -7,7 +7,7 @@ locals {
   role_graphql_service     = aws_iam_role.fl_synago_graphql.arn
 
   # ---------------------------------------------------------------------------
-  # All 14 in-scope Lambda functions, mirrored from the live configuration.
+  # All in-scope Lambda functions, mirrored from the live configuration.
   # `environment` holds env-var KEYS/values that are NOT secret (the secret
   # CONTENT lives in Secrets Manager; AWS_SECRET_NAME is just a pointer).
   # ---------------------------------------------------------------------------
@@ -94,16 +94,6 @@ locals {
       handler           = "index.handler"
       memory_size       = 128
       timeout           = 10
-      architectures     = ["arm64"]
-      ephemeral_storage = 512
-      role              = local.role_fl_lambda_functions
-      environment       = { AWS_SECRET_NAME = "prod/fl-admin-portal" }
-    }
-    "fl-synago-services-not-banked" = {
-      runtime           = "nodejs22.x"
-      handler           = "index.handler"
-      memory_size       = 128
-      timeout           = 20
       architectures     = ["arm64"]
       ephemeral_storage = 512
       role              = local.role_fl_lambda_functions

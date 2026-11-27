@@ -1,3 +1,5 @@
+import { badRequest } from './utils'
+
 const errorMessage = require('../texts.json').error
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -43,12 +45,19 @@ const mondayOfWeekIso = (date: Date): string => {
 // [Monday-of-this-week, today] inclusive. Direct GraphQL callers bypass the FE
 // form, so this guard is the only thing standing between an authenticated
 // caller and an out-of-week ServiceRecord write.
+//
+// SYN-278 — these are refusals the user can act on (pick a date in this week),
+// not server failures, so they are `badRequest` (BAD_USER_INPUT) and logged at
+// WARN. A plain Error was stamped INTERNAL_SERVER_ERROR and logged at ERROR —
+// e.g. a Sunday form submitted just after midnight UTC, once the week had
+// rolled over — and error intake filed each one as a ticket. The rule itself
+// is unchanged: loosening it would let back-dated records reopen closed weeks.
 export const assertServiceDateInCurrentWeek = (serviceDate?: string): void => {
   if (!serviceDate || !ISO_DATE_RE.test(serviceDate)) {
-    throw new Error(errorMessage.service_date_required)
+    throw badRequest(errorMessage.service_date_required)
   }
   if (Number.isNaN(Date.parse(serviceDate))) {
-    throw new Error(errorMessage.service_date_required)
+    throw badRequest(errorMessage.service_date_required)
   }
 
   const now = new Date()
@@ -56,6 +65,6 @@ export const assertServiceDateInCurrentWeek = (serviceDate?: string): void => {
   const mondayThisWeekIso = mondayOfWeekIso(now)
 
   if (serviceDate < mondayThisWeekIso || serviceDate > todayIso) {
-    throw new Error(errorMessage.service_date_out_of_week)
+    throw badRequest(errorMessage.service_date_out_of_week)
   }
 }

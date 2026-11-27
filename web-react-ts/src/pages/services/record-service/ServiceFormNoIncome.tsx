@@ -11,8 +11,31 @@ import Input from 'components/formik/Input'
 import { Church, ChurchLevel } from 'global-types'
 import { MutationFunction } from '@apollo/client'
 import ImageUpload from 'components/formik/ImageUpload'
+import { Button } from 'components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'components/ui/dialog'
+import useModal from 'hooks/useModal'
 import { StickyPageHeader } from 'components/shell/StickyPageHeader'
 import { formatChurchLevel } from 'lib/scope-display'
+
+const ReviewRow = ({
+  label,
+  value,
+}: {
+  label: string
+  value: string | number
+}) => (
+  <div className="flex items-center justify-between gap-2">
+    <span className="text-muted-foreground">{label}</span>
+    <span className="font-medium tabular-nums text-foreground">{value}</span>
+  </div>
+)
 
 type ServiceFormProps = {
   church: Church
@@ -38,6 +61,7 @@ const ServiceForm = ({
   const { t } = useTranslation()
   const { clickCard } = useContext(ChurchContext)
   const navigate = useNavigate()
+  const { show, handleClose, handleShow } = useModal()
 
   const today = new Date()
   const mondayThisWeek = getMondayThisWeek(today)
@@ -158,7 +182,53 @@ const ServiceForm = ({
                     </div>
                   </div>
 
-                  <SubmitButton formik={formik} />
+                  <Dialog
+                    open={show}
+                    onOpenChange={(open) => !open && handleClose()}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {t('services.form.confirmTitle')}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {t('shared.confirmDialog.reviewDetails')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-1 text-sm">
+                        <ReviewRow
+                          label={t('services.form.church')}
+                          value={`${church?.name} · ${formatChurchLevel(church?.__typename, t)}`}
+                        />
+                        <ReviewRow
+                          label={t('services.form.dateOfService')}
+                          value={formik.values.serviceDate}
+                        />
+                        <ReviewRow
+                          label={t('services.form.attendance')}
+                          value={formik.values.attendance}
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={handleClose}>
+                          {t('shared.actions.edit')}
+                        </Button>
+                        <SubmitButton
+                          onClick={formik.handleSubmit}
+                          formik={formik}
+                        />
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={handleShow}
+                    disabled={!formik.isValid || formik.isSubmitting}
+                  >
+                    {t('services.form.reviewAndSubmit')}
+                  </Button>
                 </div>
               </div>
             </Form>

@@ -46,7 +46,7 @@ api/src/
 │   └── uploads/
 ├── functions/
 │   ├── graphql/                      # Lambda GraphQL handler
-│   └── background/                   # 9 scheduled jobs (also CLI-runnable)
+│   └── background/                   # 8 scheduled jobs (also CLI-runnable)
 ├── scripts/                          # CLI runners for the background jobs
 └── db/
 ```

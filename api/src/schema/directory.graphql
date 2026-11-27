@@ -4,7 +4,7 @@ type Member @node @mutation(operations: []) {
   #   - CreateMember            (directory-resolvers.ts)
   #   - MakeMemberInactive      (directory-resolvers.ts)
   #   - UpdateMemberBacenta     (directory-resolvers.ts)
-  #   - SetMemberStickyNote     (directory-history.graphql)
+  #   - SetMemberStickyNote     (directory-resolvers.ts)
   #   - LogMemberHistory        (directory-history.graphql)
   # Leaving the auto-gen `updateMembers` exposed (even with `@authentication`)
   # lets any logged-in user overwrite arbitrary member PII or connect
