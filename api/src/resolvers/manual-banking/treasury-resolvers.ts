@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import {
+  badRequest,
   isAuth,
   noEmptyArgsValidation,
   rearrangeCypherObject,
@@ -43,32 +44,36 @@ const treasuryMutations = {
 
     //  implement checks to make sure that all the bacentas have filled their offering
 
-    // Form-defaulter precheck is a pure read with no write side, so the
-    // read-then-throw pattern is safe (no race with the write below).
-    const formDefaultersResponse = rearrangeCypherObject(
-      await session
-        .run(treasury.formDefaultersCount, args)
-        .catch((error: any) =>
-          throwToSentry('There was an error running cypher', error)
-        )
-    )
-
-    const formDefaultersCount = formDefaultersResponse.defaulters.low
-    const formDefaultersList = formDefaultersResponse.defaultersNames
-
-    if (formDefaultersCount > 0) {
-      throw new Error(
-        `You cannot confirm this governorship until all the active bacentas have filled their forms. Outstanding bacentas are: ${formDefaultersList.join(
-          ', '
-        )}`
-      )
-    }
-
-    // Removed the bankingDefaulersCount read-then-write precheck: two
-    // tellers could both read non-zero and both fire confirmBanking. The
-    // Cypher itself is now the source of truth — it returns affectedCount
-    // and we throw "already banked" when zero records were updated.
+    // SYN-292: the precheck sits inside the try so `finally` closes the
+    // session on its refusal too — it used to leak one per refusal.
     try {
+      // Form-defaulter precheck is a pure read with no write side, so the
+      // read-then-throw pattern is safe (no race with the write below).
+      const formDefaultersResponse = rearrangeCypherObject(
+        await session
+          .run(treasury.formDefaultersCount, args)
+          .catch((error: any) =>
+            throwToSentry('There was an error running cypher', error)
+          )
+      )
+
+      const formDefaultersCount = formDefaultersResponse.defaulters.low
+      const formDefaultersList = formDefaultersResponse.defaultersNames
+
+      // SYN-292: a refusal the teller is meant to see (chase the bacentas), so
+      // BAD_USER_INPUT logs at WARN (SYN-253), not a plain INTERNAL Error.
+      if (formDefaultersCount > 0) {
+        throw badRequest(
+          `You cannot confirm this governorship until all the active bacentas have filled their forms. Outstanding bacentas are: ${formDefaultersList.join(
+            ', '
+          )}`
+        )
+      }
+
+      // Removed the bankingDefaulersCount read-then-write precheck: two
+      // tellers could both read non-zero and both fire confirmBanking. The
+      // Cypher itself is now the source of truth — it returns affectedCount
+      // and we throw "already banked" when zero records were updated.
       const response = await session.executeWrite((tx) =>
         tx.run(treasury.confirmBanking, {
           ...args,
@@ -89,7 +94,12 @@ const treasuryMutations = {
         !confirmationResponse.affectedCount ||
         confirmationResponse.affectedCount.low === 0
       ) {
-        throw new Error("This governorship's offering has already been banked!")
+        // SYN-292: zero rows means another teller (or a second tap, or a
+        // stale pending list) confirmed it first — a refusal the teller sees,
+        // not a server fault, so BAD_USER_INPUT logs at WARN (SYN-253).
+        throw badRequest(
+          "This governorship's offering has already been banked!"
+        )
       }
 
       return {
@@ -97,13 +107,10 @@ const treasuryMutations = {
         banked: true,
       }
     } catch (error: any) {
-      // Preserve the explicit "already banked" message — re-throw it raw
-      // rather than wrapping it in "There was a problem…" so the user UI
-      // can show the precise reason.
-      if (
-        typeof error?.message === 'string' &&
-        error.message.includes('already been banked')
-      ) {
+      // Re-throw our own refusal raw rather than wrapping it in "There was a
+      // problem…": the UI shows the precise reason, and wrapping in a plain
+      // Error would drop BAD_USER_INPUT back to INTERNAL_SERVER_ERROR.
+      if (error?.extensions?.code === 'BAD_USER_INPUT') {
         throw error
       }
       throw new Error(`There was a problem confirming the banking ${error}`)
@@ -141,7 +148,8 @@ const treasuryMutations = {
         !confirmationResponse.affectedCount ||
         confirmationResponse.affectedCount.low === 0
       ) {
-        throw new Error("This council's offering has already been banked!")
+        // SYN-292: same expected refusal as ConfirmBanking — WARN, not ERROR.
+        throw badRequest("This council's offering has already been banked!")
       }
 
       return {
@@ -149,10 +157,7 @@ const treasuryMutations = {
         banked: true,
       }
     } catch (error: any) {
-      if (
-        typeof error?.message === 'string' &&
-        error.message.includes('already been banked')
-      ) {
+      if (error?.extensions?.code === 'BAD_USER_INPUT') {
         throw error
       }
       throw new Error(`There was a problem confirming the banking ${error}`)
