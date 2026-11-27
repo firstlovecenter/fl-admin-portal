@@ -8,9 +8,16 @@
  *     reliably maintained on Council/Governorship/Stream);
  *   - the recipient + opt-out wiring (LEADS|IS_ADMIN_FOR + notifyDefaulters);
  *   - the correct :HAS depth per level.
+ * Plus the banking reminder: its unbanked checks, which its comment ties to
+ * the Defaulters page's `bankingDefaultersThisWeek`, and its 6-day window.
  */
 
-const { DEFAULTERS_REMINDER_QUERIES } = require('./reminders-cypher')
+const fs = require('fs')
+const path = require('path')
+const {
+  BANKING_REMINDER_RECIPIENTS,
+  DEFAULTERS_REMINDER_QUERIES,
+} = require('./reminders-cypher')
 
 const [GOVERNORSHIP, COUNCIL, STREAM] = DEFAULTERS_REMINDER_QUERIES
 
@@ -63,6 +70,79 @@ describe('DEFAULTERS_REMINDER_QUERIES', () => {
     // Stream → Council → Governorship → Bacenta (3 hops).
     expect(STREAM).toContain(
       '(node)-[:HAS]->(:Council)-[:HAS]->(:Governorship)-[:HAS]->(bacenta:Active:Bacenta)'
+    )
+  })
+})
+
+// Every `bankingDefaultersThisWeek` @cypher statement in the SDL, as
+// [type it extends, statement body] pairs.
+const bankingDefaultersStatements = (sdl) =>
+  [
+    ...sdl.matchAll(
+      /bankingDefaultersThisWeek\([^)]*\)[^@]*@cypher\(\s*statement:\s*"""([\s\S]*?)"""/g
+    ),
+  ].map((match) => {
+    const types = [
+      ...sdl.slice(0, match.index).matchAll(/^extend type (\w+) \{/gm),
+    ]
+    return [types[types.length - 1][1], match[1]]
+  })
+
+describe('BANKING_REMINDER_RECIPIENTS', () => {
+  // Its comment says the unbanked checks are the Defaulters page's, so a
+  // reminder never nags a Bacenta that page counts as banked. Fail here if
+  // the two drift apart.
+  const statements = bankingDefaultersStatements(
+    fs.readFileSync(
+      path.resolve(__dirname, '../../../schema/services.graphql'),
+      'utf8'
+    )
+  )
+
+  it('finds the Defaulters page predicate in services.graphql', () => {
+    expect(statements.map(([type]) => type)).toEqual(
+      expect.arrayContaining(['Governorship', 'Council', 'Stream'])
+    )
+  })
+
+  it.each(statements)(
+    'keeps every unbanked check of %s.bankingDefaultersThisWeek',
+    (type, statement) => {
+      const nullChecks = statement.match(/record\.\w+ IS NULL/g) ?? []
+
+      expect(nullChecks).toEqual(
+        expect.arrayContaining([
+          'record.noServiceReason IS NULL',
+          'record.bankingSlip IS NULL',
+          'record.tellerConfirmationTime IS NULL',
+        ])
+      )
+      nullChecks.forEach((check) => {
+        expect(BANKING_REMINDER_RECIPIENTS).toContain(check)
+      })
+      // Widened below to also treat 'pending' as handled.
+      expect(statement).toContain("record.transactionStatus <> 'success'")
+    }
+  )
+
+  it('narrows them to filled records with income that are not in flight', () => {
+    // "Filled": a record without attendance is not a service yet.
+    expect(BANKING_REMINDER_RECIPIENTS).toContain(
+      'record.attendance IS NOT NULL'
+    )
+    // A zero-income service has nothing to bank.
+    expect(BANKING_REMINDER_RECIPIENTS).toContain(
+      'coalesce(record.income, 0) > 0'
+    )
+    // A self-banking payment in flight (SM1) counts as handled.
+    expect(BANKING_REMINDER_RECIPIENTS).toContain(
+      "NOT record.transactionStatus IN ['success', 'pending']"
+    )
+  })
+
+  it('looks back over the trailing 6 days only, never today', () => {
+    expect(BANKING_REMINDER_RECIPIENTS).toContain(
+      'WITH [d IN range(1, 6) | today - duration({days: d})] AS dates'
     )
   })
 })

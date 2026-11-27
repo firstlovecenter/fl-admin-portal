@@ -71,7 +71,7 @@ Before proposing a fix, list:
   state machine?
 - What aggregates, reports, or background jobs depend on the affected data?
   (`service-graph-aggregator`, `bacenta-graph-aggregator`,
-  `services-not-banked`, `accra-campus-weekly`, `outside-accra-weekly`,
+  `accra-campus-weekly`, `outside-accra-weekly`,
   `den-office-monthly-report`)
 - Which roles' UI surfaces will change (visible / functional)?
 - Is there an audit-trail concern (`HistoryLog`, banking confirmation)?

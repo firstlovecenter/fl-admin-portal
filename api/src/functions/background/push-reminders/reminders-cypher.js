@@ -45,8 +45,10 @@ const SERVICE_REMINDER_RECIPIENTS = `
 //
 // Targets Bacentas with a filled, non-cancelled ServiceRecord in the trailing
 // 6 days (yesterday back — never today, banking is "next day") that carries
-// real income and is not banked by ANY rail. The unbanked predicate mirrors
-// services-not-banked/index.js, with two deliberate additions:
+// real income and is not banked by ANY rail. Its unbanked checks are the
+// Defaulters page's (`bankingDefaultersThisWeek` in services.graphql),
+// narrowed to filled records (attendance recorded) and with two deliberate
+// additions:
 //   - income > 0: a zero-income service has nothing to bank; reminding is noise.
 //   - transactionStatus 'pending' also counts as handled: a self-banking
 //     payment in flight (SM1) resolves on its own; nagging mid-payment is a
@@ -55,8 +57,9 @@ const SERVICE_REMINDER_RECIPIENTS = `
 // The trailing window (not the Tue-anchored week) is what makes Monday-after-
 // Sunday work: on Mondays the Tue-anchored "current week" points FORWARD, so
 // a Sunday service would never be seen by a week-window query. Consequence:
-// a record still unbanked after 6 days ages out of push reminders for good —
-// the weekly services-not-banked spreadsheet is the backstop for those.
+// a record still unbanked after 6 days ages out of push reminders for good,
+// and nothing automated chases it after that: the `defaulters` job only looks
+// at the current Tue–Sun week.
 // Anchored on the TimeGraph(date) index (repo convention) so cost scales with
 // the trailing window, not with all-time ServiceRecord history.
 const BANKING_REMINDER_RECIPIENTS = `
